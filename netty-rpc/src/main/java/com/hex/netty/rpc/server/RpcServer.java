@@ -74,8 +74,8 @@ public class RpcServer extends AbstractRpc implements Server {
         }
 
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getWorkerThreads());
-
-//        buildTrafficMonitor(defaultEventExecutorGroup, config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
+        // 流控
+        buildTrafficMonitor(defaultEventExecutorGroup, config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
 
         boolean useEpolll = useEpoll();
         this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)
@@ -93,10 +93,10 @@ public class RpcServer extends AbstractRpc implements Server {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-//                        // 流控
-//                        if (null != trafficShapingHandler) {
-//                            pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
-//                        }
+                        // 流控
+                        if (null != trafficShapingHandler) {
+                            pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
+                        }
                         // 编解码
                         if (config.getCompressEnable() != null && config.getCompressEnable()) {
                             // 添加压缩编解码

@@ -27,6 +27,21 @@ public class RpcClientConfig {
     private ProtocolAdapter protocolAdapter = new PbProtocolAdapter();
 
     /**
+     * 是否开启流量监控
+     */
+    private Boolean trafficMonitorEnable = true;
+
+    /**
+     * 带宽限制，最大读取速度
+     */
+    private Long maxReadSpeed = 10 * 1000 * 1000L;
+
+    /**
+     * 带宽限制，最大写出速度
+     */
+    private Long maxWriteSpeed = 10 * 1000 * 1000L;
+
+    /**
      * 是否开启数据压缩
      */
     private Boolean compressEnable = true;
@@ -151,6 +166,33 @@ public class RpcClientConfig {
 
     public RpcClientConfig setMaxThreshold(Long maxThreshold) {
         this.maxThreshold = maxThreshold;
+        return this;
+    }
+
+    public Boolean getTrafficMonitorEnable() {
+        return trafficMonitorEnable;
+    }
+
+    public RpcClientConfig setTrafficMonitorEnable(Boolean trafficMonitorEnable) {
+        this.trafficMonitorEnable = trafficMonitorEnable;
+        return this;
+    }
+
+    public Long getMaxReadSpeed() {
+        return maxReadSpeed;
+    }
+
+    public RpcClientConfig setMaxReadSpeed(Long maxReadSpeed) {
+        this.maxReadSpeed = maxReadSpeed;
+        return this;
+    }
+
+    public Long getMaxWriteSpeed() {
+        return maxWriteSpeed;
+    }
+
+    public RpcClientConfig setMaxWriteSpeed(Long maxWriteSpeed) {
+        this.maxWriteSpeed = maxWriteSpeed;
         return this;
     }
 }

@@ -76,6 +76,8 @@ public class RpcClient extends AbstractRpc implements Client {
             this.eventLoopGroupSelector = new NioEventLoopGroup(config.getEventLoopGroupSelector());
         }
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getWorkerThreads());
+        // 流控
+        buildTrafficMonitor(defaultEventExecutorGroup, config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
 
         boolean useEpoll = useEpoll();
         this.bootstrap.group(this.eventLoopGroupSelector)
@@ -91,10 +93,12 @@ public class RpcClient extends AbstractRpc implements Client {
                     @Override
                     public void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
-//                        // 流控
-//                        if (null != trafficShapingHandler) {
-//                            pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
-//                        }
+
+                        // 流控
+                        if (null != trafficShapingHandler) {
+                            pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
+                        }
+
                         if (config.getCompressEnable() != null && config.getCompressEnable()) {
                             // 压缩
                             pipeline.addLast(
