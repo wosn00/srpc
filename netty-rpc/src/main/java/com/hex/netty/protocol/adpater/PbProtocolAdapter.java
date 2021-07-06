@@ -42,9 +42,9 @@ public class PbProtocolAdapter implements ProtocolAdapter<Command, Rpc.Packet> {
     public Command decode(Rpc.Packet packet) {
         Command<String> command;
         if (CommandType.REQUEST_COMMAND.getValue().equals(packet.getCommandType())) {
-            command = new RpcRequest<>();
+            command = new RpcRequest();
         } else if (CommandType.RESPONSE_COMMAND.getValue().equals(packet.getCommandType())) {
-            command = new RpcResponse<>();
+            command = new RpcResponse();
         } else {
             command = new Command<>();
         }

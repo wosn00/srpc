@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * @author: hs
  */
-public class RpcResponse<T> extends Command<T> {
+public class RpcResponse extends Command<String> {
 
     public static final Integer SUCCESS_CODE = 200;
 
@@ -20,7 +20,7 @@ public class RpcResponse<T> extends Command<T> {
     public RpcResponse() {
     }
 
-    public RpcResponse(String seq, String cmd, Integer code, T body) {
+    public RpcResponse(String seq, String cmd, Integer code, String body) {
         super(seq, cmd, CommandType.RESPONSE_COMMAND.getValue(), code, System.currentTimeMillis(), body);
     }
 
@@ -28,21 +28,21 @@ public class RpcResponse<T> extends Command<T> {
      * 客户端错误响应
      */
     public static RpcResponse clientError() {
-        return new RpcResponse<>(UUID.randomUUID().toString(), null, CLIENT_ERROR_CODE, null);
+        return new RpcResponse(UUID.randomUUID().toString(), null, CLIENT_ERROR_CODE, null);
     }
 
     /**
      * 服务端错误响应
      */
     public static RpcResponse serverError() {
-        return new RpcResponse<>(UUID.randomUUID().toString(), null, SERVER_ERROR_CODE, null);
+        return new RpcResponse(UUID.randomUUID().toString(), null, SERVER_ERROR_CODE, null);
     }
 
     /**
      * 请求超时响应
      */
     public static RpcResponse requestTimeout() {
-        return new RpcResponse<>(UUID.randomUUID().toString(), null, REQUEST_TIMEOUT, null);
+        return new RpcResponse(UUID.randomUUID().toString(), null, REQUEST_TIMEOUT, null);
     }
 
     /**
@@ -52,8 +52,8 @@ public class RpcResponse<T> extends Command<T> {
      * @param responseBody 响应内容
      * @return RpcResponse
      */
-    public static RpcResponse<String> success(String requestSeq, String responseBody) {
-        return new RpcResponse<>(requestSeq, null, SUCCESS_CODE, responseBody);
+    public static RpcResponse success(String requestSeq, String responseBody) {
+        return new RpcResponse(requestSeq, null, SUCCESS_CODE, responseBody);
     }
 
 

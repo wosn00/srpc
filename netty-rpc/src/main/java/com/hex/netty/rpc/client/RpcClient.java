@@ -1,6 +1,8 @@
 package com.hex.netty.rpc.client;
 
 import com.hex.netty.cmd.IHadnler;
+import com.hex.netty.compress.JdkZlibExtendDecoder;
+import com.hex.netty.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcClientConfig;
 import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.DefaultConnectionManager;
@@ -93,12 +95,27 @@ public class RpcClient extends AbstractRpc implements Client {
 //                        if (null != trafficShapingHandler) {
 //                            pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
 //                        }
+                        if (config.getCompressEnable() != null && config.getCompressEnable()) {
+                            // 压缩
+                            pipeline.addLast(
+                                    defaultEventExecutorGroup,
+                                    new ProtobufVarint32FrameDecoder(),
+                                    new JdkZlibExtendDecoder(),
+                                    new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
+                                    new ProtobufVarint32LengthFieldPrepender(),
+                                    new JdkZlibExtendEncoder(config.getCompressionLevel(), config.getMinThreshold(), config.getMaxThreshold()),
+                                    new ProtobufEncoder());
+                        } else {
+                            pipeline.addLast(
+                                    defaultEventExecutorGroup,
+                                    new ProtobufVarint32FrameDecoder(),
+                                    new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
+                                    new ProtobufVarint32LengthFieldPrepender(),
+                                    new ProtobufEncoder());
+                        }
+
                         pipeline.addLast(
                                 defaultEventExecutorGroup,
-                                new ProtobufVarint32FrameDecoder(),
-                                new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                                new ProtobufVarint32LengthFieldPrepender(),
-                                new ProtobufEncoder(),
                                 // 指定时间内没收到或没发送数据则认为空闲
                                 new IdleStateHandler(config.getMaxIdleSecs(), config.getMaxIdleSecs(), 0),
                                 new NettyClientConnManageHandler(defaultConnectionManager),

@@ -25,7 +25,7 @@ public class ClientTest {
         rpcClient.connect("127.0.0.1", 8500);
 
         // 构造请求
-        RpcRequest<String> request = new RpcRequest<>();
+        RpcRequest request = new RpcRequest();
         request.setCmd("/test/cmd");
         request.setBody("这是请求内容");
 
@@ -35,6 +35,8 @@ public class ClientTest {
 
         // 异步发送请求
         rpcClient.invokeAsync(request, rpcResponse -> System.out.println("收到响应，开始执行回调方法"));
+
+
 
 
     }

@@ -28,6 +28,24 @@ public class RpcServerConfig {
 
     private ProtocolAdapter protocolAdapter = new PbProtocolAdapter();
 
+    private Boolean compressEnable = true;
+
+    /**
+     * 压缩级别(0-9)
+     */
+    private Integer compressionLevel = 6;
+
+    /**
+     * 开启压缩最低阈值(byte)
+     */
+    private Long minThreshold = -1L;
+
+    /**
+     * 开启压缩最高阈值(byte)
+     */
+    private Long maxThreshold = -1L;
+
+
     public Integer getEventLoopGroupSelector() {
         return eventLoopGroupSelector;
     }
@@ -106,5 +124,41 @@ public class RpcServerConfig {
 
     public void setProtocolAdapter(ProtocolAdapter protocolAdapter) {
         this.protocolAdapter = protocolAdapter;
+    }
+
+    public Boolean getCompressEnable() {
+        return compressEnable;
+    }
+
+    public RpcServerConfig setCompressEnable(Boolean compressEnable) {
+        this.compressEnable = compressEnable;
+        return this;
+    }
+
+    public Integer getCompressionLevel() {
+        return compressionLevel;
+    }
+
+    public RpcServerConfig setCompressionLevel(Integer compressionLevel) {
+        this.compressionLevel = compressionLevel;
+        return this;
+    }
+
+    public Long getMinThreshold() {
+        return minThreshold;
+    }
+
+    public RpcServerConfig setMinThreshold(Long minThreshold) {
+        this.minThreshold = minThreshold;
+        return this;
+    }
+
+    public Long getMaxThreshold() {
+        return maxThreshold;
+    }
+
+    public RpcServerConfig setMaxThreshold(Long maxThreshold) {
+        this.maxThreshold = maxThreshold;
+        return this;
     }
 }

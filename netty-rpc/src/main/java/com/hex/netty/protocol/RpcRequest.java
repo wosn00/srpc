@@ -5,7 +5,7 @@ import com.hex.netty.constant.CommandType;
 /**
  * @author: hs
  */
-public class RpcRequest<T> extends Command<T> {
+public class RpcRequest extends Command<String> {
 
     public RpcRequest() {
         super();
