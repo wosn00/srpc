@@ -11,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * @author: hs
  */
-public class PbProtocolAdapter implements ProtocolAdapter<Command, Rpc.Packet> {
+public class PbProtocolAdapter implements ProtocolAdapter<Command<String>, Rpc.Packet> {
     @Override
     public Rpc.Packet encode(Command command) {
         Rpc.Packet.Builder builder = Rpc.Packet.newBuilder();
@@ -39,7 +39,7 @@ public class PbProtocolAdapter implements ProtocolAdapter<Command, Rpc.Packet> {
     }
 
     @Override
-    public Command decode(Rpc.Packet packet) {
+    public Command<String> decode(Rpc.Packet packet) {
         Command<String> command;
         if (CommandType.REQUEST_COMMAND.getValue().equals(packet.getCommandType())) {
             command = new RpcRequest();

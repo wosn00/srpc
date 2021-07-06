@@ -7,6 +7,7 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.SocketAddress;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -56,6 +57,11 @@ public class NettyConnection implements Connection {
     @Override
     public boolean isAvailable() {
         return channel != null && !isClosed.get() && this.channel.isActive();
+    }
+
+    @Override
+    public SocketAddress getRemoteAddress() {
+        return channel.remoteAddress();
     }
 
     @Override

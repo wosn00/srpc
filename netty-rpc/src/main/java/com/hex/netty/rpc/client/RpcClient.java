@@ -100,7 +100,7 @@ public class RpcClient extends AbstractRpc implements Client {
                         }
 
                         if (config.getCompressEnable() != null && config.getCompressEnable()) {
-                            // 压缩
+                            // 添加压缩编解码
                             pipeline.addLast(
                                     defaultEventExecutorGroup,
                                     new ProtobufVarint32FrameDecoder(),
@@ -110,6 +110,7 @@ public class RpcClient extends AbstractRpc implements Client {
                                     new JdkZlibExtendEncoder(config.getCompressionLevel(), config.getMinThreshold(), config.getMaxThreshold()),
                                     new ProtobufEncoder());
                         } else {
+                            //正常pb编解码
                             pipeline.addLast(
                                     defaultEventExecutorGroup,
                                     new ProtobufVarint32FrameDecoder(),

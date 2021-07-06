@@ -1,10 +1,13 @@
 package com.hex.netty.rpc.server;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.base.Throwables;
 import com.hex.netty.cmd.IHadnler;
 import com.hex.netty.compress.JdkZlibExtendDecoder;
 import com.hex.netty.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcServerConfig;
+import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.DefaultConnectionManager;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyClientConnManageHandler;
@@ -36,7 +39,11 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @author hs
@@ -136,6 +143,7 @@ public class RpcServer extends AbstractRpc implements Server {
         }
 
         logger.info("NettyRpcServer started success!  Listening port:{}", config.getPort());
+        countConnectionNum(defaultConnectionManager);
 
     }
 
@@ -159,5 +167,22 @@ public class RpcServer extends AbstractRpc implements Server {
             logger.error("NettyRpcServer stop exception, {}", Throwables.getStackTraceAsString(e));
         }
         logger.info("NettyRpcServer stopped!");
+    }
+
+    private void countConnectionNum(DefaultConnectionManager defaultConnectionManager) {
+        new Timer("connection monitor", true)
+                .scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        int size = defaultConnectionManager.size();
+                        Connection[] allConn = defaultConnectionManager.getAllConn();
+                        Map<String, Object> connMap = new HashMap<>();
+                        for (int i = 0; i < allConn.length; i++) {
+                            connMap.put("connection" + (i + 1), allConn[i].getRemoteAddress());
+                        }
+                        logger.info("服务端当前连接数量:[{}], 客户端地址:[{}]", size, JSON.toJSONString(connMap,
+                                SerializerFeature.DisableCircularReferenceDetect, SerializerFeature.PrettyFormat));
+                    }
+                }, 3 * 1000L, 20 * 1000L);
     }
 }
