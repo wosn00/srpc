@@ -5,7 +5,13 @@ package com.hex.netty.rpc;
  */
 public interface Server {
 
+    /**
+     * 启动服务端
+     */
     void start();
 
+    /**
+     * 停止服务端
+     */
     void stop();
 }

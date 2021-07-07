@@ -2,7 +2,7 @@ package com.hex.netty.chain.dealing;
 
 import com.hex.netty.chain.Dealing;
 import com.hex.netty.chain.DealingContext;
-import com.hex.netty.cmd.IHadnler;
+import com.hex.netty.cmd.IHandler;
 import com.hex.netty.connection.Connection;
 import com.hex.netty.constant.CommandType;
 import com.hex.netty.invoke.ResponseFuture;
@@ -29,7 +29,7 @@ public class DispatchDealing implements Dealing {
     /**
      * 处理器映射
      */
-    private Map<String, IHadnler> hadnlerMap = new ConcurrentHashMap<>();
+    private Map<String, IHandler> handlerMap = new ConcurrentHashMap<>();
 
     @Override
     public void deal(DealingContext context) {
@@ -50,15 +50,15 @@ public class DispatchDealing implements Dealing {
 
     private void requestDispatch(RpcRequest rpcRequest, String cmd, Connection connection) {
         // 获取请求处理器
-        IHadnler iHadnler = hadnlerMap.get(cmd);
-        if (iHadnler == null) {
+        IHandler iHandler = handlerMap.get(cmd);
+        if (iHandler == null) {
             logger.warn("The handler of cmd is not defined, Ignore request seq:[{}]", rpcRequest.getSeq());
             return;
         }
         // 处理请求
         String responseBody;
         try {
-            responseBody = iHadnler.handler(rpcRequest);
+            responseBody = iHandler.handler(rpcRequest);
         } catch (Exception e) {
             logger.error("handler processing error", e);
             connection.send(RpcResponse.serverError());
@@ -81,13 +81,13 @@ public class DispatchDealing implements Dealing {
         responseFuture.receipt();
     }
 
-    public void registerHandler(IHadnler hadnler) {
-        hadnlerMap.put(hadnler.getCmd(), hadnler);
+    public void registerHandler(IHandler handler) {
+        handlerMap.put(handler.getCmd(), handler);
     }
 
-    public DispatchDealing registerHandlers(List<IHadnler> hadnlers) {
-        Map<String, IHadnler> map = hadnlers.stream().collect(Collectors.toMap(IHadnler::getCmd, Function.identity()));
-        hadnlerMap.putAll(map);
+    public DispatchDealing registerHandlers(List<IHandler> handlers) {
+        Map<String, IHandler> map = handlers.stream().collect(Collectors.toMap(IHandler::getCmd, Function.identity()));
+        handlerMap.putAll(map);
         return this;
     }
 }

@@ -1,13 +1,10 @@
 package com.hex.netty.rpc;
 
-import com.hex.netty.cmd.IHadnler;
+import com.hex.netty.cmd.IHandler;
 import io.netty.channel.epoll.Epoll;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.apache.commons.lang3.SystemUtils;
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -17,7 +14,7 @@ public abstract class AbstractRpc {
 
     protected GlobalTrafficShapingHandler trafficShapingHandler;
 
-    protected List<IHadnler> hadnlers;
+    protected IHandler[] handlers;
 
     protected boolean useEpoll() {
         return SystemUtils.IS_OS_LINUX && Epoll.isAvailable();

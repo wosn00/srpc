@@ -1,14 +1,11 @@
 package com.hex.netty.config;
 
-import com.hex.netty.protocol.adpater.PbProtocolAdapter;
-import com.hex.netty.protocol.adpater.ProtocolAdapter;
-
 /**
  * @author: hs
  */
 public class RpcServerConfig {
 
-    private Integer port = 8500;
+    private Integer port = 8008;
     private Integer eventLoopGroupSelector = 4;
     private Integer workerThreads = 10;
     private Integer connectionTimeout = 3000;
@@ -17,7 +14,6 @@ public class RpcServerConfig {
     private Integer lowWaterLevel = 1024 * 1024;
     private Integer highWaterLevel = 10 * 1024 * 1024;
     private Integer maxIdleSecs = 180;
-    private ProtocolAdapter protocolAdapter = new PbProtocolAdapter();
 
     /**
      * 是否开启流量监控
@@ -125,14 +121,6 @@ public class RpcServerConfig {
 
     public void setMaxIdleSecs(Integer maxIdleSecs) {
         this.maxIdleSecs = maxIdleSecs;
-    }
-
-    public ProtocolAdapter getProtocolAdapter() {
-        return protocolAdapter;
-    }
-
-    public void setProtocolAdapter(ProtocolAdapter protocolAdapter) {
-        this.protocolAdapter = protocolAdapter;
     }
 
     public Boolean getCompressEnable() {

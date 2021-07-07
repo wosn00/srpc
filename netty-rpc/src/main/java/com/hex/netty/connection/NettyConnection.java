@@ -1,7 +1,7 @@
 package com.hex.netty.connection;
 
 import com.hex.netty.protocol.Command;
-import com.hex.netty.protocol.adpater.ProtocolAdapter;
+import com.hex.netty.protocol.adpater.PbProtocolAdapter;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
@@ -23,18 +23,15 @@ public class NettyConnection implements Connection {
 
     private Channel channel;
 
-    private ProtocolAdapter protocolAdapter;
-
     private AtomicBoolean isClosed = new AtomicBoolean(false);
 
     public NettyConnection(String id) {
         this.id = id;
     }
 
-    public NettyConnection(String id, Channel channel, ProtocolAdapter protocolAdapter) {
+    public NettyConnection(String id, Channel channel) {
         this.id = id;
         this.channel = channel;
-        this.protocolAdapter = protocolAdapter;
     }
 
     @Override
@@ -67,7 +64,7 @@ public class NettyConnection implements Connection {
     @Override
     public void send(Command command) {
         if (this.channel.isWritable() && isAvailable()) {
-            this.channel.writeAndFlush(protocolAdapter.encode(command));
+            this.channel.writeAndFlush(PbProtocolAdapter.getAdapter().encode(command));
         } else {
             logger.warn("connection is unWritable now!,id=[{}], command=[{}]", id, command);
         }

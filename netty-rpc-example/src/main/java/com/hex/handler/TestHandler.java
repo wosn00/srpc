@@ -1,12 +1,12 @@
 package com.hex.handler;
 
-import com.hex.netty.cmd.IHadnler;
+import com.hex.netty.cmd.IHandler;
 import com.hex.netty.protocol.RpcRequest;
 
 /**
  * @author: hs
  */
-public class TestHandler implements IHadnler {
+public class TestHandler implements IHandler {
     @Override
     public String getCmd() {
         return "/test/cmd";

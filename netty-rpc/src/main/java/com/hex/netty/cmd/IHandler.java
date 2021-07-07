@@ -5,7 +5,7 @@ import com.hex.netty.protocol.RpcRequest;
 /**
  * @author: hs
  */
-public interface IHadnler {
+public interface IHandler {
 
     String getCmd();
 

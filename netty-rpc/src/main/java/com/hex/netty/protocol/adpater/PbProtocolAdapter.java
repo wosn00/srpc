@@ -12,6 +12,23 @@ import org.apache.commons.lang3.StringUtils;
  * @author: hs
  */
 public class PbProtocolAdapter implements ProtocolAdapter<Command<String>, Rpc.Packet> {
+
+    private volatile static PbProtocolAdapter adapter;
+
+    private PbProtocolAdapter() {
+    }
+
+    public static PbProtocolAdapter getAdapter() {
+        if (adapter == null) {
+            synchronized (PbProtocolAdapter.class) {
+                if (adapter == null) {
+                    adapter = new PbProtocolAdapter();
+                }
+            }
+        }
+        return adapter;
+    }
+
     @Override
     public Rpc.Packet encode(Command command) {
         Rpc.Packet.Builder builder = Rpc.Packet.newBuilder();

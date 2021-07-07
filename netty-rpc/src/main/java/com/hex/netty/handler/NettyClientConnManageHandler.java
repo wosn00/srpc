@@ -1,6 +1,6 @@
 package com.hex.netty.handler;
 
-import com.hex.netty.connection.DefaultConnectionManager;
+import com.hex.netty.connection.ConnectionManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.timeout.IdleState;
@@ -16,8 +16,8 @@ import java.net.SocketAddress;
 public class NettyClientConnManageHandler extends AbstractConnManagerHandler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public NettyClientConnManageHandler(DefaultConnectionManager defaultConnectionManager) {
-        super.defaultConnectionManager = defaultConnectionManager;
+    public NettyClientConnManageHandler(ConnectionManager connectionManager) {
+        super.connectionManager = connectionManager;
     }
 
     @Override

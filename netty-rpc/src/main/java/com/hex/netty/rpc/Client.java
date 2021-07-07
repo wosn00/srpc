@@ -27,6 +27,11 @@ public interface Client {
     Connection connect(String host, int port);
 
     /**
+     * 与服务器建立连接, 初始连接数
+     */
+    void connect(String host, int port, int connectionNum);
+
+    /**
      * 同步调用
      */
     RpcResponse invoke(RpcRequest rpcRequest);

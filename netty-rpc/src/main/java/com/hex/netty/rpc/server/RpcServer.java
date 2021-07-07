@@ -3,14 +3,15 @@ package com.hex.netty.rpc.server;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.base.Throwables;
-import com.hex.netty.cmd.IHadnler;
+import com.google.common.collect.Lists;
+import com.hex.netty.cmd.IHandler;
 import com.hex.netty.compress.JdkZlibExtendDecoder;
 import com.hex.netty.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcServerConfig;
 import com.hex.netty.connection.Connection;
+import com.hex.netty.connection.ConnectionManager;
 import com.hex.netty.connection.DefaultConnectionManager;
 import com.hex.netty.exception.RpcException;
-import com.hex.netty.handler.NettyClientConnManageHandler;
 import com.hex.netty.handler.NettyProcessHandler;
 import com.hex.netty.handler.NettyServerConnManagerHandler;
 import com.hex.netty.protocol.pb.proto.Rpc;
@@ -40,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -61,11 +61,15 @@ public class RpcServer extends AbstractRpc implements Server {
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
-    private DefaultConnectionManager defaultConnectionManager = new DefaultConnectionManager();
+    private ConnectionManager connectionManager = new DefaultConnectionManager();
 
-    public RpcServer(RpcServerConfig config, List<IHadnler> hadnlers) {
+    public RpcServer(RpcServerConfig config, IHandler... handlers) {
         this.config = config;
-        super.hadnlers = hadnlers;
+        super.handlers = handlers;
+    }
+
+    public void setHandler(IHandler... handlers) {
+        super.handlers = handlers;
     }
 
     @Override
@@ -128,8 +132,8 @@ public class RpcServer extends AbstractRpc implements Server {
                                 defaultEventExecutorGroup,
                                 // 指定时间内没收到或没发送数据则认为空闲
                                 new IdleStateHandler(config.getMaxIdleSecs(), config.getMaxIdleSecs(), 0),
-                                new NettyServerConnManagerHandler(defaultConnectionManager, config),
-                                new NettyProcessHandler(config.getProtocolAdapter(), defaultConnectionManager, hadnlers));
+                                new NettyServerConnManagerHandler(connectionManager, config),
+                                new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers)));
                     }
                 });
         if (useEpolll) {
@@ -143,7 +147,7 @@ public class RpcServer extends AbstractRpc implements Server {
         }
 
         logger.info("NettyRpcServer started success!  Listening port:{}", config.getPort());
-        countConnectionNum(defaultConnectionManager);
+        countConnectionNum(connectionManager);
 
     }
 
@@ -152,7 +156,7 @@ public class RpcServer extends AbstractRpc implements Server {
         logger.info("NettyRpcServer stopping...");
         try {
             // 关闭连接管理器
-            defaultConnectionManager.close();
+            connectionManager.close();
 
             if (this.defaultEventExecutorGroup != null) {
                 this.defaultEventExecutorGroup.shutdownGracefully();
@@ -169,13 +173,13 @@ public class RpcServer extends AbstractRpc implements Server {
         logger.info("NettyRpcServer stopped!");
     }
 
-    private void countConnectionNum(DefaultConnectionManager defaultConnectionManager) {
+    private void countConnectionNum(ConnectionManager connectionManager) {
         new Timer("connection monitor", true)
                 .scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        int size = defaultConnectionManager.size();
-                        Connection[] allConn = defaultConnectionManager.getAllConn();
+                        int size = connectionManager.size();
+                        Connection[] allConn = connectionManager.getAllConn();
                         Map<String, Object> connMap = new HashMap<>();
                         for (int i = 0; i < allConn.length; i++) {
                             connMap.put("connection" + (i + 1), allConn[i].getRemoteAddress());
@@ -183,6 +187,6 @@ public class RpcServer extends AbstractRpc implements Server {
                         logger.info("服务端当前连接数量:[{}], 客户端地址:[{}]", size, JSON.toJSONString(connMap,
                                 SerializerFeature.DisableCircularReferenceDetect, SerializerFeature.PrettyFormat));
                     }
-                }, 3 * 1000L, 20 * 1000L);
+                }, 3 * 1000L, 30 * 1000L);
     }
 }

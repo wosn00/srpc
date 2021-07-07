@@ -1,10 +1,12 @@
 package com.hex.netty.rpc.client;
 
-import com.hex.netty.cmd.IHadnler;
+import com.google.common.collect.Lists;
+import com.hex.netty.cmd.IHandler;
 import com.hex.netty.compress.JdkZlibExtendDecoder;
 import com.hex.netty.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcClientConfig;
 import com.hex.netty.connection.Connection;
+import com.hex.netty.connection.ConnectionManager;
 import com.hex.netty.connection.DefaultConnectionManager;
 import com.hex.netty.connection.NettyConnection;
 import com.hex.netty.exception.RpcException;
@@ -40,7 +42,6 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.hex.netty.connection.NettyConnection.CONN;
@@ -59,11 +60,11 @@ public class RpcClient extends AbstractRpc implements Client {
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
-    private DefaultConnectionManager defaultConnectionManager = new DefaultConnectionManager();
+    private ConnectionManager connectionManager = new DefaultConnectionManager();
 
-    public RpcClient(RpcClientConfig config, List<IHadnler> hadnlers) {
+    public RpcClient(RpcClientConfig config, IHandler... handlers) {
         this.config = config;
-        super.hadnlers = hadnlers;
+        super.handlers = handlers;
     }
 
     @Override
@@ -123,8 +124,8 @@ public class RpcClient extends AbstractRpc implements Client {
                                 defaultEventExecutorGroup,
                                 // 指定时间内没收到或没发送数据则认为空闲
                                 new IdleStateHandler(config.getMaxIdleSecs(), config.getMaxIdleSecs(), 0),
-                                new NettyClientConnManageHandler(defaultConnectionManager),
-                                new NettyProcessHandler(config.getProtocolAdapter(), defaultConnectionManager, hadnlers));
+                                new NettyClientConnManageHandler(connectionManager),
+                                new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers)));
                     }
                 });
         logger.info("NettyRpcClient init success!");
@@ -141,7 +142,7 @@ public class RpcClient extends AbstractRpc implements Client {
                 defaultEventExecutorGroup.shutdownGracefully();
             }
             // 关闭连接
-            defaultConnectionManager.close();
+            connectionManager.close();
         } catch (Exception e) {
             logger.error("Failed to stop nettyClient!", e);
         }
@@ -156,9 +157,9 @@ public class RpcClient extends AbstractRpc implements Client {
         NettyConnection conn = null;
         if (future.awaitUninterruptibly(config.getConnectionTimeout())) {
             if (future.channel() != null && future.channel().isActive()) {
-                conn = new NettyConnection(UUID.randomUUID().toString(), future.channel(), config.getProtocolAdapter());
+                conn = new NettyConnection(UUID.randomUUID().toString(), future.channel());
                 future.channel().attr(CONN).set(conn);
-                defaultConnectionManager.addConn(conn);
+                connectionManager.addConn(conn);
             } else {
                 logger.error("NettyClient connect fail host:[{}] port:[{}]", host, port);
             }
@@ -166,6 +167,16 @@ public class RpcClient extends AbstractRpc implements Client {
             logger.error("NettyClient connect fail host:[{}] port:[{}]", host, port);
         }
         return conn;
+    }
+
+    @Override
+    public void connect(String host, int port, int connectionNum) {
+        if (connectionNum <= 0) {
+            throw new IllegalArgumentException("The number of connections should be greater than 1 !");
+        }
+        for (int i = 0; i < connectionNum; i++) {
+            connect(host, port);
+        }
     }
 
     /**
@@ -208,7 +219,7 @@ public class RpcClient extends AbstractRpc implements Client {
     private boolean sendRequest(RpcRequest rpcRequest) {
         requestInit(rpcRequest);
         // 获取连接
-        Connection conn = defaultConnectionManager.getConn();
+        Connection conn = connectionManager.getConn();
         if (conn == null) {
             logger.error("No connection available, please try to connect first");
             return false;
