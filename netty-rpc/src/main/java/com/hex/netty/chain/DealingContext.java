@@ -1,6 +1,7 @@
 package com.hex.netty.chain;
 
 import com.google.common.collect.Maps;
+import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.ConnectionManager;
 import com.hex.netty.protocol.Command;
 
@@ -11,11 +12,13 @@ import java.util.Map;
  */
 public class DealingContext {
 
-    private Command command;
+    private Command<String> command;
 
     private DealingChain dealingChain;
 
     private ConnectionManager connectionManager;
+
+    private Connection connection;
 
     private long createTime = System.currentTimeMillis();
 
@@ -31,11 +34,11 @@ public class DealingContext {
         dealingChain.deal(this);
     }
 
-    public Command getCommand() {
+    public Command<String> getCommand() {
         return command;
     }
 
-    public void setCommand(Command command) {
+    public void setCommand(Command<String> command) {
         this.command = command;
     }
 
@@ -69,5 +72,13 @@ public class DealingContext {
 
     public void setConnectionManager(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
     }
 }

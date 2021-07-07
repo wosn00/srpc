@@ -131,7 +131,7 @@ public class RpcServer extends AbstractRpc implements Server {
                         pipeline.addLast(
                                 defaultEventExecutorGroup,
                                 // 指定时间内没收到或没发送数据则认为空闲
-                                new IdleStateHandler(config.getMaxIdleSecs(), config.getMaxIdleSecs(), 0),
+                                new IdleStateHandler(0, 0, config.getMaxIdleSecs()),
                                 new NettyServerConnManagerHandler(connectionManager, config),
                                 new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers)));
                     }

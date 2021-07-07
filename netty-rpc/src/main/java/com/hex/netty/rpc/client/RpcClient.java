@@ -12,6 +12,7 @@ import com.hex.netty.connection.NettyConnection;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyClientConnManageHandler;
 import com.hex.netty.handler.NettyProcessHandler;
+import com.hex.netty.invoke.HeartBeatTask;
 import com.hex.netty.invoke.RpcCallback;
 import com.hex.netty.protocol.RpcRequest;
 import com.hex.netty.protocol.RpcResponse;
@@ -43,7 +44,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
+import java.util.Timer;
 
 import static com.hex.netty.connection.NettyConnection.CONN;
 
@@ -124,11 +125,14 @@ public class RpcClient extends AbstractRpc implements Client {
                         pipeline.addLast(
                                 defaultEventExecutorGroup,
                                 // 指定时间内没收到或没发送数据则认为空闲
-                                new IdleStateHandler(config.getMaxIdleSecs(), config.getMaxIdleSecs(), 0),
+                                new IdleStateHandler(0, 0, config.getMaxIdleSecs()),
                                 new NettyClientConnManageHandler(connectionManager),
                                 new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers)));
                     }
                 });
+        // 心跳保活
+        new Timer("HeartbeatTimer", true)
+                .scheduleAtFixedRate(new HeartBeatTask(this.connectionManager), 3 * 1000L, 5 * 1000L);
         logger.info("NettyRpcClient init success!");
     }
 

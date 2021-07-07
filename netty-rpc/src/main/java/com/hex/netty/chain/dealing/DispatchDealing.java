@@ -10,6 +10,7 @@ import com.hex.netty.invoke.ResponseMapping;
 import com.hex.netty.protocol.Command;
 import com.hex.netty.protocol.RpcRequest;
 import com.hex.netty.protocol.RpcResponse;
+import com.hex.netty.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +34,10 @@ public class DispatchDealing implements Dealing {
 
     @Override
     public void deal(DealingContext context) {
-        Command command = context.getCommand();
+        Command<String> command = context.getCommand();
         if (CommandType.HEARTBEAT.getValue().equals(command.getCommandType())) {
             // 链路心跳包处理
-            logger.info("---connection receive a heartbeat packet");
+            heartBeatProcess(command, context.getConnection());
 
         } else if (CommandType.REQUEST_COMMAND.getValue().equals(command.getCommandType())) {
             // 请求分发处理
@@ -79,6 +80,18 @@ public class DispatchDealing implements Dealing {
         responseFuture.setRpcResponse(rpcResponse);
         // 恢复客户端调用线程，并执行回调
         responseFuture.receipt();
+    }
+
+    private void heartBeatProcess(Command<String> command, Connection connection) {
+        String body = command.getBody();
+        if ("ping".equals(body)) {
+            logger.info("---connection receive a heartbeat packet from client");
+            Command<String> pong = new Command<>();
+            pong.setSeq(Util.genSeq());
+            pong.setCommandType(CommandType.HEARTBEAT.getValue());
+            pong.setBody("pong");
+            connection.send(command);
+        }
     }
 
     public void registerHandler(IHandler handler) {

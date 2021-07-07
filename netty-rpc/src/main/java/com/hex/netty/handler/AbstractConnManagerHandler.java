@@ -18,7 +18,6 @@ abstract class AbstractConnManagerHandler extends ChannelDuplexHandler {
     ConnectionManager connectionManager;
 
     void close(ChannelHandlerContext ctx) {
-        logger.info("trigger channel close!");
         Connection connection = ctx.channel().attr(CONN).get();
         connection.close();
         connectionManager.removeConn(connection.getId());

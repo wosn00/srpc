@@ -31,7 +31,7 @@ public class RpcClientConfig {
     private Long maxWriteSpeed = 10 * 1000 * 1000L;
 
     /**
-     * 是否开启数据压缩
+     * 是否开启数据压缩（平均压缩率在60%以上，可节省大部分流量）
      */
     private Boolean compressEnable = true;
 

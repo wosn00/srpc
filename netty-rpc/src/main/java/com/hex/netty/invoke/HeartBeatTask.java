@@ -7,7 +7,6 @@ import com.hex.netty.protocol.Command;
 import com.hex.netty.util.Util;
 
 import java.util.TimerTask;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class HeartBeatTask extends TimerTask {
     private ConnectionManager connectionManager;
 
-    private static final long HEART_BEAT_INTERVAL = TimeUnit.SECONDS.toMillis(20);
+    private static final long HEART_BEAT_INTERVAL = TimeUnit.SECONDS.toMillis(10);
 
     public HeartBeatTask(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
@@ -28,9 +27,10 @@ public class HeartBeatTask extends TimerTask {
         for (Connection connection : allConn) {
             long lastSendTime = connection.getLastSendTime();
             if (System.currentTimeMillis() - lastSendTime > HEART_BEAT_INTERVAL) {
-                Command<?> ping = new Command<>();
+                Command<String> ping = new Command<>();
                 ping.setSeq(Util.genSeq());
                 ping.setCommandType(CommandType.HEARTBEAT.getValue());
+                ping.setBody("ping");
                 connection.send(ping);
             }
         }

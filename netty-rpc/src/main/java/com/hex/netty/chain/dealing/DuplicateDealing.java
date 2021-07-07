@@ -10,6 +10,8 @@ import com.hex.netty.chain.DealingContext;
 public class DuplicateDealing implements Dealing {
     @Override
     public void deal(DealingContext context) {
+
+
         context.nextDealing();
     }
 }

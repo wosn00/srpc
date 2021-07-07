@@ -13,6 +13,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.util.List;
 
+import static com.hex.netty.connection.NettyConnection.CONN;
+
 /**
  * @author: hs
  */
@@ -38,6 +40,7 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
         context.setCommand(PbProtocolAdapter.getAdapter().decode(msg));
         context.setDealingChain(chain);
         context.setConnectionManager(connectionManager);
+        context.setConnection(ctx.channel().attr(CONN).get());
         // 开始执行责任链
         chain.deal(context);
 

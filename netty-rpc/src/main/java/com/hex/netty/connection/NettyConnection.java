@@ -44,7 +44,7 @@ public class NettyConnection implements Connection {
     @Override
     public void close() {
         if (isClosed.compareAndSet(false, true)) {
-            logger.warn("connection close! id=[{}]!", id);
+            logger.warn("connection close! id=[{}]", id);
             try {
                 this.channel.close();
             } catch (Exception e) {
