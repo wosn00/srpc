@@ -33,10 +33,7 @@ public class DefaultConnectionManager implements ConnectionManager {
 
     @Override
     public Connection[] getAllConn() {
-        Connection[] connections = connectionQueue.toArray(new Connection[0]);
-//        Object[] objects = connectionQueue.toArray();
-        return connections;
-//        return (Connection[]) this.connectionQueue.toArray();
+        return connectionQueue.toArray(new Connection[0]);
     }
 
     @Override

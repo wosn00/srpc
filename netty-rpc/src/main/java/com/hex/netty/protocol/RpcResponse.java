@@ -1,6 +1,7 @@
 package com.hex.netty.protocol;
 
 import com.hex.netty.constant.CommandType;
+import com.hex.netty.util.Util;
 
 import java.util.UUID;
 
@@ -28,21 +29,21 @@ public class RpcResponse extends Command<String> {
      * 客户端错误响应
      */
     public static RpcResponse clientError() {
-        return new RpcResponse(UUID.randomUUID().toString(), null, CLIENT_ERROR_CODE, null);
+        return new RpcResponse(Util.genSeq(), null, CLIENT_ERROR_CODE, null);
     }
 
     /**
      * 服务端错误响应
      */
     public static RpcResponse serverError() {
-        return new RpcResponse(UUID.randomUUID().toString(), null, SERVER_ERROR_CODE, null);
+        return new RpcResponse(Util.genSeq(), null, SERVER_ERROR_CODE, null);
     }
 
     /**
      * 请求超时响应
      */
     public static RpcResponse requestTimeout() {
-        return new RpcResponse(UUID.randomUUID().toString(), null, REQUEST_TIMEOUT, null);
+        return new RpcResponse(Util.genSeq(), null, REQUEST_TIMEOUT, null);
     }
 
     /**

@@ -20,6 +20,7 @@ import com.hex.netty.rpc.AbstractRpc;
 import com.hex.netty.rpc.Client;
 import com.hex.netty.invoke.ResponseFuture;
 import com.hex.netty.invoke.ResponseMapping;
+import com.hex.netty.util.Util;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -157,7 +158,7 @@ public class RpcClient extends AbstractRpc implements Client {
         NettyConnection conn = null;
         if (future.awaitUninterruptibly(config.getConnectionTimeout())) {
             if (future.channel() != null && future.channel().isActive()) {
-                conn = new NettyConnection(UUID.randomUUID().toString(), future.channel());
+                conn = new NettyConnection(Util.genSeq(), future.channel());
                 future.channel().attr(CONN).set(conn);
                 connectionManager.addConn(conn);
             } else {
@@ -233,7 +234,7 @@ public class RpcClient extends AbstractRpc implements Client {
         if (rpcRequest.getCmd() == null) {
             throw new RpcException("rpcRequest cmd can not be null!");
         }
-        rpcRequest.setSeq(UUID.randomUUID().toString());
+        rpcRequest.setSeq(Util.genSeq());
         rpcRequest.setTs(System.currentTimeMillis());
     }
 }

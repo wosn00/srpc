@@ -25,6 +25,8 @@ public class NettyConnection implements Connection {
 
     private AtomicBoolean isClosed = new AtomicBoolean(false);
 
+    private long lastSendTime = System.currentTimeMillis();
+
     public NettyConnection(String id) {
         this.id = id;
     }
@@ -65,9 +67,16 @@ public class NettyConnection implements Connection {
     public void send(Command command) {
         if (this.channel.isWritable() && isAvailable()) {
             this.channel.writeAndFlush(PbProtocolAdapter.getAdapter().encode(command));
+            this.lastSendTime = System.currentTimeMillis();
         } else {
             logger.warn("connection is unWritable now!,id=[{}], command=[{}]", id, command);
+            close();
         }
+    }
+
+    @Override
+    public long getLastSendTime() {
+        return lastSendTime;
     }
 
     @Override

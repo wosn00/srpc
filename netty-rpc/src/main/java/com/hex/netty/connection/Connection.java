@@ -18,4 +18,6 @@ public interface Connection {
     SocketAddress getRemoteAddress();
 
     void send(Command command);
+
+    long getLastSendTime();
 }
