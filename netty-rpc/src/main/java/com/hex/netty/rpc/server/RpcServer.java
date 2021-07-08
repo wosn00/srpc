@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author hs
@@ -63,6 +64,8 @@ public class RpcServer extends AbstractRpc implements Server {
 
     private ConnectionManager connectionManager = new DefaultConnectionManager();
 
+    private AtomicBoolean isServerStart = new AtomicBoolean(false);
+
     public RpcServer(RpcServerConfig config, IHandler... handlers) {
         this.config = config;
         super.handlers = handlers;
@@ -74,7 +77,41 @@ public class RpcServer extends AbstractRpc implements Server {
 
     @Override
     public void start() {
-        logger.info("rpc server init ...");
+        if (isServerStart.compareAndSet(false, true)) {
+            serverStart();
+        } else {
+            logger.warn("RpcServer has started!");
+        }
+    }
+
+    @Override
+    public void stop() {
+        if (!isServerStart.get()) {
+            logger.warn("RpcServer does not start");
+            return;
+        }
+        logger.info("RpcServer stopping...");
+        try {
+            // 关闭连接管理器
+            connectionManager.close();
+
+            if (this.defaultEventExecutorGroup != null) {
+                this.defaultEventExecutorGroup.shutdownGracefully();
+            }
+            if (this.eventLoopGroupSelector != null) {
+                this.eventLoopGroupSelector.shutdownGracefully();
+            }
+            if (this.eventLoopGroupBoss != null) {
+                this.eventLoopGroupBoss.shutdownGracefully();
+            }
+        } catch (Exception e) {
+            logger.error("RpcServer stop exception, {}", Throwables.getStackTraceAsString(e));
+        }
+        logger.info("RpcServer stopped!");
+    }
+
+    private void serverStart() {
+        logger.info("RpcServer server init ...");
 
         if (useEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(1);
@@ -143,34 +180,12 @@ public class RpcServer extends AbstractRpc implements Server {
         try {
             this.serverBootstrap.bind(this.config.getPort()).sync();
         } catch (InterruptedException e1) {
-            throw new RpcException("NettyRpcServer bind Interrupted!", e1);
+            throw new RpcException("RpcServer bind Interrupted!", e1);
         }
 
-        logger.info("NettyRpcServer started success!  Listening port:{}", config.getPort());
+        logger.info("RpcServer started success!  Listening port:{}", config.getPort());
         countConnectionNum(connectionManager);
 
-    }
-
-    @Override
-    public void stop() {
-        logger.info("NettyRpcServer stopping...");
-        try {
-            // 关闭连接管理器
-            connectionManager.close();
-
-            if (this.defaultEventExecutorGroup != null) {
-                this.defaultEventExecutorGroup.shutdownGracefully();
-            }
-            if (this.eventLoopGroupSelector != null) {
-                this.eventLoopGroupSelector.shutdownGracefully();
-            }
-            if (this.eventLoopGroupBoss != null) {
-                this.eventLoopGroupBoss.shutdownGracefully();
-            }
-        } catch (Exception e) {
-            logger.error("NettyRpcServer stop exception, {}", Throwables.getStackTraceAsString(e));
-        }
-        logger.info("NettyRpcServer stopped!");
     }
 
     private void countConnectionNum(ConnectionManager connectionManager) {
@@ -189,4 +204,5 @@ public class RpcServer extends AbstractRpc implements Server {
                     }
                 }, 3 * 1000L, 30 * 1000L);
     }
+
 }

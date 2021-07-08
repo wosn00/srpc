@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.hex.netty.connection.NettyConnection.CONN;
 
@@ -64,6 +65,8 @@ public class RpcClient extends AbstractRpc implements Client {
 
     private ConnectionManager connectionManager = new DefaultConnectionManager();
 
+    private AtomicBoolean isClientStart = new AtomicBoolean(false);
+
     public RpcClient(RpcClientConfig config, IHandler... handlers) {
         this.config = config;
         super.handlers = handlers;
@@ -71,7 +74,104 @@ public class RpcClient extends AbstractRpc implements Client {
 
     @Override
     public void start() {
-        logger.info("rpc client init ...");
+        if (isClientStart.compareAndSet(false, true)) {
+            clientStart();
+        } else {
+            logger.warn("RpcClient has started!");
+        }
+    }
+
+    @Override
+    public void stop() {
+        if (!isClientStart.get()) {
+            logger.warn("RpcClient does not start");
+            return;
+        }
+        logger.info("RpcClient stop ...");
+        try {
+            if (eventLoopGroupSelector != null) {
+                eventLoopGroupSelector.shutdownGracefully();
+            }
+            if (defaultEventExecutorGroup != null) {
+                defaultEventExecutorGroup.shutdownGracefully();
+            }
+            // 关闭连接
+            connectionManager.close();
+        } catch (Exception e) {
+            logger.error("Failed to stop RpcClient!", e);
+        }
+        logger.info("RpcClient stop");
+
+    }
+
+    @Override
+    public Connection connect(String host, int port) {
+        logger.info("RpcClient connect to host:[{}] port:[{}]", host, port);
+        ChannelFuture future = this.bootstrap.connect(host, port);
+        NettyConnection conn = null;
+        if (future.awaitUninterruptibly(config.getConnectionTimeout())) {
+            if (future.channel() != null && future.channel().isActive()) {
+                conn = new NettyConnection(Util.genSeq(), future.channel());
+                future.channel().attr(CONN).set(conn);
+                connectionManager.addConn(conn);
+            } else {
+                logger.error("RpcClient connect fail host:[{}] port:[{}]", host, port);
+            }
+        } else {
+            logger.error("RpcClient connect fail host:[{}] port:[{}]", host, port);
+        }
+        return conn;
+    }
+
+    @Override
+    public void connect(String host, int port, int connectionNum) {
+        if (connectionNum <= 0) {
+            throw new IllegalArgumentException("The number of connections should be greater than 1 !");
+        }
+        for (int i = 0; i < connectionNum; i++) {
+            connect(host, port);
+        }
+    }
+
+    /**
+     * 同步调用
+     */
+    @Override
+    public RpcResponse invoke(RpcRequest rpcRequest) {
+        // 发送请求
+        if (!sendRequest(rpcRequest)) {
+            // 未发送成功
+            return RpcResponse.clientError();
+        }
+        ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq());
+        ResponseMapping.putResponseFuture(rpcRequest.getSeq(), responseFuture);
+
+        // 等待并获取响应
+        return responseFuture.waitForResponse();
+    }
+
+    /**
+     * 异步调用
+     */
+    @Override
+    public void invokeAsync(RpcRequest rpcRequest) {
+        invokeAsync(rpcRequest, null);
+    }
+
+    /**
+     * 异步调用，带回调
+     */
+    @Override
+    public void invokeAsync(RpcRequest rpcRequest, RpcCallback callback) {
+        // 发送请求
+        sendRequest(rpcRequest);
+        // 添加响应回调
+        ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq(), callback);
+        ResponseMapping.putResponseFuture(rpcRequest.getSeq(), responseFuture);
+    }
+
+    private void clientStart() {
+        logger.info("RpcClient init ...");
 
         if (useEpoll()) {
             this.eventLoopGroupSelector = new EpollEventLoopGroup(config.getEventLoopGroupSelector());
@@ -133,92 +233,8 @@ public class RpcClient extends AbstractRpc implements Client {
         // 心跳保活
         new Timer("HeartbeatTimer", true)
                 .scheduleAtFixedRate(new HeartBeatTask(this.connectionManager), 3 * 1000L, 5 * 1000L);
-        logger.info("NettyRpcClient init success!");
-    }
+        logger.info("RpcClient init success!");
 
-    @Override
-    public void stop() {
-        logger.info("NettyClient stop ...");
-        try {
-            if (eventLoopGroupSelector != null) {
-                eventLoopGroupSelector.shutdownGracefully();
-            }
-            if (defaultEventExecutorGroup != null) {
-                defaultEventExecutorGroup.shutdownGracefully();
-            }
-            // 关闭连接
-            connectionManager.close();
-        } catch (Exception e) {
-            logger.error("Failed to stop nettyClient!", e);
-        }
-        logger.info("NettyClient stop");
-
-    }
-
-    @Override
-    public Connection connect(String host, int port) {
-        logger.info("NettyClient connect to host:[{}] port:[{}]", host, port);
-        ChannelFuture future = this.bootstrap.connect(host, port);
-        NettyConnection conn = null;
-        if (future.awaitUninterruptibly(config.getConnectionTimeout())) {
-            if (future.channel() != null && future.channel().isActive()) {
-                conn = new NettyConnection(Util.genSeq(), future.channel());
-                future.channel().attr(CONN).set(conn);
-                connectionManager.addConn(conn);
-            } else {
-                logger.error("NettyClient connect fail host:[{}] port:[{}]", host, port);
-            }
-        } else {
-            logger.error("NettyClient connect fail host:[{}] port:[{}]", host, port);
-        }
-        return conn;
-    }
-
-    @Override
-    public void connect(String host, int port, int connectionNum) {
-        if (connectionNum <= 0) {
-            throw new IllegalArgumentException("The number of connections should be greater than 1 !");
-        }
-        for (int i = 0; i < connectionNum; i++) {
-            connect(host, port);
-        }
-    }
-
-    /**
-     * 同步调用
-     */
-    @Override
-    public RpcResponse invoke(RpcRequest rpcRequest) {
-        // 发送请求
-        if (!sendRequest(rpcRequest)) {
-            // 未发送成功
-            return RpcResponse.clientError();
-        }
-        ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq());
-        ResponseMapping.putResponseFuture(rpcRequest.getSeq(), responseFuture);
-
-        // 等待并获取响应
-        return responseFuture.waitForResponse();
-    }
-
-    /**
-     * 异步调用
-     */
-    @Override
-    public void invokeAsync(RpcRequest rpcRequest) {
-        invokeAsync(rpcRequest, null);
-    }
-
-    /**
-     * 异步调用，带回调
-     */
-    @Override
-    public void invokeAsync(RpcRequest rpcRequest, RpcCallback callback) {
-        // 发送请求
-        sendRequest(rpcRequest);
-        // 添加响应回调
-        ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq(), callback);
-        ResponseMapping.putResponseFuture(rpcRequest.getSeq(), responseFuture);
     }
 
     private boolean sendRequest(RpcRequest rpcRequest) {
