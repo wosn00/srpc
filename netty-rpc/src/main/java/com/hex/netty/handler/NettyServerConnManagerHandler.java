@@ -55,13 +55,13 @@ public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         logger.warn("channel inactive");
-        close(ctx);
+        ctx.channel().close();
         super.channelInactive(ctx);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        close(ctx);
+        ctx.channel().close();
         super.exceptionCaught(ctx, cause);
     }
 }

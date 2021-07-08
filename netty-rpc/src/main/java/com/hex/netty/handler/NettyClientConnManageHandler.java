@@ -29,7 +29,7 @@ public class NettyClientConnManageHandler extends AbstractConnManagerHandler {
     @Override
     public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         logger.info("rpc client disconnect!");
-        close(ctx);
+        ctx.channel().close();
         super.disconnect(ctx, promise);
     }
 
@@ -45,7 +45,7 @@ public class NettyClientConnManageHandler extends AbstractConnManagerHandler {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state().equals(IdleState.ALL_IDLE)) {
                 logger.warn("netty rpc client channel idle [{}]", ctx.channel().remoteAddress());
-                close(ctx);
+                ctx.channel().close();
             }
         }
         ctx.fireUserEventTriggered(evt);
@@ -53,7 +53,7 @@ public class NettyClientConnManageHandler extends AbstractConnManagerHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        close(ctx);
+        ctx.channel().close();
         super.exceptionCaught(ctx, cause);
     }
 

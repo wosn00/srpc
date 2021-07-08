@@ -1,5 +1,6 @@
 package com.hex.netty.handler;
 
+import com.google.common.base.Throwables;
 import com.hex.netty.chain.DealingChain;
 import com.hex.netty.chain.DealingContext;
 import com.hex.netty.chain.dealing.DispatchDealing;
@@ -10,6 +11,8 @@ import com.hex.netty.protocol.adpater.PbProtocolAdapter;
 import com.hex.netty.protocol.pb.proto.Rpc;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -19,6 +22,7 @@ import static com.hex.netty.connection.NettyConnection.CONN;
  * @author: hs
  */
 public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet> {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ConnectionManager connectionManager;
 
@@ -44,6 +48,11 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
         // 开始执行责任链
         chain.deal(context);
 
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.error("Rpc exceptionCaught {}, {}", ctx.channel().remoteAddress(), Throwables.getStackTraceAsString(cause));
     }
 
 }
