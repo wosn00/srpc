@@ -1,8 +1,8 @@
 package com.hex.netty.invoke;
 
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.time.Duration;
 
@@ -11,18 +11,18 @@ import java.time.Duration;
  */
 public class ResponseMapping {
     /**
-     * 响应最长等待时间2Min
+     * 响应最长等待时间30s
      */
-    private static Cache<String, ResponseFuture> mapping = CacheBuilder.newBuilder()
+    private static Cache<String, ResponseFuture> futureCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofSeconds(30))
             .build();
 
     public static void putResponseFuture(String requestId, ResponseFuture responseFuture) {
-        mapping.put(requestId, responseFuture);
+        futureCache.put(requestId, responseFuture);
     }
 
     public static ResponseFuture getResponseFuture(String requestId) {
-        return mapping.getIfPresent(requestId);
+        return futureCache.getIfPresent(requestId);
     }
 
 
