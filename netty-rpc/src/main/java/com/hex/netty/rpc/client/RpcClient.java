@@ -174,9 +174,9 @@ public class RpcClient extends AbstractRpc implements Client {
         logger.info("RpcClient init ...");
 
         if (useEpoll()) {
-            this.eventLoopGroupSelector = new EpollEventLoopGroup(config.getEventLoopGroupSelector());
+            this.eventLoopGroupSelector = new EpollEventLoopGroup(config.getSelectorThreads());
         } else {
-            this.eventLoopGroupSelector = new NioEventLoopGroup(config.getEventLoopGroupSelector());
+            this.eventLoopGroupSelector = new NioEventLoopGroup(config.getSelectorThreads());
         }
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getWorkerThreads());
         // 流控
@@ -232,7 +232,7 @@ public class RpcClient extends AbstractRpc implements Client {
                 });
         // 心跳保活
         new Timer("HeartbeatTimer", true)
-                .scheduleAtFixedRate(new HeartBeatTask(this.connectionManager), 3 * 1000L, 5 * 1000L);
+                .scheduleAtFixedRate(new HeartBeatTask(this.connectionManager), 3 * 1000L, 30 * 1000L);
         logger.info("RpcClient init success!");
 
     }

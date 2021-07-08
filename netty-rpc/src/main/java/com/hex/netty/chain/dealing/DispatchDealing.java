@@ -72,7 +72,7 @@ public class DispatchDealing implements Dealing {
     private void responseProcess(RpcResponse rpcResponse) {
         ResponseFuture responseFuture = ResponseMapping.getResponseFuture(rpcResponse.getSeq());
         if (responseFuture == null) {
-            // 获取不到，可能是服务端处理超时（2Min）
+            // 获取不到，可能是服务端处理超时（30s）
             logger.warn("Response mismatch request, maybe request already timeout");
             return;
         }
@@ -85,12 +85,12 @@ public class DispatchDealing implements Dealing {
     private void heartBeatProcess(Command<String> command, Connection connection) {
         String body = command.getBody();
         if ("ping".equals(body)) {
-            logger.info("---connection receive a heartbeat packet from client");
+            logger.info("-----connection:[{}] receive a heartbeat packet from client", connection.getId());
             Command<String> pong = new Command<>();
             pong.setSeq(Util.genSeq());
             pong.setCommandType(CommandType.HEARTBEAT.getValue());
             pong.setBody("pong");
-            connection.send(command);
+            connection.send(pong);
         }
     }
 

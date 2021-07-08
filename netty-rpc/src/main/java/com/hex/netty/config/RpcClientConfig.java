@@ -6,9 +6,9 @@ package com.hex.netty.config;
  */
 public class RpcClientConfig {
 
-    private Integer eventLoopGroupSelector = 4;
-    private Integer workerThreads = 10;
-    private Integer connectionTimeout = 3000;
+    private Integer selectorThreads = 8;
+    private Integer workerThreads = 8;
+    private Integer connectionTimeout = 5000;
     private Integer sendBuf = 65535;
     private Integer receiveBuf = 65535;
     private Integer lowWaterLevel = 1024 * 1024;
@@ -50,12 +50,12 @@ public class RpcClientConfig {
      */
     private Long maxThreshold = -1L;
 
-    public Integer getEventLoopGroupSelector() {
-        return eventLoopGroupSelector;
+    public Integer getSelectorThreads() {
+        return selectorThreads;
     }
 
-    public void setEventLoopGroupSelector(Integer eventLoopGroupSelector) {
-        this.eventLoopGroupSelector = eventLoopGroupSelector;
+    public void setSelectorThreads(Integer selectorThreads) {
+        this.selectorThreads = selectorThreads;
     }
 
     public Integer getWorkerThreads() {

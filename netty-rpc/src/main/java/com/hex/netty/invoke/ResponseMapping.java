@@ -14,7 +14,7 @@ public class ResponseMapping {
      * 响应最长等待时间2Min
      */
     private static Cache<String, ResponseFuture> mapping = CacheBuilder.newBuilder()
-            .expireAfterWrite(Duration.ofMinutes(2))
+            .expireAfterWrite(Duration.ofSeconds(30))
             .build();
 
     public static void putResponseFuture(String requestId, ResponseFuture responseFuture) {

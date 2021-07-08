@@ -115,10 +115,10 @@ public class RpcServer extends AbstractRpc implements Server {
 
         if (useEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(1);
-            this.eventLoopGroupSelector = new EpollEventLoopGroup(config.getEventLoopGroupSelector());
+            this.eventLoopGroupSelector = new EpollEventLoopGroup(config.getSelectorThreads());
         } else {
             this.eventLoopGroupBoss = new NioEventLoopGroup(1);
-            this.eventLoopGroupSelector = new NioEventLoopGroup(config.getEventLoopGroupSelector());
+            this.eventLoopGroupSelector = new NioEventLoopGroup(config.getSelectorThreads());
         }
 
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getWorkerThreads());
