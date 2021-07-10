@@ -22,8 +22,8 @@ public class ResponseMapping {
     }
 
     public static ResponseFuture getResponseFuture(String requestId) {
-        return futureCache.getIfPresent(requestId);
+        ResponseFuture responseFuture = futureCache.getIfPresent(requestId);
+        futureCache.invalidate(requestId);
+        return responseFuture;
     }
-
-
 }

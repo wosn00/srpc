@@ -1,4 +1,4 @@
-package com.hex.netty.invoke;
+package com.hex.netty.ext;
 
 import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.ConnectionManager;

@@ -62,7 +62,7 @@ public class DispatchDealing implements Dealing {
             responseBody = iHandler.handler(rpcRequest);
         } catch (Exception e) {
             logger.error("handler processing error", e);
-            connection.send(RpcResponse.serverError());
+            connection.send(RpcResponse.serverError(rpcRequest.getSeq()));
             return;
         }
         // 响应

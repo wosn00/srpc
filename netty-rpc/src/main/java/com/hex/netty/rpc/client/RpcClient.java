@@ -12,7 +12,7 @@ import com.hex.netty.connection.NettyConnection;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyClientConnManageHandler;
 import com.hex.netty.handler.NettyProcessHandler;
-import com.hex.netty.invoke.HeartBeatTask;
+import com.hex.netty.ext.HeartBeatTask;
 import com.hex.netty.invoke.RpcCallback;
 import com.hex.netty.protocol.RpcRequest;
 import com.hex.netty.protocol.RpcResponse;
@@ -41,6 +41,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,7 +142,7 @@ public class RpcClient extends AbstractRpc implements Client {
         // 发送请求
         if (!sendRequest(rpcRequest)) {
             // 未发送成功
-            return RpcResponse.clientError();
+            return RpcResponse.clientError(rpcRequest.getSeq());
         }
         ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq());
         ResponseMapping.putResponseFuture(rpcRequest.getSeq(), responseFuture);
@@ -242,7 +243,7 @@ public class RpcClient extends AbstractRpc implements Client {
         // 获取连接
         Connection conn = connectionManager.getConn();
         if (conn == null) {
-            logger.error("No connection available, please try to connect first");
+            logger.error("No connection available, please try to connect first!");
             return false;
         }
         // 发送请求
@@ -254,7 +255,9 @@ public class RpcClient extends AbstractRpc implements Client {
         if (rpcRequest.getCmd() == null) {
             throw new RpcException("rpcRequest cmd can not be null!");
         }
-        rpcRequest.setSeq(Util.genSeq());
+        if (StringUtils.isBlank(rpcRequest.getSeq())) {
+            rpcRequest.setSeq(Util.genSeq());
+        }
         rpcRequest.setTs(System.currentTimeMillis());
     }
 }

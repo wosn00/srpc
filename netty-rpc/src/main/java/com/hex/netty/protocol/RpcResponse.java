@@ -1,12 +1,12 @@
 package com.hex.netty.protocol;
 
 import com.hex.netty.constant.CommandType;
-import com.hex.netty.util.Util;
 
-import java.util.UUID;
 
 /**
  * @author: hs
+ * <p>
+ * 状态码参照HTTP
  */
 public class RpcResponse extends Command<String> {
 
@@ -18,6 +18,8 @@ public class RpcResponse extends Command<String> {
 
     public static final Integer REQUEST_TIMEOUT = 408;
 
+    public static final Integer REQUEST_DUPLICATE = 201;
+
     public RpcResponse() {
     }
 
@@ -28,23 +30,31 @@ public class RpcResponse extends Command<String> {
     /**
      * 客户端错误响应
      */
-    public static RpcResponse clientError() {
-        return new RpcResponse(Util.genSeq(), null, CLIENT_ERROR_CODE, null);
+    public static RpcResponse clientError(String requestSeq) {
+        return new RpcResponse(requestSeq, null, CLIENT_ERROR_CODE, null);
     }
 
     /**
      * 服务端错误响应
      */
-    public static RpcResponse serverError() {
-        return new RpcResponse(Util.genSeq(), null, SERVER_ERROR_CODE, null);
+    public static RpcResponse serverError(String requestSeq) {
+        return new RpcResponse(requestSeq, null, SERVER_ERROR_CODE, null);
     }
 
     /**
      * 请求超时响应
      */
-    public static RpcResponse requestTimeout() {
-        return new RpcResponse(Util.genSeq(), null, REQUEST_TIMEOUT, null);
+    public static RpcResponse requestTimeout(String requestSeq) {
+        return new RpcResponse(requestSeq, null, REQUEST_TIMEOUT, null);
     }
+
+    /**
+     * 重复请求
+     */
+    public static RpcResponse duplicateRequest(String requestSeq) {
+        return new RpcResponse(requestSeq, null, REQUEST_DUPLICATE, null);
+    }
+
 
     /**
      * 成功响应

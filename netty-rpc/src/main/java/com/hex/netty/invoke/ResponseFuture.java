@@ -41,14 +41,14 @@ public class ResponseFuture {
             await = latch.await(MAX_WAIT_TIME, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             logger.error("wait for response error", e);
-            return RpcResponse.clientError();
+            return RpcResponse.clientError(requestSeq);
         }
         if (await && rpcResponse != null) {
             return rpcResponse;
         } else {
             // 响应超时
             logger.error("Request timed out! seq:[{}], max wait time:[{}]s", requestSeq, MAX_WAIT_TIME);
-            return RpcResponse.requestTimeout();
+            return RpcResponse.requestTimeout(requestSeq);
         }
     }
 
