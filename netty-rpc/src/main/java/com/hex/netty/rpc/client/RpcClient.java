@@ -144,7 +144,7 @@ public class RpcClient extends AbstractRpc implements Client {
             // 未发送成功
             return RpcResponse.clientError(rpcRequest.getSeq());
         }
-        ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq());
+        ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq(), config.getRequestTimeout());
         ResponseMapping.putResponseFuture(rpcRequest.getSeq(), responseFuture);
 
         // 等待并获取响应

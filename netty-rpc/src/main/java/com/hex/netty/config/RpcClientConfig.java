@@ -9,6 +9,7 @@ public class RpcClientConfig {
     private Integer selectorThreads = 8;
     private Integer workerThreads = 8;
     private Integer connectionTimeout = 5000;
+    private Integer requestTimeout = 30;
     private Integer sendBuf = 65535;
     private Integer receiveBuf = 65535;
     private Integer lowWaterLevel = 1024 * 1024;
@@ -175,5 +176,13 @@ public class RpcClientConfig {
     public RpcClientConfig setMaxWriteSpeed(Long maxWriteSpeed) {
         this.maxWriteSpeed = maxWriteSpeed;
         return this;
+    }
+
+    public Integer getRequestTimeout() {
+        return requestTimeout;
+    }
+
+    public void setRequestTimeout(Integer requestTimeout) {
+        this.requestTimeout = requestTimeout;
     }
 }

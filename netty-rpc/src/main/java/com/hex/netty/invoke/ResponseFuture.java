@@ -21,10 +21,11 @@ public class ResponseFuture {
 
     private CountDownLatch latch = new CountDownLatch(1);
 
-    private static final int MAX_WAIT_TIME = 20;
+    private int requestTimeout = 30;
 
-    public ResponseFuture(String requestSeq) {
+    public ResponseFuture(String requestSeq, int requestTimeout) {
         this.requestSeq = requestSeq;
+        this.requestTimeout = requestTimeout;
     }
 
     public ResponseFuture(String requestSeq, RpcCallback rpcCallback) {
@@ -38,7 +39,7 @@ public class ResponseFuture {
     public RpcResponse waitForResponse() {
         boolean await;
         try {
-            await = latch.await(MAX_WAIT_TIME, TimeUnit.SECONDS);
+            await = latch.await(requestTimeout, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             logger.error("wait for response error", e);
             return RpcResponse.clientError(requestSeq);
@@ -47,7 +48,7 @@ public class ResponseFuture {
             return rpcResponse;
         } else {
             // 响应超时
-            logger.error("Request timed out! seq:[{}], max wait time:[{}]s", requestSeq, MAX_WAIT_TIME);
+            logger.error("Request timed out! seq:[{}], max wait time:[{}]s", requestSeq, requestTimeout);
             return RpcResponse.requestTimeout(requestSeq);
         }
     }

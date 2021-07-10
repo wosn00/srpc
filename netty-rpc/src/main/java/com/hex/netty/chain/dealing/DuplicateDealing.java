@@ -19,7 +19,7 @@ import java.time.Duration;
 public class DuplicateDealing implements Dealing {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static Cache<String, Boolean> duplicateCache = Caffeine.newBuilder()
+    private static final Cache<String, Boolean> DUPLICATE_CACHE = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofSeconds(300))
             .build();
 
@@ -29,14 +29,25 @@ public class DuplicateDealing implements Dealing {
         // 只有是请求才需要去重
         if (CommandType.REQUEST_COMMAND.getValue().equals(command.getCommandType())) {
             String seq = command.getSeq();
-            Boolean seqPresent = duplicateCache.getIfPresent(seq);
+            Boolean seqPresent = DUPLICATE_CACHE.getIfPresent(seq);
+            boolean isDuplicated = false;
             if (seqPresent == null) {
-                duplicateCache.put(seq, Boolean.TRUE);
-                context.nextDealing();
+                synchronized (DUPLICATE_CACHE) {
+                    if (DUPLICATE_CACHE.getIfPresent(seq) == null) {
+                        DUPLICATE_CACHE.put(seq, Boolean.TRUE);
+                    } else {
+                        isDuplicated = true;
+                    }
+                }
             } else {
+                isDuplicated = true;
+            }
+            if (isDuplicated) {
                 logger.warn("Received duplicate request seq=[{}], ignore it", seq);
                 RpcResponse response = RpcResponse.duplicateRequest(seq);
                 context.getConnection().send(response);
+            } else {
+                context.nextDealing();
             }
         } else {
             context.nextDealing();
