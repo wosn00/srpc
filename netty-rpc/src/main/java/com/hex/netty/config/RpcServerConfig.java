@@ -13,7 +13,7 @@ public class RpcServerConfig {
     private Integer receiveBuf = 65535;
     private Integer lowWaterLevel = 1024 * 1024;
     private Integer highWaterLevel = 10 * 1024 * 1024;
-    private Integer maxIdleSecs = 180;
+    private Boolean preventDuplicateEnable = true; // 是否开启去重处理
 
     /**
      * 是否开启流量监控
@@ -115,13 +115,6 @@ public class RpcServerConfig {
         this.highWaterLevel = highWaterLevel;
     }
 
-    public Integer getMaxIdleSecs() {
-        return maxIdleSecs;
-    }
-
-    public void setMaxIdleSecs(Integer maxIdleSecs) {
-        this.maxIdleSecs = maxIdleSecs;
-    }
 
     public Boolean getCompressEnable() {
         return compressEnable;
@@ -184,5 +177,13 @@ public class RpcServerConfig {
     public RpcServerConfig setMaxWriteSpeed(Long maxWriteSpeed) {
         this.maxWriteSpeed = maxWriteSpeed;
         return this;
+    }
+
+    public Boolean getPreventDuplicateEnable() {
+        return preventDuplicateEnable;
+    }
+
+    public void setPreventDuplicateEnable(Boolean preventDuplicateEnable) {
+        this.preventDuplicateEnable = preventDuplicateEnable;
     }
 }

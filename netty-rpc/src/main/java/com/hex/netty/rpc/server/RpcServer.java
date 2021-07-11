@@ -167,10 +167,10 @@ public class RpcServer extends AbstractRpc implements Server {
                         }
                         pipeline.addLast(
                                 defaultEventExecutorGroup,
-                                // 指定时间内没收到或没发送数据则认为空闲
-                                new IdleStateHandler(0, 0, config.getMaxIdleSecs()),
+                                // 3min没收到或没发送数据则认为空闲
+                                new IdleStateHandler(0, 0, 180),
                                 new NettyServerConnManagerHandler(connectionManager, config),
-                                new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers)));
+                                new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers), config.getPreventDuplicateEnable()));
                     }
                 });
         if (useEpolll) {

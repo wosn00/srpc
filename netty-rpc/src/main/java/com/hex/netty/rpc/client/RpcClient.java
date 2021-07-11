@@ -225,10 +225,10 @@ public class RpcClient extends AbstractRpc implements Client {
 
                         pipeline.addLast(
                                 defaultEventExecutorGroup,
-                                // 指定时间内没收到或没发送数据则认为空闲
-                                new IdleStateHandler(0, 0, config.getMaxIdleSecs()),
+                                // 3min内没收到或没发送数据则认为空闲
+                                new IdleStateHandler(0, 0, 180),
                                 new NettyClientConnManageHandler(connectionManager),
-                                new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers)));
+                                new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers), config.getPreventDuplicateEnable()));
                     }
                 });
         // 心跳保活

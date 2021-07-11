@@ -28,16 +28,21 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
 
     private List<IHandler> handlers;
 
-    public NettyProcessHandler(ConnectionManager connectionManager, List<IHandler> handlers) {
+    private boolean enablePreventDuplicate;
+
+    public NettyProcessHandler(ConnectionManager connectionManager, List<IHandler> handlers, boolean enablePreventDuplicate) {
         this.connectionManager = connectionManager;
         this.handlers = handlers;
+        this.enablePreventDuplicate = enablePreventDuplicate;
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Rpc.Packet msg) throws Exception {
         // 生成处理责任链
         DealingChain chain = new DealingChain();
-        chain.addDealing(new DuplicateDealing());
+        if (enablePreventDuplicate) {
+            chain.addDealing(new DuplicateDealing());
+        }
         chain.addDealing(new DispatchDealing().registerHandlers(handlers));
         // 上下文，携带消息内容
         DealingContext context = new DealingContext();

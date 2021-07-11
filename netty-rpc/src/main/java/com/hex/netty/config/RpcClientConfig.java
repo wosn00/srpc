@@ -8,13 +8,13 @@ public class RpcClientConfig {
 
     private Integer selectorThreads = 8;
     private Integer workerThreads = 8;
-    private Integer connectionTimeout = 5000;
-    private Integer requestTimeout = 30;
+    private Integer connectionTimeout = 5000;  // 连接超时时间(ms)
+    private Integer requestTimeout = 30;  // 请求超时时间(s)
     private Integer sendBuf = 65535;
     private Integer receiveBuf = 65535;
     private Integer lowWaterLevel = 1024 * 1024;
     private Integer highWaterLevel = 10 * 1024 * 1024;
-    private Integer maxIdleSecs = 180;
+    private Boolean preventDuplicateEnable = true; // 是否开启去重处理
 
     /**
      * 是否开启流量监控
@@ -107,13 +107,6 @@ public class RpcClientConfig {
         this.highWaterLevel = highWaterLevel;
     }
 
-    public Integer getMaxIdleSecs() {
-        return maxIdleSecs;
-    }
-
-    public void setMaxIdleSecs(Integer maxIdleSecs) {
-        this.maxIdleSecs = maxIdleSecs;
-    }
 
     public Boolean getCompressEnable() {
         return compressEnable;
@@ -184,5 +177,13 @@ public class RpcClientConfig {
 
     public void setRequestTimeout(Integer requestTimeout) {
         this.requestTimeout = requestTimeout;
+    }
+
+    public Boolean getPreventDuplicateEnable() {
+        return preventDuplicateEnable;
+    }
+
+    public void setPreventDuplicateEnable(Boolean preventDuplicateEnable) {
+        this.preventDuplicateEnable = preventDuplicateEnable;
     }
 }

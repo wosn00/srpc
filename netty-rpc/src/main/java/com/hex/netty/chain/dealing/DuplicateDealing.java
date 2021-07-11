@@ -14,6 +14,7 @@ import java.time.Duration;
 
 /**
  * @author: hs
+ * <p>
  * 去重处理器，集群部署模式需使用redis实现去重
  */
 public class DuplicateDealing implements Dealing {
