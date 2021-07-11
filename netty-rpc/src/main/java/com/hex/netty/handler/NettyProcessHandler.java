@@ -5,7 +5,6 @@ import com.hex.netty.chain.DealingChain;
 import com.hex.netty.chain.DealingContext;
 import com.hex.netty.chain.dealing.DispatchDealing;
 import com.hex.netty.chain.dealing.DuplicateDealing;
-import com.hex.netty.cmd.IHandler;
 import com.hex.netty.connection.ConnectionManager;
 import com.hex.netty.protocol.adpater.PbProtocolAdapter;
 import com.hex.netty.protocol.pb.proto.Rpc;
@@ -13,8 +12,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import static com.hex.netty.connection.NettyConnection.CONN;
 
@@ -26,13 +23,10 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
 
     private ConnectionManager connectionManager;
 
-    private List<IHandler> handlers;
-
     private boolean enablePreventDuplicate;
 
-    public NettyProcessHandler(ConnectionManager connectionManager, List<IHandler> handlers, boolean enablePreventDuplicate) {
+    public NettyProcessHandler(ConnectionManager connectionManager, boolean enablePreventDuplicate) {
         this.connectionManager = connectionManager;
-        this.handlers = handlers;
         this.enablePreventDuplicate = enablePreventDuplicate;
     }
 
@@ -43,7 +37,7 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
         if (enablePreventDuplicate) {
             chain.addDealing(new DuplicateDealing());
         }
-        chain.addDealing(new DispatchDealing().registerHandlers(handlers));
+        chain.addDealing(new DispatchDealing());
         // 上下文，携带消息内容
         DealingContext context = new DealingContext();
         context.setCommand(PbProtocolAdapter.getAdapter().decode(msg));

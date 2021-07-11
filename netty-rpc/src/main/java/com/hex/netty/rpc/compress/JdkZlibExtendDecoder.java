@@ -1,4 +1,4 @@
-package com.hex.netty.compress;
+package com.hex.netty.rpc.compress;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

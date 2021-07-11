@@ -4,9 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.hex.netty.cmd.IHandler;
-import com.hex.netty.compress.JdkZlibExtendDecoder;
-import com.hex.netty.compress.JdkZlibExtendEncoder;
+import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
+import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcServerConfig;
 import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.ConnectionManager;
@@ -66,13 +65,8 @@ public class RpcServer extends AbstractRpc implements Server {
 
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
 
-    public RpcServer(RpcServerConfig config, IHandler... handlers) {
+    public RpcServer(RpcServerConfig config) {
         this.config = config;
-        super.handlers = handlers;
-    }
-
-    public void setHandler(IHandler... handlers) {
-        super.handlers = handlers;
     }
 
     @Override
@@ -170,7 +164,7 @@ public class RpcServer extends AbstractRpc implements Server {
                                 // 3min没收到或没发送数据则认为空闲
                                 new IdleStateHandler(0, 0, 180),
                                 new NettyServerConnManagerHandler(connectionManager, config),
-                                new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers), config.getPreventDuplicateEnable()));
+                                new NettyProcessHandler(connectionManager, config.getPreventDuplicateEnable()));
                     }
                 });
         if (useEpolll) {

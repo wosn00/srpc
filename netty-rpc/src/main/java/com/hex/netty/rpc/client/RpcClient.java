@@ -1,18 +1,17 @@
 package com.hex.netty.rpc.client;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.hex.netty.cmd.IHandler;
-import com.hex.netty.compress.JdkZlibExtendDecoder;
-import com.hex.netty.compress.JdkZlibExtendEncoder;
+import com.hex.netty.constant.CommandType;
+import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
+import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcClientConfig;
 import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.ConnectionManager;
 import com.hex.netty.connection.DefaultConnectionManager;
 import com.hex.netty.connection.NettyConnection;
-import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyClientConnManageHandler;
 import com.hex.netty.handler.NettyProcessHandler;
-import com.hex.netty.ext.HeartBeatTask;
 import com.hex.netty.invoke.RpcCallback;
 import com.hex.netty.protocol.RpcRequest;
 import com.hex.netty.protocol.RpcResponse;
@@ -21,6 +20,7 @@ import com.hex.netty.rpc.AbstractRpc;
 import com.hex.netty.rpc.Client;
 import com.hex.netty.invoke.ResponseFuture;
 import com.hex.netty.invoke.ResponseMapping;
+import com.hex.netty.rpc.ext.HeartBeatTask;
 import com.hex.netty.util.Util;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -68,9 +68,8 @@ public class RpcClient extends AbstractRpc implements Client {
 
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
 
-    public RpcClient(RpcClientConfig config, IHandler... handlers) {
+    public RpcClient(RpcClientConfig config) {
         this.config = config;
-        super.handlers = handlers;
     }
 
     @Override
@@ -134,43 +133,6 @@ public class RpcClient extends AbstractRpc implements Client {
         }
     }
 
-    /**
-     * 同步调用
-     */
-    @Override
-    public RpcResponse invoke(RpcRequest rpcRequest) {
-        // 发送请求
-        if (!sendRequest(rpcRequest)) {
-            // 未发送成功
-            return RpcResponse.clientError(rpcRequest.getSeq());
-        }
-        ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq(), config.getRequestTimeout());
-        ResponseMapping.putResponseFuture(rpcRequest.getSeq(), responseFuture);
-
-        // 等待并获取响应
-        return responseFuture.waitForResponse();
-    }
-
-    /**
-     * 异步调用
-     */
-    @Override
-    public void invokeAsync(RpcRequest rpcRequest) {
-        invokeAsync(rpcRequest, null);
-    }
-
-    /**
-     * 异步调用，带回调
-     */
-    @Override
-    public void invokeAsync(RpcRequest rpcRequest, RpcCallback callback) {
-        // 发送请求
-        sendRequest(rpcRequest);
-        // 添加响应回调
-        ResponseFuture responseFuture = new ResponseFuture(rpcRequest.getSeq(), callback);
-        ResponseMapping.putResponseFuture(rpcRequest.getSeq(), responseFuture);
-    }
-
     private void clientStart() {
         logger.info("RpcClient init ...");
 
@@ -197,12 +159,10 @@ public class RpcClient extends AbstractRpc implements Client {
                     @Override
                     public void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
-
                         // 流控
                         if (null != trafficShapingHandler) {
                             pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
                         }
-
                         if (config.getCompressEnable() != null && config.getCompressEnable()) {
                             // 添加压缩编解码
                             pipeline.addLast(
@@ -222,42 +182,88 @@ public class RpcClient extends AbstractRpc implements Client {
                                     new ProtobufVarint32LengthFieldPrepender(),
                                     new ProtobufEncoder());
                         }
-
                         pipeline.addLast(
                                 defaultEventExecutorGroup,
                                 // 3min内没收到或没发送数据则认为空闲
                                 new IdleStateHandler(0, 0, 180),
                                 new NettyClientConnManageHandler(connectionManager),
-                                new NettyProcessHandler(connectionManager, Lists.newArrayList(handlers), config.getPreventDuplicateEnable()));
+                                new NettyProcessHandler(connectionManager, config.getPreventDuplicateEnable()));
                     }
                 });
         // 心跳保活
         new Timer("HeartbeatTimer", true)
                 .scheduleAtFixedRate(new HeartBeatTask(this.connectionManager), 3 * 1000L, 30 * 1000L);
         logger.info("RpcClient init success!");
+    }
 
+
+    @Override
+    public RpcResponse invoke(String cmd, Object body) {
+        RpcRequest request = buildRequest(cmd, body);
+        // 发送请求
+        if (!sendRequest(request)) {
+            // 未发送成功
+            return RpcResponse.clientError(request.getSeq());
+        }
+        ResponseFuture responseFuture = new ResponseFuture(request.getSeq(), config.getRequestTimeout());
+        ResponseMapping.putResponseFuture(request.getSeq(), responseFuture);
+
+        // 等待并获取响应
+        return responseFuture.waitForResponse();
+    }
+
+    @Override
+    public <T> T invoke(String cmd, Object body, Class<T> resultType) {
+        RpcResponse response = invoke(cmd, body);
+        if (RpcResponse.SUCCESS_CODE.equals(response.getCode())) {
+            String responseBody = response.getBody();
+            return JSON.parseObject(responseBody, resultType);
+        } else {
+            logger.warn("The response code to this request [{}] is [{}]", response.getSeq(), response.getCode());
+            return null;
+        }
+    }
+
+    @Override
+    public void invokeAsync(String cmd, Object body) {
+        invokeAsync(cmd, body, null);
+    }
+
+    @Override
+    public void invokeAsync(String cmd, Object body, RpcCallback callback) {
+        RpcRequest request = buildRequest(cmd, body);
+        // 发送请求
+        sendRequest(request);
+        // 添加响应回调
+        ResponseFuture responseFuture = new ResponseFuture(request.getSeq(), callback);
+        ResponseMapping.putResponseFuture(request.getSeq(), responseFuture);
+    }
+
+    private RpcRequest buildRequest(String cmd, Object body) {
+        String requestBody = JSON.toJSONString(body);
+        RpcRequest request = new RpcRequest();
+        if (StringUtils.isBlank(request.getSeq())) {
+            request.setSeq(Util.genSeq());
+        }
+        if (StringUtils.isBlank(cmd)) {
+            throw new IllegalArgumentException("cmd can not be empty");
+        }
+        request.setCmd(cmd);
+        request.setTs(System.currentTimeMillis());
+        request.setBody(requestBody);
+        request.setCommandType(CommandType.REQUEST_COMMAND.getValue());
+        return request;
     }
 
     private boolean sendRequest(RpcRequest rpcRequest) {
-        requestInit(rpcRequest);
         // 获取连接
         Connection conn = connectionManager.getConn();
         if (conn == null) {
-            logger.error("No connection available, please try to connect first!");
+            logger.error("No connection available, please try to connect RpcServer first!");
             return false;
         }
         // 发送请求
         conn.send(rpcRequest);
         return true;
-    }
-
-    private void requestInit(RpcRequest rpcRequest) {
-        if (rpcRequest.getCmd() == null) {
-            throw new RpcException("rpcRequest cmd can not be null!");
-        }
-        if (StringUtils.isBlank(rpcRequest.getSeq())) {
-            rpcRequest.setSeq(Util.genSeq());
-        }
-        rpcRequest.setTs(System.currentTimeMillis());
     }
 }

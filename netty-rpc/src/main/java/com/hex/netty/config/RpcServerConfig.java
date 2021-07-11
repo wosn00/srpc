@@ -1,5 +1,7 @@
 package com.hex.netty.config;
 
+import com.hex.netty.reflection.RouteScanner;
+
 /**
  * @author: hs
  */
@@ -50,6 +52,9 @@ public class RpcServerConfig {
      */
     private Long maxThreshold = -1L;
 
+    public RpcServerConfig(Class<?> primarySources) {
+        new RouteScanner(primarySources).san();
+    }
 
     public Integer getSelectorThreads() {
         return selectorThreads;
