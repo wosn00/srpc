@@ -55,6 +55,12 @@ public class RpcResponse extends Command<String> {
         return new RpcResponse(requestSeq, null, REQUEST_DUPLICATE, null);
     }
 
+    /**
+     * 失败响应
+     */
+    public static RpcResponse failedResponse(String requestSeq, Integer code) {
+        return new RpcResponse(requestSeq, null, REQUEST_DUPLICATE, null);
+    }
 
     /**
      * 成功响应

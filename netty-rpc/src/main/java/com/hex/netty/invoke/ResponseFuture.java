@@ -19,7 +19,7 @@ public class ResponseFuture {
 
     private RpcCallback rpcCallback;
 
-    private CountDownLatch latch = new CountDownLatch(1);
+    private CountDownLatch latch;
 
     private int requestTimeout = 30;
 
@@ -37,6 +37,7 @@ public class ResponseFuture {
      * 等待服务端响应结果并返回
      */
     public RpcResponse waitForResponse() {
+        latch = new CountDownLatch(1);
         boolean await;
         try {
             await = latch.await(requestTimeout, TimeUnit.SECONDS);
@@ -57,7 +58,9 @@ public class ResponseFuture {
      * 客户端收到服务端响应后调用
      */
     public void receipt() {
-        latch.countDown();
+        if (latch != null) {
+            latch.countDown();
+        }
         // 执行响应回调方法
         if (this.rpcCallback != null) {
             try {

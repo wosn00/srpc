@@ -13,7 +13,7 @@ public interface Client {
     /**
      * 启动客户端
      */
-    void start();
+    Client start();
 
     /**
      * 停止客户端

@@ -67,17 +67,27 @@ public class RpcClient extends AbstractRpc implements Client {
 
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
 
-    public RpcClient(RpcClientConfig config) {
-        this.config = config;
+    private RpcClient() {
     }
 
+    public RpcClient config(RpcClientConfig config) {
+        this.config = config;
+        return this;
+    }
+
+    public static RpcClient newBuilder() {
+        return new RpcClient();
+    }
+
+
     @Override
-    public void start() {
+    public Client start() {
         if (isClientStart.compareAndSet(false, true)) {
             clientStart();
         } else {
             logger.warn("RpcClient has started!");
         }
+        return this;
     }
 
     @Override
@@ -154,41 +164,8 @@ public class RpcClient extends AbstractRpc implements Client {
                 .option(ChannelOption.SO_SNDBUF, this.config.getSendBuf())
                 .option(ChannelOption.SO_RCVBUF, this.config.getReceiveBuf())
                 .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(this.config.getLowWaterLevel(), this.config.getHighWaterLevel()))
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    public void initChannel(SocketChannel ch) {
-                        ChannelPipeline pipeline = ch.pipeline();
-                        // 流控
-                        if (null != trafficShapingHandler) {
-                            pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
-                        }
-                        if (config.getCompressEnable() != null && config.getCompressEnable()) {
-                            // 添加压缩编解码
-                            pipeline.addLast(
-                                    defaultEventExecutorGroup,
-                                    new ProtobufVarint32FrameDecoder(),
-                                    new JdkZlibExtendDecoder(),
-                                    new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                                    new ProtobufVarint32LengthFieldPrepender(),
-                                    new JdkZlibExtendEncoder(config.getMinThreshold(), config.getMaxThreshold()),
-                                    new ProtobufEncoder());
-                        } else {
-                            //正常pb编解码
-                            pipeline.addLast(
-                                    defaultEventExecutorGroup,
-                                    new ProtobufVarint32FrameDecoder(),
-                                    new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                                    new ProtobufVarint32LengthFieldPrepender(),
-                                    new ProtobufEncoder());
-                        }
-                        pipeline.addLast(
-                                defaultEventExecutorGroup,
-                                // 3min内没收到或没发送数据则认为空闲
-                                new IdleStateHandler(0, 0, 180),
-                                new NettyClientConnManageHandler(connectionManager),
-                                new NettyProcessHandler(connectionManager, config.getPreventDuplicateEnable()));
-                    }
-                });
+                .handler(new RpcClientChannel());
+
         // 心跳保活
         new Timer("HeartbeatTimer", true)
                 .scheduleAtFixedRate(new HeartBeatTask(this.connectionManager), 3 * 1000L, 30 * 1000L);
@@ -264,5 +241,44 @@ public class RpcClient extends AbstractRpc implements Client {
         // 发送请求
         conn.send(rpcRequest);
         return true;
+    }
+
+    /**
+     * Rpc客户端channel
+     */
+    class RpcClientChannel extends ChannelInitializer<SocketChannel> {
+        @Override
+        public void initChannel(SocketChannel ch) {
+            ChannelPipeline pipeline = ch.pipeline();
+            // 流控
+            if (null != trafficShapingHandler) {
+                pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
+            }
+            if (config.getCompressEnable() != null && config.getCompressEnable()) {
+                // 添加压缩编解码
+                pipeline.addLast(
+                        defaultEventExecutorGroup,
+                        new ProtobufVarint32FrameDecoder(),
+                        new JdkZlibExtendDecoder(),
+                        new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
+                        new ProtobufVarint32LengthFieldPrepender(),
+                        new JdkZlibExtendEncoder(config.getMinThreshold(), config.getMaxThreshold()),
+                        new ProtobufEncoder());
+            } else {
+                //正常pb编解码
+                pipeline.addLast(
+                        defaultEventExecutorGroup,
+                        new ProtobufVarint32FrameDecoder(),
+                        new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
+                        new ProtobufVarint32LengthFieldPrepender(),
+                        new ProtobufEncoder());
+            }
+            pipeline.addLast(
+                    defaultEventExecutorGroup,
+                    // 3min内没收到或没发送数据则认为空闲
+                    new IdleStateHandler(0, 0, 180),
+                    new NettyClientConnManageHandler(connectionManager),
+                    new NettyProcessHandler(connectionManager, config.getPreventDuplicateEnable()));
+        }
     }
 }

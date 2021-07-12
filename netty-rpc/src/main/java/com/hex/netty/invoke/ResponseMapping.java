@@ -17,6 +17,10 @@ public class ResponseMapping {
             .expireAfterWrite(Duration.ofSeconds(30))
             .build();
 
+    private ResponseMapping() {
+
+    }
+
     public static void putResponseFuture(String requestId, ResponseFuture responseFuture) {
         futureCache.put(requestId, responseFuture);
     }
