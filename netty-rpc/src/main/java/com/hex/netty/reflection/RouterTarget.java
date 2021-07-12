@@ -15,17 +15,14 @@ import java.lang.reflect.Type;
 /**
  * @author: hs
  */
-public class RouterMapping {
+public class RouterTarget {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private String mapping;
 
     private Object router;
 
     private Method method;
 
-    public RouterMapping(String mapping, Object router, Method method) {
-        this.mapping = mapping;
+    public RouterTarget(Object router, Method method) {
         this.router = router;
         this.method = method;
     }
@@ -36,8 +33,7 @@ public class RouterMapping {
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i].isAnnotationPresent(RouteBody.class)) {
                 Type type = parameters[i].getAnnotatedType().getType();
-                Class<? extends Type> aClass = type.getClass();
-                args[i] = JSON.parseObject(command.getBody(), aClass);
+                args[i] = JSON.parseObject(command.getBody(), type);
             }
         }
         Object result = null;

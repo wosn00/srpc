@@ -69,6 +69,9 @@ public class RpcServerConfig {
     }
 
     public void setPort(Integer port) {
+        if (port <= 0 || port > 65535) {
+            throw new IllegalArgumentException("port should be lesser 65535 and greater 0");
+        }
         this.port = port;
     }
 

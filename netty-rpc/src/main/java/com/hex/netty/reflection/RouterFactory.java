@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RouterFactory {
     private static Logger logger = LoggerFactory.getLogger(RouterFactory.class);
 
-    private static Map<String, RouterMapping> routerMappingMap = new ConcurrentHashMap<>();
+    private static Map<String, RouterTarget> routerTargetMap = new ConcurrentHashMap<>();
 
     private static Map<String, Object> factory = new ConcurrentHashMap<>();
 
@@ -25,7 +25,7 @@ public class RouterFactory {
      * 注册Router，单例模式
      */
     public static synchronized void register(String mapping, Class<?> clazz, Method method) {
-        Object o = factory.computeIfAbsent(clazz.getName(), key -> {
+        Object instance = factory.computeIfAbsent(clazz.getName(), key -> {
             try {
                 return clazz.getConstructor().newInstance();
             } catch (Exception e) {
@@ -33,15 +33,19 @@ public class RouterFactory {
                 return null;
             }
         });
-        RouterMapping routerMapping = new RouterMapping(mapping, o, method);
-        routerMappingMap.put(mapping, routerMapping);
+        RouterTarget routerTarget = new RouterTarget(instance, method);
+        routerTargetMap.put(mapping, routerTarget);
     }
 
-    public static RouterMapping getRouter(String mapping) {
-        return routerMappingMap.get(mapping);
+    public static RouterTarget getRouter(String mapping) {
+        return routerTargetMap.get(mapping);
     }
 
     public static int getMappingSize() {
-        return routerMappingMap.size();
+        return routerTargetMap.size();
+    }
+
+    public static Map<String, RouterTarget> getRouterTargetMap() {
+        return routerTargetMap;
     }
 }

@@ -15,13 +15,13 @@ import java.time.Duration;
 /**
  * @author: hs
  * <p>
- * 去重处理器，集群部署模式需使用redis实现去重
+ * 去重处理器(30s内)，集群部署模式需使用redis实现去重
  */
 public class DuplicateDealing implements Dealing {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final Cache<String, Boolean> DUPLICATE_CACHE = Caffeine.newBuilder()
-            .expireAfterAccess(Duration.ofSeconds(300))
+            .expireAfterAccess(Duration.ofSeconds(30))
             .build();
 
     @Override

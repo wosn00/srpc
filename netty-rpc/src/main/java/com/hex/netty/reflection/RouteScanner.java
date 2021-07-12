@@ -36,7 +36,14 @@ public class RouteScanner {
     public synchronized void san() {
         if (primarySources.isAnnotationPresent(RouteScan.class)) {
             RouteScan routeScan = primarySources.getDeclaredAnnotation(RouteScan.class);
-            basePackages.addAll(Arrays.asList(routeScan.value()));
+            if (routeScan.value().length == 0) {
+                basePackages.add(primarySources.getPackage().getName());
+            } else {
+                basePackages.addAll(Arrays.asList(routeScan.value()));
+            }
+        } else {
+            logger.error("Class [{}] doesn't have @RouteScan annotation", primarySources.getSimpleName());
+            return;
         }
         for (String basePackage : basePackages) {
             basePackage = basePackage.replace(".", "/");
@@ -48,17 +55,12 @@ public class RouteScanner {
             File file = new File(resource.getFile());
             File[] files = file.listFiles();
             if (files == null) {
-                logger.warn("the package [{}] does not have any file", basePackage);
+                logger.warn("the package [{}] does not have any class or package", basePackage);
                 return;
             }
             loadAndRegister(files);
         }
-        int mappingSize = RouterFactory.getMappingSize();
-        if (mappingSize == 0) {
-            logger.warn("No RouterMapping was scanned");
-        } else {
-            logger.info("[{}] RouterMapping was scanned", mappingSize);
-        }
+        printScannedResult();
     }
 
 
@@ -69,6 +71,7 @@ public class RouteScanner {
         for (File file : files) {
             if (file.isDirectory()) {
                 loadAndRegister(file.listFiles());
+                continue;
             }
             String classAbsolutePath = file.getAbsolutePath();
             String className = classAbsolutePath.substring(classAbsolutePath.indexOf("com"), classAbsolutePath.lastIndexOf(".class"));
@@ -93,13 +96,26 @@ public class RouteScanner {
                     RouteMapping routeMapping = method.getDeclaredAnnotation(RouteMapping.class);
                     String route = routeMapping.value();
                     if (route.length() == 0) {
-                        logger.warn("Class [{}] Method [{}] does not have clearly routeMapping", clazz, method);
+                        logger.warn("Class [{}] Method [{}] does not have clearly routeMapping, skip register", clazz, method);
                         continue;
                     }
                     // 注册进容器
                     RouterFactory.register(route, clazz, method);
                 }
             }
+        }
+    }
+
+    private void printScannedResult() {
+        int mappingSize = RouterFactory.getMappingSize();
+        if (mappingSize == 0) {
+            logger.warn("No RouterMapping was scanned");
+        } else {
+            logger.info("[{}] RouterMapping was scanned", mappingSize);
+        }
+        if (logger.isDebugEnabled()) {
+            Set<String> mappings = RouterFactory.getRouterTargetMap().keySet();
+            logger.debug("Scanned RouterMapping: {}", mappings);
         }
     }
 }

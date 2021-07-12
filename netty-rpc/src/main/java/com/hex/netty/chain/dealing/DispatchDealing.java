@@ -10,7 +10,7 @@ import com.hex.netty.protocol.Command;
 import com.hex.netty.protocol.RpcRequest;
 import com.hex.netty.protocol.RpcResponse;
 import com.hex.netty.reflection.RouterFactory;
-import com.hex.netty.reflection.RouterMapping;
+import com.hex.netty.reflection.RouterTarget;
 import com.hex.netty.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +41,14 @@ public class DispatchDealing implements Dealing {
 
     private void requestDispatch(RpcRequest rpcRequest, String cmd, Connection connection) {
         // 获取对应router
-        RouterMapping router = RouterFactory.getRouter(cmd);
-        String jsonResult = null;
+        RouterTarget target = RouterFactory.getRouter(cmd);
+        if (target == null) {
+            RpcResponse.serverError(rpcRequest.getSeq());
+            return;
+        }
+        String jsonResult;
         try {
-            jsonResult = router.invoke(rpcRequest);
+            jsonResult = target.invoke(rpcRequest);
         } catch (Exception e) {
             logger.error("An error occurred on the RpcServer", e);
             connection.send(RpcResponse.serverError(rpcRequest.getSeq()));

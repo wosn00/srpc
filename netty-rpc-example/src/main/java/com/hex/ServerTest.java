@@ -8,7 +8,7 @@ import com.hex.netty.rpc.server.RpcServer;
 /**
  * @author: hs
  */
-@RouteScan("com.hex")
+@RouteScan
 public class ServerTest {
     public static void main(String[] args) {
         // 1.自定义配置，可使用默认配置

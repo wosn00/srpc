@@ -1,7 +1,6 @@
 package com.hex.netty.rpc.client;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
 import com.hex.netty.constant.CommandType;
 import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;

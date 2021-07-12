@@ -16,6 +16,7 @@ import com.hex.netty.handler.NettyServerConnManagerHandler;
 import com.hex.netty.protocol.pb.proto.Rpc;
 import com.hex.netty.rpc.AbstractRpc;
 import com.hex.netty.rpc.Server;
+import com.hex.netty.util.Util;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
@@ -76,6 +77,12 @@ public class RpcServer extends AbstractRpc implements Server {
         } else {
             logger.warn("RpcServer has started!");
         }
+    }
+
+    @Override
+    public void startAtPort(int port) {
+        config.setPort(port);
+        start();
     }
 
     @Override
@@ -193,8 +200,7 @@ public class RpcServer extends AbstractRpc implements Server {
                         for (int i = 0; i < allConn.length; i++) {
                             connMap.put("connection" + (i + 1), allConn[i].getRemoteAddress());
                         }
-                        logger.info("服务端当前连接数量:[{}], 客户端地址:[{}]", size, JSON.toJSONString(connMap,
-                                SerializerFeature.DisableCircularReferenceDetect, SerializerFeature.PrettyFormat));
+                        logger.info("服务端当前连接数量:[{}], 客户端地址:[{}]", size, Util.jsonSerializePretty(connMap));
                     }
                 }, 3 * 1000L, 30 * 1000L);
     }
