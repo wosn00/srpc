@@ -155,7 +155,7 @@ public class RpcServer extends AbstractRpc implements Server {
                                     new JdkZlibExtendDecoder(),
                                     new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
                                     new ProtobufVarint32LengthFieldPrepender(),
-                                    new JdkZlibExtendEncoder(config.getCompressionLevel(), config.getMinThreshold(), config.getMaxThreshold()),
+                                    new JdkZlibExtendEncoder(config.getMinThreshold(), config.getMaxThreshold()),
                                     new ProtobufEncoder());
                         } else {
                             //正常pb编解码
