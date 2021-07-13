@@ -22,20 +22,31 @@ public class RouterTarget {
 
     private Method method;
 
+    private Integer paramAnnotationPos;
+
+    private Object[] args;
+
+    private Type paramAnnotationType;
+
     public RouterTarget(Object router, Method method) {
         this.router = router;
         this.method = method;
+        Parameter[] parameters = method.getParameters();
+        args = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            if (parameters[i].isAnnotationPresent(RouteBody.class)) {
+                paramAnnotationPos = i;
+                paramAnnotationType = parameters[i].getAnnotatedType().getType();
+                break;
+            }
+        }
     }
 
     public String invoke(Command<String> command) {
-        Parameter[] parameters = method.getParameters();
-        Object[] args = new Object[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            if (parameters[i].isAnnotationPresent(RouteBody.class)) {
-                Type type = parameters[i].getAnnotatedType().getType();
-                args[i] = JSON.parseObject(command.getBody(), type);
-            }
+        if (paramAnnotationPos != null) {
+            args[paramAnnotationPos] = JSON.parseObject(command.getBody(), paramAnnotationType);
         }
+
         Object result = null;
         try {
             result = method.invoke(router, args);
@@ -44,5 +55,4 @@ public class RouterTarget {
         }
         return JSON.toJSONString(result);
     }
-
 }
