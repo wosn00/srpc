@@ -184,9 +184,13 @@ public class RpcServer extends AbstractRpc implements Server {
                         for (int i = 0; i < allConn.length; i++) {
                             connMap.put("connection" + (i + 1), allConn[i].getRemoteAddress());
                         }
-                        logger.info("服务端当前连接数量:[{}], 客户端地址:[{}]", size, Util.jsonSerializePretty(connMap));
+                        if (connMap.size() == 0) {
+                            logger.info("服务端当前连接数:[0]");
+                        } else {
+                            logger.info("服务端当前连接数量:[{}], 客户端地址:[{}]", size, Util.jsonSerializePretty(connMap));
+                        }
                     }
-                }, 3 * 1000L, 30 * 1000L);
+                }, 3 * 1000L, 60 * 1000L);
     }
 
 
