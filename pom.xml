@@ -12,6 +12,8 @@
         <module>netty-rpc</module>
         <module>vertx-demo</module>
         <module>netty-rpc-example</module>
+        <module>thrift-demo</module>
+        <module>gRPC-demo</module>
     </modules>
 
     <properties>
