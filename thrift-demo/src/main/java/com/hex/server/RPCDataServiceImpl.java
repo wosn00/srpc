@@ -8,6 +8,7 @@ import org.apache.thrift.TException;
  * @date 2021/7/14
  */
 public class RPCDataServiceImpl implements PRCDataService.Iface {
+
     @Override
     public String getData(String userName) throws TException {
         System.out.println("服务端收到调用：" + userName);
