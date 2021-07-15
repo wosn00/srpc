@@ -14,6 +14,7 @@
         <module>netty-rpc-example</module>
         <module>thrift-demo</module>
         <module>gRPC-demo</module>
+        <module>dubbo-demo</module>
     </modules>
 
     <properties>

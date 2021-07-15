@@ -7,7 +7,7 @@ import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcServerConfig;
 import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.ConnectionManager;
-import com.hex.netty.connection.DefaultConnectionManager;
+import com.hex.netty.connection.ServerConnectionManager;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyProcessHandler;
 import com.hex.netty.handler.NettyServerConnManagerHandler;
@@ -62,7 +62,7 @@ public class RpcServer extends AbstractRpc implements Server {
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
-    private ConnectionManager connectionManager = new DefaultConnectionManager();
+    private ConnectionManager connectionManager = new ServerConnectionManager();
 
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
 
