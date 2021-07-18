@@ -31,7 +31,7 @@ public class DispatchDealing implements Dealing {
 
         } else if (CommandType.REQUEST_COMMAND.getValue().equals(command.getCommandType())) {
             // 请求分发处理
-            requestDispatch((RpcRequest) command, command.getCmd(), context.getConnectionManager().getConn());
+            requestDispatch((RpcRequest) command, command.getCmd(), context.getServerManager().getConn());
 
         } else if (CommandType.RESPONSE_COMMAND.getValue().equals(command.getCommandType())) {
             // 响应处理

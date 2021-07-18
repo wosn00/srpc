@@ -1,9 +1,11 @@
 package com.hex.netty.invoke;
 
+import com.hex.netty.connection.ServerManagerImpl;
 import com.hex.netty.protocol.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -14,18 +16,16 @@ public class ResponseFuture {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String requestSeq;
-
     private RpcResponse rpcResponse;
-
     private RpcCallback rpcCallback;
-
     private CountDownLatch latch;
-
     private int requestTimeout = 30;
+    private InetSocketAddress address;
 
-    public ResponseFuture(String requestSeq, int requestTimeout) {
+    public ResponseFuture(String requestSeq, int requestTimeout, InetSocketAddress address) {
         this.requestSeq = requestSeq;
         this.requestTimeout = requestTimeout;
+        this.address = address;
     }
 
     public ResponseFuture(String requestSeq, RpcCallback rpcCallback) {
@@ -50,6 +50,8 @@ public class ResponseFuture {
         } else {
             // 响应超时
             logger.error("Request timed out! seq:[{}], max wait time:[{}]s", requestSeq, requestTimeout);
+            // 记录错误次数
+            ServerManagerImpl.serverError(address);
             return RpcResponse.requestTimeout(requestSeq);
         }
     }

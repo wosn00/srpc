@@ -11,13 +11,15 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LoadBalanceFactory {
 
-    private Map<LoadBalanceRule, LoadBalance> loadBalanceMap = new ConcurrentHashMap<>(4);
+    private static Map<LoadBalanceRule, LoadBalancer> loadBalanceMap;
 
-    public void register(LoadBalance loadBalance) {
-        loadBalanceMap.put(loadBalance.getRule(), loadBalance);
+    static {
+        loadBalanceMap = new ConcurrentHashMap<>(4);
+        loadBalanceMap.put(LoadBalanceRule.RANDOM, new RandomLoadBalancer());
+        loadBalanceMap.put(LoadBalanceRule.ROUND, new RoundLoadBalancer());
     }
 
-    public LoadBalance newInstance(LoadBalanceRule rule) {
+    public static LoadBalancer getLoadBalance(LoadBalanceRule rule) {
         return loadBalanceMap.get(rule);
     }
 }

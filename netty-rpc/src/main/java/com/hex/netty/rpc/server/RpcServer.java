@@ -6,8 +6,8 @@ import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcServerConfig;
 import com.hex.netty.connection.Connection;
-import com.hex.netty.connection.ConnectionManager;
-import com.hex.netty.connection.ServerConnectionManager;
+import com.hex.netty.connection.ServerManager;
+import com.hex.netty.connection.ServerManagerImpl;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyProcessHandler;
 import com.hex.netty.handler.NettyServerConnManagerHandler;
@@ -62,7 +62,7 @@ public class RpcServer extends AbstractRpc implements Server {
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
-    private ConnectionManager connectionManager = new ServerConnectionManager();
+    private ServerManager serverManager = new ServerManagerImpl();
 
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
 
@@ -109,7 +109,7 @@ public class RpcServer extends AbstractRpc implements Server {
         logger.info("RpcServer stopping...");
         try {
             // 关闭连接管理器
-            connectionManager.close();
+            serverManager.close();
 
             if (this.defaultEventExecutorGroup != null) {
                 this.defaultEventExecutorGroup.shutdownGracefully();
@@ -169,17 +169,17 @@ public class RpcServer extends AbstractRpc implements Server {
         }
 
         logger.info("RpcServer started success!  Listening port:{}", config.getPort());
-        countConnectionNum(connectionManager);
+        countConnectionNum(serverManager);
 
     }
 
-    private void countConnectionNum(ConnectionManager connectionManager) {
+    private void countConnectionNum(ServerManager serverManager) {
         new Timer("connection monitor", true)
                 .scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        int size = connectionManager.size();
-                        Connection[] allConn = connectionManager.getAllConn();
+                        int size = serverManager.size();
+                        Connection[] allConn = serverManager.getAllConn();
                         Map<String, Object> connMap = new HashMap<>();
                         for (int i = 0; i < allConn.length; i++) {
                             connMap.put("connection" + (i + 1), allConn[i].getRemoteAddress());
@@ -198,6 +198,8 @@ public class RpcServer extends AbstractRpc implements Server {
      * RPC服务端channel
      */
     class RpcServerChannel extends ChannelInitializer<SocketChannel> {
+        private final int idleTimeSeconds = 180;
+
         @Override
         public void initChannel(SocketChannel ch) throws Exception {
             ChannelPipeline pipeline = ch.pipeline();
@@ -228,9 +230,9 @@ public class RpcServer extends AbstractRpc implements Server {
             pipeline.addLast(
                     defaultEventExecutorGroup,
                     // 3min没收到或没发送数据则认为空闲
-                    new IdleStateHandler(0, 0, 180),
-                    new NettyServerConnManagerHandler(connectionManager, config),
-                    new NettyProcessHandler(connectionManager, config.getPreventDuplicateEnable()));
+                    new IdleStateHandler(idleTimeSeconds, idleTimeSeconds, 0),
+                    new NettyServerConnManagerHandler(serverManager, config),
+                    new NettyProcessHandler(serverManager, config.getPreventDuplicateEnable()));
         }
     }
 

@@ -3,7 +3,10 @@ package com.hex.netty.connection;
 import com.hex.netty.protocol.Command;
 import com.hex.netty.protocol.adpater.PbProtocolAdapter;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

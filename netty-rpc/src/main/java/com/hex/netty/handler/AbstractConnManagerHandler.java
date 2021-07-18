@@ -1,7 +1,7 @@
 package com.hex.netty.handler;
 
 import com.hex.netty.connection.Connection;
-import com.hex.netty.connection.ConnectionManager;
+import com.hex.netty.connection.ServerManager;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -15,11 +15,11 @@ import static com.hex.netty.connection.NettyConnection.CONN;
 abstract class AbstractConnManagerHandler extends ChannelDuplexHandler {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    ConnectionManager connectionManager;
+    ServerManager serverManager;
 
     void close(ChannelHandlerContext ctx) {
         Connection connection = ctx.channel().attr(CONN).get();
         connection.close();
-        connectionManager.removeConn(connection.getId());
+        serverManager.removeConn(connection.getId());
     }
 }

@@ -2,7 +2,7 @@ package com.hex.netty.chain;
 
 import com.google.common.collect.Maps;
 import com.hex.netty.connection.Connection;
-import com.hex.netty.connection.ConnectionManager;
+import com.hex.netty.connection.ServerManager;
 import com.hex.netty.protocol.Command;
 
 import java.util.Map;
@@ -16,7 +16,7 @@ public class DealingContext {
 
     private DealingChain dealingChain;
 
-    private ConnectionManager connectionManager;
+    private ServerManager serverManager;
 
     private Connection connection;
 
@@ -66,12 +66,12 @@ public class DealingContext {
         this.dealingChain = dealingChain;
     }
 
-    public ConnectionManager getConnectionManager() {
-        return connectionManager;
+    public ServerManager getServerManager() {
+        return serverManager;
     }
 
-    public void setConnectionManager(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
+    public void setServerManager(ServerManager serverManager) {
+        this.serverManager = serverManager;
     }
 
     public Connection getConnection() {

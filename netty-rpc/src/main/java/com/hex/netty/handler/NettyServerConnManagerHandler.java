@@ -1,15 +1,13 @@
 package com.hex.netty.handler;
 
 import com.hex.netty.config.RpcServerConfig;
-import com.hex.netty.connection.ConnectionManager;
+import com.hex.netty.connection.ServerManager;
 import com.hex.netty.connection.NettyConnection;
 import com.hex.netty.util.Util;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.UUID;
 
 import static com.hex.netty.connection.NettyConnection.CONN;
 
@@ -21,8 +19,8 @@ public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
 
     private RpcServerConfig serverConfig;
 
-    public NettyServerConnManagerHandler(ConnectionManager connectionManager, RpcServerConfig serverConfig) {
-        super.connectionManager = connectionManager;
+    public NettyServerConnManagerHandler(ServerManager serverManager, RpcServerConfig serverConfig) {
+        super.serverManager = serverManager;
         this.serverConfig = serverConfig;
     }
 
@@ -47,7 +45,7 @@ public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         NettyConnection conn = new NettyConnection(Util.genSeq(), ctx.channel());
-        connectionManager.addConn(conn);
+        serverManager.addConn(conn);
         ctx.channel().attr(CONN).set(conn);
         super.channelActive(ctx);
     }

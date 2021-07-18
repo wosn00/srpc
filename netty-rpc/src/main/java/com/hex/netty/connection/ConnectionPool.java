@@ -1,19 +1,21 @@
 package com.hex.netty.connection;
 
+import java.util.List;
+
 /**
  * @author guohs
  * @date 2021/7/15
  */
 public interface ConnectionPool {
 
+    List<Connection> getAllConnections();
+
     Connection getConnection();
 
-    void release(Connection connection);
+    void releaseConnection(String id);
 
-    int totalSize();
+    int size();
 
-    void closeConnection(String connId);
-
-    void closePool();
+    void close();
 
 }

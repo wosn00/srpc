@@ -6,8 +6,8 @@ import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcClientConfig;
 import com.hex.netty.connection.Connection;
-import com.hex.netty.connection.ConnectionManager;
-import com.hex.netty.connection.ServerConnectionManager;
+import com.hex.netty.connection.ServerManager;
+import com.hex.netty.connection.ServerManagerImpl;
 import com.hex.netty.connection.NettyConnection;
 import com.hex.netty.handler.NettyClientConnManageHandler;
 import com.hex.netty.handler.NettyProcessHandler;
@@ -44,6 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -63,7 +64,7 @@ public class RpcClient extends AbstractRpc implements Client {
 
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
-    private ConnectionManager connectionManager = new ServerConnectionManager(this);
+    private ServerManager serverManager = new ServerManagerImpl(this);
 
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
 
@@ -105,7 +106,7 @@ public class RpcClient extends AbstractRpc implements Client {
                 defaultEventExecutorGroup.shutdownGracefully();
             }
             // 关闭连接
-            connectionManager.close();
+            serverManager.close();
         } catch (Exception e) {
             logger.error("Failed to stop RpcClient!", e);
         }
@@ -122,12 +123,15 @@ public class RpcClient extends AbstractRpc implements Client {
             if (future.channel() != null && future.channel().isActive()) {
                 conn = new NettyConnection(Util.genSeq(), future.channel());
                 future.channel().attr(CONN).set(conn);
-                connectionManager.addConn(conn);
             } else {
                 logger.error("RpcClient connect fail host:[{}] port:[{}]", host, port);
+                // 记录失败次数
+                ServerManagerImpl.serverError(new InetSocketAddress(host, port));
             }
         } else {
             logger.error("RpcClient connect fail host:[{}] port:[{}]", host, port);
+            // 记录失败次数
+            ServerManagerImpl.serverError(new InetSocketAddress(host, port));
         }
         return conn;
     }
@@ -168,7 +172,7 @@ public class RpcClient extends AbstractRpc implements Client {
 
         // 心跳保活
         new Timer("HeartbeatTimer", true)
-                .scheduleAtFixedRate(new HeartBeatTask(this.connectionManager), 3 * 1000L, 30 * 1000L);
+                .scheduleAtFixedRate(new HeartBeatTask(this.serverManager), 3 * 1000L, 30 * 1000L);
         logger.info("RpcClient init success!");
     }
 
@@ -233,7 +237,7 @@ public class RpcClient extends AbstractRpc implements Client {
 
     private boolean sendRequest(RpcRequest rpcRequest) {
         // 获取连接
-        Connection conn = connectionManager.getConn();
+        Connection conn = serverManager.getConn();
         if (conn == null) {
             logger.error("No connection available, please try to connect RpcServer first!");
             return false;
@@ -247,6 +251,8 @@ public class RpcClient extends AbstractRpc implements Client {
      * Rpc客户端channel
      */
     class RpcClientChannel extends ChannelInitializer<SocketChannel> {
+        private final int idleTimeSeconds = 180;
+
         @Override
         public void initChannel(SocketChannel ch) {
             ChannelPipeline pipeline = ch.pipeline();
@@ -276,9 +282,9 @@ public class RpcClient extends AbstractRpc implements Client {
             pipeline.addLast(
                     defaultEventExecutorGroup,
                     // 3min内没收到或没发送数据则认为空闲
-                    new IdleStateHandler(0, 0, 180),
-                    new NettyClientConnManageHandler(connectionManager),
-                    new NettyProcessHandler(connectionManager, config.getPreventDuplicateEnable()));
+                    new IdleStateHandler(idleTimeSeconds, idleTimeSeconds, 0),
+                    new NettyClientConnManageHandler(serverManager),
+                    new NettyProcessHandler(serverManager, config.getPreventDuplicateEnable()));
         }
     }
 }
