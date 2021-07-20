@@ -36,14 +36,17 @@ public class ServerManagerImpl implements ServerManager {
         this.loadBalanceRule = loadBalanceRule;
     }
 
-
     @Override
-    public void addServer(InetSocketAddress server) {
+    public synchronized void addServer(InetSocketAddress server) {
         if (isClosed.get()) {
             logger.error("serverManager closed, add server [{}] failed", server);
         }
         if (!servers.contains(server)) {
             servers.add(server);
+            ConnectionPool connectionPool = connectionPoolMap.get(server);
+            if (connectionPool != null) {
+                connectionPool.close();
+            }
             connectionPoolMap.put(server, new ConnectionPoolImpl(poolSizePerServer, server, client));
         }
     }
@@ -56,7 +59,21 @@ public class ServerManagerImpl implements ServerManager {
     }
 
     @Override
-    public InetSocketAddress[] getAllServers() {
+    public synchronized void removeServer(InetSocketAddress server) {
+        servers.remove(server);
+        ConnectionPool connectionPool = connectionPoolMap.get(server);
+        if (connectionPool != null) {
+            connectionPool.close();
+            connectionPoolMap.remove(server);
+        }
+        ServerStatus serverStatus = serverStatusMap.get(server);
+        if (serverStatus != null) {
+            serverStatusMap.remove(server);
+        }
+    }
+
+    @Override
+    public InetSocketAddress[] getAllRemoteServers() {
         return servers.toArray(new InetSocketAddress[]{});
     }
 
@@ -67,9 +84,9 @@ public class ServerManagerImpl implements ServerManager {
 
     @Override
     public InetSocketAddress selectServer(List<InetSocketAddress> servers) {
-        // 过滤掉不可用的server
+        // 过滤出可用的server
         List<InetSocketAddress> availableServers = servers.stream()
-                .filter(server -> serverStatusMap.get(server).isAvailable())
+                .filter(server -> serverStatusMap.get(server) == null || serverStatusMap.get(server).isAvailable())
                 .collect(Collectors.toList());
         if (availableServers.isEmpty()) {
             logger.error("no available server");
@@ -81,15 +98,37 @@ public class ServerManagerImpl implements ServerManager {
     }
 
     @Override
-    public Connection getConnection(List<InetSocketAddress> addresses) {
+    public Connection chooseConnection(List<InetSocketAddress> addresses) {
+        if (isClosed.get()) {
+            logger.error("serverManager closed, choose connection failed");
+        }
         InetSocketAddress address = selectServer(addresses);
-
-        return null;
+        ConnectionPool connectionPool = connectionPoolMap.get(address);
+        if (connectionPool == null) {
+            synchronized (address.toString().intern()) {
+                if ((connectionPool = connectionPoolMap.get(address)) == null) {
+                    connectionPool = new ConnectionPoolImpl(poolSizePerServer, address, client);
+                    connectionPoolMap.put(address, connectionPool);
+                }
+            }
+        }
+        return connectionPool.getConnection();
     }
 
     @Override
-    public Connection getConnection() {
-        return null;
+    public Connection chooseConnection() {
+        return chooseConnection(servers);
+    }
+
+    @Override
+    public void closeManager() {
+        if (isClosed.compareAndSet(false, true)) {
+            for (ConnectionPool connectionPool : connectionPoolMap.values()) {
+                connectionPool.close();
+            }
+            servers.clear();
+            connectionPoolMap.clear();
+        }
     }
 
     public static void serverError(InetSocketAddress server) {
@@ -104,5 +143,4 @@ public class ServerManagerImpl implements ServerManager {
         }
         serverStatus.errorTimesInc();
     }
-
 }

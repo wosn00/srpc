@@ -12,14 +12,18 @@ public interface ServerManager {
 
     void addServers(List<InetSocketAddress> servers);
 
-    InetSocketAddress[] getAllServers();
+    void removeServer(InetSocketAddress server);
+
+    InetSocketAddress[] getAllRemoteServers();
 
     int getServersNum();
 
     InetSocketAddress selectServer(List<InetSocketAddress> servers);
 
-    Connection getConnection(List<InetSocketAddress> servers);
+    Connection chooseConnection(List<InetSocketAddress> servers);
 
-    Connection getConnection();
+    Connection chooseConnection();
+
+    void closeManager();
 
 }

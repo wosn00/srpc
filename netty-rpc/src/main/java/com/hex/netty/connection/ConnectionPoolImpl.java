@@ -23,7 +23,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private int maxSize;
-    private InetSocketAddress server;
+    private InetSocketAddress remoteAddress;
     private Client client;
     private final List<Connection> connections = new CopyOnWriteArrayList<>();
     private final AtomicInteger counter = new AtomicInteger(0);
@@ -34,9 +34,9 @@ public class ConnectionPoolImpl implements ConnectionPool {
     private final Lock writeLock = lock.writeLock();
 
 
-    public ConnectionPoolImpl(int maxSize, InetSocketAddress server, Client client) {
+    public ConnectionPoolImpl(int maxSize, InetSocketAddress remoteAddress, Client client) {
         this.maxSize = maxSize;
-        this.server = server;
+        this.remoteAddress = remoteAddress;
         this.client = client;
     }
 
@@ -106,7 +106,10 @@ public class ConnectionPoolImpl implements ConnectionPool {
                     }
                     iterator.remove();
                 }
-                logger.info("connectionPool [{}]  closed, release all connections!", server);
+                connections.clear();
+                logger.info("connectionPool [{}]  closed, release all connections", remoteAddress);
+            } catch (Exception e) {
+                logger.error("connectionPool [{}]  closed failed!", remoteAddress, e);
             } finally {
                 writeLock.unlock();
             }
@@ -119,7 +122,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
         try {
             while (size() < maxSize && retryTimes < 3) {
                 try {
-                    Connection connection = this.client.connect(server.getHostString(), server.getPort());
+                    Connection connection = this.client.connect(remoteAddress.getHostString(), remoteAddress.getPort());
                     if (connection.isAvailable()) {
                         connections.add(connection);
                     } else {
@@ -127,7 +130,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
                     }
                 } catch (Exception e) {
                     retryTimes++;
-                    logger.error("server [{}] connectionPool init failed", server, e);
+                    logger.error("server [{}] connectionPool init failed", remoteAddress, e);
                 }
             }
         } finally {
