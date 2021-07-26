@@ -156,7 +156,7 @@ public class RpcServer extends AbstractRpc implements Server {
                 .childOption(ChannelOption.SO_RCVBUF, config.getReceiveBuf())
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(config.getLowWaterLevel(), config.getHighWaterLevel()))
-                .childHandler(new RpcServerChannel());
+                .childHandler(new ServerChannel());
 
         if (useEpolll) {
             this.serverBootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
@@ -197,7 +197,7 @@ public class RpcServer extends AbstractRpc implements Server {
     /**
      * RPC服务端channel
      */
-    class RpcServerChannel extends ChannelInitializer<SocketChannel> {
+    class ServerChannel extends ChannelInitializer<SocketChannel> {
         private final int idleTimeSeconds = 180;
 
         @Override

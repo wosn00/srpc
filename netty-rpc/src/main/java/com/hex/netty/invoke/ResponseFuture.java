@@ -20,17 +20,18 @@ public class ResponseFuture {
     private RpcCallback rpcCallback;
     private CountDownLatch latch;
     private int requestTimeout = 30;
-    private InetSocketAddress address;
+    private InetSocketAddress remoteAddress;
 
-    public ResponseFuture(String requestSeq, int requestTimeout, InetSocketAddress address) {
+    public ResponseFuture(String requestSeq, int requestTimeout, InetSocketAddress remoteAddress) {
         this.requestSeq = requestSeq;
         this.requestTimeout = requestTimeout;
-        this.address = address;
+        this.remoteAddress = remoteAddress;
     }
 
-    public ResponseFuture(String requestSeq, RpcCallback rpcCallback) {
+    public ResponseFuture(String requestSeq, RpcCallback rpcCallback, InetSocketAddress remoteAddress) {
         this.requestSeq = requestSeq;
         this.rpcCallback = rpcCallback;
+        this.remoteAddress = remoteAddress;
     }
 
     /**
@@ -51,7 +52,7 @@ public class ResponseFuture {
             // 响应超时
             logger.error("Request timed out! seq:[{}], max wait time:[{}]s", requestSeq, requestTimeout);
             // 记录错误次数
-            ServerManagerImpl.serverError(address);
+            ServerManagerImpl.serverError(remoteAddress);
             return RpcResponse.requestTimeout(requestSeq);
         }
     }

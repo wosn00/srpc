@@ -4,6 +4,10 @@ package com.hex.netty.exception;
  * @author: hs
  */
 public class RpcException extends RuntimeException {
+
+    public RpcException() {
+    }
+
     public RpcException(String message) {
         super(message);
     }

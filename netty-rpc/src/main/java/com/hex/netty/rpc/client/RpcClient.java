@@ -2,6 +2,7 @@ package com.hex.netty.rpc.client;
 
 import com.alibaba.fastjson.JSON;
 import com.hex.netty.constant.CommandType;
+import com.hex.netty.exception.RpcException;
 import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcClientConfig;
@@ -45,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -57,15 +59,10 @@ public class RpcClient extends AbstractRpc implements Client {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Bootstrap bootstrap = new Bootstrap();
-
     private RpcClientConfig config;
-
     private EventLoopGroup eventLoopGroupSelector;
-
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
-
-    private ServerManager serverManager = new ServerManagerImpl(this);
-
+    private ServerManager serverManager;
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
 
     private RpcClient() {
@@ -80,13 +77,14 @@ public class RpcClient extends AbstractRpc implements Client {
         return new RpcClient();
     }
 
-
     @Override
     public Client start() {
         if (isClientStart.compareAndSet(false, true)) {
+            //初始化服务节点管理器
+            serverManager = new ServerManagerImpl(this, config.getConnectionSizePerHost(), config.getLoadBalanceRule());
             clientStart();
         } else {
-            logger.warn("RpcClient has started!");
+            logger.warn("RpcClient already started!");
         }
         return this;
     }
@@ -105,15 +103,35 @@ public class RpcClient extends AbstractRpc implements Client {
             if (defaultEventExecutorGroup != null) {
                 defaultEventExecutorGroup.shutdownGracefully();
             }
-            // 关闭连接
-            serverManager.close();
+            //关闭所有服务的连接
+            serverManager.closeManager();
         } catch (Exception e) {
             logger.error("Failed to stop RpcClient!", e);
         }
         logger.info("RpcClient stop");
-
     }
 
+    @Override
+    public void contact(List<InetSocketAddress> cluster) {
+        try {
+            serverManager.addCluster(cluster);
+        } catch (Exception e) {
+            logger.error("add server cluster failed, cluster:{}", cluster, e);
+        }
+    }
+
+    @Override
+    public void contact(InetSocketAddress node) {
+        try {
+            serverManager.addNode(node);
+        } catch (Exception e) {
+            logger.error("add server node failed, node:{}", node, e);
+        }
+    }
+
+    /**
+     * 根据host port发起连接
+     */
     @Override
     public Connection connect(String host, int port) {
         logger.info("RpcClient connect to host:[{}] port:[{}]", host, port);
@@ -134,16 +152,6 @@ public class RpcClient extends AbstractRpc implements Client {
             ServerManagerImpl.serverError(new InetSocketAddress(host, port));
         }
         return conn;
-    }
-
-    @Override
-    public void connect(String host, int port, int connectionNum) {
-        if (connectionNum <= 0) {
-            throw new IllegalArgumentException("The number of connections should be greater than 1 !");
-        }
-        for (int i = 0; i < connectionNum; i++) {
-            connect(host, port);
-        }
     }
 
     private void clientStart() {
@@ -168,7 +176,7 @@ public class RpcClient extends AbstractRpc implements Client {
                 .option(ChannelOption.SO_SNDBUF, this.config.getSendBuf())
                 .option(ChannelOption.SO_RCVBUF, this.config.getReceiveBuf())
                 .option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(this.config.getLowWaterLevel(), this.config.getHighWaterLevel()))
-                .handler(new RpcClientChannel());
+                .handler(new ClientChannel());
 
         // 心跳保活
         new Timer("HeartbeatTimer", true)
@@ -180,16 +188,24 @@ public class RpcClient extends AbstractRpc implements Client {
     @Override
     public RpcResponse invoke(String cmd, Object body) {
         RpcRequest request = buildRequest(cmd, body);
+        ResponseFuture responseFuture;
         // 发送请求
-        if (!sendRequest(request)) {
+        try {
+            responseFuture = sendRequest(request);
+        } catch (Exception e) {
             // 未发送成功
+            logger.error("send request error", e);
             return RpcResponse.clientError(request.getSeq());
         }
-        ResponseFuture responseFuture = new ResponseFuture(request.getSeq(), config.getRequestTimeout());
         ResponseMapping.putResponseFuture(request.getSeq(), responseFuture);
 
         // 等待并获取响应
         return responseFuture.waitForResponse();
+    }
+
+    @Override
+    public RpcResponse invoke(String cmd, Object body, List<InetSocketAddress> cluster) {
+        return null;
     }
 
     @Override
@@ -205,8 +221,18 @@ public class RpcClient extends AbstractRpc implements Client {
     }
 
     @Override
+    public <T> T invoke(String cmd, Object body, Class<T> resultType, List<InetSocketAddress> cluster) {
+        return null;
+    }
+
+    @Override
     public void invokeAsync(String cmd, Object body) {
         invokeAsync(cmd, body, null);
+    }
+
+    @Override
+    public void invokeAsync(String cmd, Object body, List<InetSocketAddress> cluster) {
+
     }
 
     @Override
@@ -217,6 +243,11 @@ public class RpcClient extends AbstractRpc implements Client {
         // 添加响应回调
         ResponseFuture responseFuture = new ResponseFuture(request.getSeq(), callback);
         ResponseMapping.putResponseFuture(request.getSeq(), responseFuture);
+    }
+
+    @Override
+    public void invokeAsync(String cmd, Object body, RpcCallback callback, List<InetSocketAddress> cluster) {
+
     }
 
     private RpcRequest buildRequest(String cmd, Object body) {
@@ -235,22 +266,23 @@ public class RpcClient extends AbstractRpc implements Client {
         return request;
     }
 
-    private boolean sendRequest(RpcRequest rpcRequest) {
+    private ResponseFuture sendRequest(RpcRequest rpcRequest) {
         // 获取连接
-        Connection conn = serverManager.getConn();
-        if (conn == null) {
+        Connection connection = serverManager.chooseConnection();
+        if (connection == null) {
             logger.error("No connection available, please try to connect RpcServer first!");
-            return false;
+            throw new RpcException();
         }
         // 发送请求
-        conn.send(rpcRequest);
-        return true;
+        connection.send(rpcRequest);
+        return new ResponseFuture(rpcRequest.getSeq(), config.getRequestTimeout(),
+                (InetSocketAddress) connection.getRemoteAddress());
     }
 
     /**
      * Rpc客户端channel
      */
-    class RpcClientChannel extends ChannelInitializer<SocketChannel> {
+    class ClientChannel extends ChannelInitializer<SocketChannel> {
         private final int idleTimeSeconds = 180;
 
         @Override

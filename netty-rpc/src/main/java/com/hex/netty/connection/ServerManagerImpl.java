@@ -37,29 +37,29 @@ public class ServerManagerImpl implements ServerManager {
     }
 
     @Override
-    public synchronized void addServer(InetSocketAddress server) {
+    public synchronized void addNode(InetSocketAddress node) {
         if (isClosed.get()) {
-            logger.error("serverManager closed, add server [{}] failed", server);
+            logger.error("serverManager closed, add server [{}] failed", node);
         }
-        if (!servers.contains(server)) {
-            servers.add(server);
-            ConnectionPool connectionPool = connectionPoolMap.get(server);
+        if (!servers.contains(node)) {
+            servers.add(node);
+            ConnectionPool connectionPool = connectionPoolMap.get(node);
             if (connectionPool != null) {
                 connectionPool.close();
             }
-            connectionPoolMap.put(server, new ConnectionPoolImpl(poolSizePerServer, server, client));
+            connectionPoolMap.put(node, new ConnectionPoolImpl(poolSizePerServer, node, client));
         }
     }
 
     @Override
-    public void addServers(List<InetSocketAddress> servers) {
+    public void addCluster(List<InetSocketAddress> servers) {
         for (InetSocketAddress server : servers) {
-            addServer(server);
+            addNode(server);
         }
     }
 
     @Override
-    public synchronized void removeServer(InetSocketAddress server) {
+    public synchronized void removeNode(InetSocketAddress server) {
         servers.remove(server);
         ConnectionPool connectionPool = connectionPoolMap.get(server);
         if (connectionPool != null) {
@@ -73,19 +73,19 @@ public class ServerManagerImpl implements ServerManager {
     }
 
     @Override
-    public InetSocketAddress[] getAllRemoteServers() {
+    public InetSocketAddress[] getAllRemoteNodes() {
         return servers.toArray(new InetSocketAddress[]{});
     }
 
     @Override
-    public int getServersNum() {
+    public int getNodesSize() {
         return servers.size();
     }
 
     @Override
-    public InetSocketAddress selectServer(List<InetSocketAddress> servers) {
+    public InetSocketAddress chooseNode(List<InetSocketAddress> cluster) {
         // 过滤出可用的server
-        List<InetSocketAddress> availableServers = servers.stream()
+        List<InetSocketAddress> availableServers = cluster.stream()
                 .filter(server -> serverStatusMap.get(server) == null || serverStatusMap.get(server).isAvailable())
                 .collect(Collectors.toList());
         if (availableServers.isEmpty()) {
@@ -98,22 +98,22 @@ public class ServerManagerImpl implements ServerManager {
     }
 
     @Override
-    public Connection chooseConnection(List<InetSocketAddress> addresses) {
+    public Connection chooseConnection(List<InetSocketAddress> cluster) {
         if (isClosed.get()) {
             logger.error("serverManager closed, choose connection failed");
         }
-        InetSocketAddress address = selectServer(addresses);
-        ConnectionPool connectionPool = connectionPoolMap.get(address);
-        if (connectionPool == null) {
-            synchronized (address.toString().intern()) {
-                if ((connectionPool = connectionPoolMap.get(address)) == null) {
-                    connectionPool = new ConnectionPoolImpl(poolSizePerServer, address, client);
-                    connectionPoolMap.put(address, connectionPool);
-                }
-            }
-        }
-        return connectionPool.getConnection();
+        InetSocketAddress address = chooseNode(cluster);
+        return getConnectionFromPool(address);
     }
+
+    @Override
+    public Connection chooseConnection(InetSocketAddress address) {
+        if (isClosed.get()) {
+            logger.error("serverManager closed, choose connection failed");
+        }
+        return getConnectionFromPool(address);
+    }
+
 
     @Override
     public Connection chooseConnection() {
@@ -129,6 +129,19 @@ public class ServerManagerImpl implements ServerManager {
             servers.clear();
             connectionPoolMap.clear();
         }
+    }
+
+    private Connection getConnectionFromPool(InetSocketAddress address) {
+        ConnectionPool connectionPool = connectionPoolMap.get(address);
+        if (connectionPool == null) {
+            synchronized (address.toString().intern()) {
+                if ((connectionPool = connectionPoolMap.get(address)) == null) {
+                    connectionPool = new ConnectionPoolImpl(poolSizePerServer, address, client);
+                    connectionPoolMap.put(address, connectionPool);
+                }
+            }
+        }
+        return connectionPool.getConnection();
     }
 
     public static void serverError(InetSocketAddress server) {

@@ -8,21 +8,35 @@ import java.util.List;
  */
 public interface ServerManager {
 
-    void addServer(InetSocketAddress server);
+    void addNode(InetSocketAddress nodeAddress);
 
-    void addServers(List<InetSocketAddress> servers);
+    void addCluster(List<InetSocketAddress> cluster);
 
-    void removeServer(InetSocketAddress server);
+    void removeNode(InetSocketAddress nodeAddress);
 
-    InetSocketAddress[] getAllRemoteServers();
+    InetSocketAddress[] getAllRemoteNodes();
 
-    int getServersNum();
+    int getNodesSize();
 
-    InetSocketAddress selectServer(List<InetSocketAddress> servers);
+    /**
+     * 根据集群节点选择高可用服务，负载均衡
+     */
+    InetSocketAddress chooseNode(List<InetSocketAddress> cluster);
 
-    Connection chooseConnection(List<InetSocketAddress> servers);
+    /**
+     * 根据集群节点选择出高可用连接，支持节点负载均衡，高可用性
+     */
+    Connection chooseConnection(List<InetSocketAddress> cluster);
 
+    /**
+     * 选择默认集群高可用连接，适用于Client只连接向一个集群的服务
+     */
     Connection chooseConnection();
+
+    /**
+     * 指定server选择连接，不支持高可用，适用于连接单节点
+     */
+    Connection chooseConnection(InetSocketAddress node);
 
     void closeManager();
 
