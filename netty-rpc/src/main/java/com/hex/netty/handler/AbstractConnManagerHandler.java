@@ -1,11 +1,12 @@
 package com.hex.netty.handler;
 
 import com.hex.netty.connection.Connection;
+import com.hex.netty.connection.ConnectionPool;
 import com.hex.netty.connection.ServerManager;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
 
 import static com.hex.netty.connection.NettyConnection.CONN;
 
@@ -13,13 +14,17 @@ import static com.hex.netty.connection.NettyConnection.CONN;
  * @author: hs
  */
 abstract class AbstractConnManagerHandler extends ChannelDuplexHandler {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     ServerManager serverManager;
 
     void close(ChannelHandlerContext ctx) {
+        //获取连接
         Connection connection = ctx.channel().attr(CONN).get();
-        connection.close();
-        serverManager.removeConn(connection.getId());
+
+        InetSocketAddress node = (InetSocketAddress) ctx.channel().remoteAddress();
+        //获取对应节点的连接池
+        ConnectionPool connectionPool = serverManager.getConnectionPool(node);
+        //关闭连接
+        connectionPool.releaseConnection(connection.getId());
     }
 }

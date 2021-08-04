@@ -4,6 +4,7 @@ import com.hex.netty.chain.Dealing;
 import com.hex.netty.chain.DealingContext;
 import com.hex.netty.connection.Connection;
 import com.hex.netty.constant.CommandType;
+import com.hex.netty.exception.RpcException;
 import com.hex.netty.invoke.ResponseFuture;
 import com.hex.netty.invoke.ResponseMapping;
 import com.hex.netty.protocol.Command;
@@ -20,22 +21,34 @@ import org.slf4j.LoggerFactory;
  * 分发处理器
  */
 public class DispatchDealing implements Dealing {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DispatchDealing.class);
 
     @Override
     public void deal(DealingContext context) {
         Command<String> command = context.getCommand();
-        if (CommandType.HEARTBEAT.getValue().equals(command.getCommandType())) {
-            // 链路心跳包处理
-            heartBeatProcess(command, context.getConnection());
+        if (command.getCommandType() == null) {
+            throw new RpcException("commandType is null");
+        }
+        CommandType type = CommandType.getType(command.getCommandType());
+        if (type == null) {
+            throw new RpcException("commandType" + command.getCommandType() + " not support");
+        }
 
-        } else if (CommandType.REQUEST_COMMAND.getValue().equals(command.getCommandType())) {
-            // 请求分发处理
-            requestDispatch((RpcRequest) command, command.getCmd(), context.getServerManager().getConn());
-
-        } else if (CommandType.RESPONSE_COMMAND.getValue().equals(command.getCommandType())) {
-            // 响应处理
-            responseProcess((RpcResponse) command);
+        switch (type) {
+            case HEARTBEAT:
+                // 链路心跳包处理
+                heartBeatProcess(command, context.getConnection());
+                break;
+            case REQUEST_COMMAND:
+                // 请求分发处理
+                requestDispatch((RpcRequest) command, command.getCmd(), context.getConnection());
+                break;
+            case RESPONSE_COMMAND:
+                // 响应处理
+                responseProcess(command);
+                break;
+            default:
+                logger.error("commandType:{} not support", type.getValue());
         }
     }
 
@@ -50,7 +63,7 @@ public class DispatchDealing implements Dealing {
         try {
             jsonResult = target.invoke(rpcRequest);
         } catch (Exception e) {
-            logger.error("An error occurred on the RpcServer", e);
+            logger.error("error occurred on the RpcServer", e);
             connection.send(RpcResponse.serverError(rpcRequest.getSeq()));
             return;
         }
@@ -58,7 +71,7 @@ public class DispatchDealing implements Dealing {
         connection.send(RpcResponse.success(rpcRequest.getSeq(), jsonResult));
     }
 
-    private void responseProcess(RpcResponse rpcResponse) {
+    private void responseProcess(Command rpcResponse) {
         ResponseFuture responseFuture = ResponseMapping.getResponseFuture(rpcResponse.getSeq());
         if (responseFuture == null) {
             // 获取不到，可能是服务端处理超时（30s）
@@ -74,12 +87,16 @@ public class DispatchDealing implements Dealing {
     private void heartBeatProcess(Command<String> command, Connection connection) {
         String body = command.getBody();
         if ("ping".equals(body)) {
+            //服务端收到ping处理
             logger.info("-----connection:[{}] receive a heartbeat packet from client", connection.getId());
             Command<String> pong = new Command<>();
-            pong.setSeq(Util.genSeq());
+            pong.setSeq(command.getSeq());
             pong.setCommandType(CommandType.HEARTBEAT.getValue());
             pong.setBody("pong");
             connection.send(pong);
+        } else {
+            //客户端收到pong处理
+            responseProcess(command);
         }
     }
 }

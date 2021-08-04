@@ -72,7 +72,7 @@ public class NettyConnection implements Connection {
             this.channel.writeAndFlush(PbProtocolAdapter.getAdapter().encode(command));
             this.lastSendTime = System.currentTimeMillis();
         } else {
-            logger.warn("connection is unWritable now!,id=[{}], command=[{}]", id, command);
+            logger.warn("connection is unWritable now ,id=[{}], command=[{}]", id, command);
             close();
         }
     }

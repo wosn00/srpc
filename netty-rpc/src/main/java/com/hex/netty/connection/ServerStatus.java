@@ -16,6 +16,14 @@ public class ServerStatus {
         this.server = server;
     }
 
+    public InetSocketAddress getServer() {
+        return server;
+    }
+
+    public void setServer(InetSocketAddress server) {
+        this.server = server;
+    }
+
     public int getErrorTimes() {
         return errorTimes.get();
     }

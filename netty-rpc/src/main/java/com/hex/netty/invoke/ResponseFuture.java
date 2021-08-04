@@ -1,6 +1,7 @@
 package com.hex.netty.invoke;
 
 import com.hex.netty.connection.ServerManagerImpl;
+import com.hex.netty.protocol.Command;
 import com.hex.netty.protocol.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,7 @@ public class ResponseFuture {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private String requestSeq;
-    private RpcResponse rpcResponse;
+    private Command<String> rpcResponse;
     private RpcCallback rpcCallback;
     private CountDownLatch latch;
     private int requestTimeout = 30;
@@ -28,8 +29,9 @@ public class ResponseFuture {
         this.remoteAddress = remoteAddress;
     }
 
-    public ResponseFuture(String requestSeq, RpcCallback rpcCallback, InetSocketAddress remoteAddress) {
+    public ResponseFuture(String requestSeq, int requestTimeout, InetSocketAddress remoteAddress, RpcCallback rpcCallback) {
         this.requestSeq = requestSeq;
+        this.requestTimeout = requestTimeout;
         this.rpcCallback = rpcCallback;
         this.remoteAddress = remoteAddress;
     }
@@ -37,7 +39,7 @@ public class ResponseFuture {
     /**
      * 等待服务端响应结果并返回
      */
-    public RpcResponse waitForResponse() {
+    public Command<String> waitForResponse() {
         latch = new CountDownLatch(1);
         boolean await;
         try {
@@ -50,7 +52,7 @@ public class ResponseFuture {
             return rpcResponse;
         } else {
             // 响应超时
-            logger.error("Request timed out! seq:[{}], max wait time:[{}]s", requestSeq, requestTimeout);
+            logger.error("Request timed out! seq:{}, max wait time:{}s", requestSeq, requestTimeout);
             // 记录错误次数
             ServerManagerImpl.serverError(remoteAddress);
             return RpcResponse.requestTimeout(requestSeq);
@@ -67,18 +69,14 @@ public class ResponseFuture {
         // 执行响应回调方法
         if (this.rpcCallback != null) {
             try {
-                rpcCallback.callback(this.rpcResponse);
+                rpcCallback.callback((RpcResponse) this.rpcResponse);
             } catch (Exception e) {
-                logger.error("response callback processing failed!,requestSeq:[{}]", this.requestSeq, e);
+                logger.error("response callback processing failed!,requestSeq:{}", this.requestSeq, e);
             }
         }
     }
 
-    public RpcResponse getRpcResponse() {
-        return rpcResponse;
-    }
-
-    public void setRpcResponse(RpcResponse rpcResponse) {
+    public void setRpcResponse(Command rpcResponse) {
         this.rpcResponse = rpcResponse;
     }
 

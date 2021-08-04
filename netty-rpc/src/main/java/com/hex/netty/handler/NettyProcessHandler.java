@@ -46,7 +46,6 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
         context.setConnection(ctx.channel().attr(CONN).get());
         // 开始执行责任链
         chain.deal(context);
-
     }
 
     @Override

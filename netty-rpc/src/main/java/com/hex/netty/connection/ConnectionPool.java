@@ -12,6 +12,8 @@ public interface ConnectionPool {
 
     Connection getConnection();
 
+    void addConnection(Connection connection);
+
     void releaseConnection(String id);
 
     int size();

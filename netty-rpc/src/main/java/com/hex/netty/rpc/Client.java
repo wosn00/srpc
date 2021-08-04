@@ -26,12 +26,22 @@ public interface Client {
     /**
      * 连接集群（支持高可用，负载均衡）
      */
-    void contact(List<InetSocketAddress> cluster);
+    Client contact(List<InetSocketAddress> cluster);
 
     /**
      * 连接单机
      */
-    void contact(InetSocketAddress node);
+    Client contact(InetSocketAddress node);
+
+    /**
+     * 根据节点发送心跳，探测节点是否能访问
+     */
+    boolean sendHeartBeat(InetSocketAddress node);
+
+    /**
+     * 指定连接发送心跳，探测节点是否能访问
+     */
+    boolean sendHeartBeat(Connection connection);
 
     /**
      * 根据host port发起连接

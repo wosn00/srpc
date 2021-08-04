@@ -20,7 +20,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * 连接池,每个server一个连接池
  */
 public class ConnectionPoolImpl implements ConnectionPool {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionPoolImpl.class);
 
     private int maxSize;
     private InetSocketAddress remoteAddress;
@@ -65,6 +65,11 @@ public class ConnectionPoolImpl implements ConnectionPool {
             readLock.unlock();
         }
         return null;
+    }
+
+    @Override
+    public void addConnection(Connection connection) {
+        connections.add(connection);
     }
 
     @Override
@@ -124,7 +129,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
                 try {
                     Connection connection = this.client.connect(remoteAddress.getHostString(), remoteAddress.getPort());
                     if (connection.isAvailable()) {
-                        connections.add(connection);
+                        addConnection(connection);
                     } else {
                         retryTimes++;
                     }

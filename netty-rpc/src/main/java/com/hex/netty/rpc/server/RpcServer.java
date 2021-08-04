@@ -5,7 +5,6 @@ import com.hex.netty.reflection.RouteScanner;
 import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcServerConfig;
-import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.ServerManager;
 import com.hex.netty.connection.ServerManagerImpl;
 import com.hex.netty.exception.RpcException;
@@ -35,14 +34,15 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author hs
@@ -51,19 +51,12 @@ public class RpcServer extends AbstractRpc implements Server {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
-
     private Class<?> primarySource;
-
     private RpcServerConfig config;
-
     private EventLoopGroup eventLoopGroupBoss;
-
     private EventLoopGroup eventLoopGroupSelector;
-
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
-
-    private ServerManager serverManager = new ServerManagerImpl();
-
+    private ServerManager serverManager = new ServerManagerImpl(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
 
     public RpcServer config(RpcServerConfig config) {
@@ -109,7 +102,7 @@ public class RpcServer extends AbstractRpc implements Server {
         logger.info("RpcServer stopping...");
         try {
             // 关闭连接管理器
-            serverManager.close();
+            serverManager.closeManager();
 
             if (this.defaultEventExecutorGroup != null) {
                 this.defaultEventExecutorGroup.shutdownGracefully();
@@ -123,15 +116,14 @@ public class RpcServer extends AbstractRpc implements Server {
         } catch (Exception e) {
             logger.error("RpcServer stop exception, {}", Throwables.getStackTraceAsString(e));
         }
-        logger.info("RpcServer stopped!");
+        logger.info("RpcServer stop success!");
     }
 
     private void serverStart() {
-        logger.info("RpcRouter scanning...");
+        logger.info("RpcRouter scanning ...");
         new RouteScanner(this.primarySource).san();
 
-        logger.info("RpcServer server init ...");
-
+        logger.info("RpcServer server init");
         if (useEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(1);
             this.eventLoopGroupSelector = new EpollEventLoopGroup(config.getSelectorThreads());
@@ -178,17 +170,19 @@ public class RpcServer extends AbstractRpc implements Server {
                 .scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        int size = serverManager.size();
-                        Connection[] allConn = serverManager.getAllConn();
-                        Map<String, Object> connMap = new HashMap<>();
-                        for (int i = 0; i < allConn.length; i++) {
-                            connMap.put("connection" + (i + 1), allConn[i].getRemoteAddress());
+                        Map<String, AtomicInteger> nodeConnectionSizeMap = serverManager.getConnectionSize();
+                        if (MapUtils.isEmpty(nodeConnectionSizeMap)) {
+                            logger.info("服务端当前总连接数: 0");
+                            return;
                         }
-                        if (connMap.size() == 0) {
-                            logger.info("服务端当前连接数:[0]");
-                        } else {
-                            logger.info("服务端当前连接数量:[{}], 客户端地址:[{}]", size, Util.jsonSerializePretty(connMap));
+                        //排除掉连接数为0的节点
+                        for (Map.Entry<String, AtomicInteger> entry : nodeConnectionSizeMap.entrySet()) {
+                            if (entry.getValue().get() == 0) {
+                                nodeConnectionSizeMap.remove(entry.getKey());
+                            }
                         }
+                        int sum = nodeConnectionSizeMap.values().stream().mapToInt(AtomicInteger::get).sum();
+                        logger.info("服务端当前总连接数量: {}, 客户端地址: {}", sum, Util.jsonSerializePretty(nodeConnectionSizeMap));
                     }
                 }, 3 * 1000L, 60 * 1000L);
     }

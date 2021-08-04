@@ -11,13 +11,13 @@ import com.hex.netty.annotation.RpcRoute;
 @RpcRoute
 public class TestRouter {
 
-    @RouteMapping("/myRouter/test")
+    @RouteMapping("test")
     public String handler(@RouteBody String body) {
         System.out.println("test1收到请求内容：" + body);
         return "这是test1响应内容";
     }
 
-    @RouteMapping("/myRouter/getWeather")
+    @RouteMapping("getWeather")
     public WeatherData handler2(@RouteBody String address) {
         WeatherData data = new WeatherData();
         data.setAddress(address);

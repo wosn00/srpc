@@ -34,4 +34,13 @@ public enum CommandType {
         this.value = value;
     }
 
+    public static CommandType getType(int value) {
+        for (CommandType commandType : CommandType.values()) {
+            if (commandType.getValue() == value) {
+                return commandType;
+            }
+        }
+        return null;
+    }
+
 }
