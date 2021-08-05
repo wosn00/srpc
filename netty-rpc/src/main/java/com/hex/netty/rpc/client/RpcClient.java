@@ -328,7 +328,7 @@ public class RpcClient extends AbstractRpc implements Client {
     private Connection getConnection(List<InetSocketAddress> nodes) {
         Connection connection;
         if (CollectionUtils.isEmpty(nodes)) {
-            // 选择默认集群节点连接
+            // 获取节点选择连接,支持高可用
             connection = serverManager.chooseHAConnection();
         } else if (nodes.size() == 1) {
             // 不支持高可用

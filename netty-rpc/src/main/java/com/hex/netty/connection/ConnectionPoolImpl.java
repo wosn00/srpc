@@ -53,7 +53,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
         connectionInit();
         readLock.lock();
         try {
-            if (connections.size() > 0) {
+            if (!connections.isEmpty()) {
                 Connection connection = connections.get(incrementAndGetModulo(size()));
                 if (!connection.isAvailable()) {
                     releaseConnection(connection.getId());
@@ -76,16 +76,16 @@ public class ConnectionPoolImpl implements ConnectionPool {
     public void releaseConnection(String id) {
         writeLock.lock();
         try {
-            Iterator<Connection> iterator = connections.iterator();
-            while (iterator.hasNext()) {
-                Connection connection = iterator.next();
+            for (Connection connection : connections) {
                 if (connection.getId().equals(id)) {
-                    iterator.remove();
+                    connections.remove(connection);
                     if (connection.isAvailable()) {
                         connection.close();
                     }
                 }
             }
+        } catch (Exception e) {
+            logger.error("releaseConnection failed", e);
         } finally {
             writeLock.unlock();
         }
