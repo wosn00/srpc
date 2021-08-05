@@ -9,10 +9,12 @@ import java.net.InetSocketAddress;
 
 
 /**
- * Hello world!
+ * 单机连接模式 [单个服务端节点]
  */
 public class ClientTest {
     public static void main(String[] args) {
+        System.out.println("---------------------客户端初始化----------------------");
+
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
         Client rpcClient = RpcClient.newBuilder()
                 .config(new RpcClientConfig())

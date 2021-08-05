@@ -9,10 +9,11 @@ import java.net.InetSocketAddress;
 
 
 /**
- * 集群连接模式
+ * 集群连接模式 [多个服务端节点]
  */
 public class ClusterClientTest {
     public static void main(String[] args) {
+        System.out.println("---------------------客户端初始化----------------------");
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
         Client rpcClient = RpcClient.newBuilder()
                 .config(new RpcClientConfig())
