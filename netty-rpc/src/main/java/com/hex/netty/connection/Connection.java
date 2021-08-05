@@ -17,7 +17,7 @@ public interface Connection {
 
     SocketAddress getRemoteAddress();
 
-    void send(Command command);
+    void send(Command<?> command);
 
     long getLastSendTime();
 }

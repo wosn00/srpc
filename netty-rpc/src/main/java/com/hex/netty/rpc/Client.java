@@ -26,7 +26,7 @@ public interface Client {
     /**
      * 连接集群（支持高可用，负载均衡）
      */
-    Client contact(List<InetSocketAddress> cluster);
+    Client contactCluster(InetSocketAddress... cluster);
 
     /**
      * 连接单机

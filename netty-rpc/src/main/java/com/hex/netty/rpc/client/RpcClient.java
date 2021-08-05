@@ -50,6 +50,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
@@ -120,11 +122,14 @@ public class RpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public Client contact(List<InetSocketAddress> cluster) {
+    public Client contactCluster(InetSocketAddress... cluster) {
+        if (cluster.length <= 1) {
+            throw new RpcException("node size must be greater 1");
+        }
         try {
-            serverManager.addCluster(cluster);
+            serverManager.addCluster(Arrays.asList(cluster));
         } catch (Exception e) {
-            logger.error("add server cluster failed, cluster:{}", cluster, e);
+            logger.error("add server cluster failed", e);
         }
         return this;
     }
@@ -305,7 +310,7 @@ public class RpcClient extends AbstractRpc implements Client {
         return request;
     }
 
-    private ResponseFuture sendCommand(Command command, List<InetSocketAddress> nodes,
+    private ResponseFuture sendCommand(Command<?> command, List<InetSocketAddress> nodes,
                                        RpcCallback callback, Integer requestTimeout) {
         // 获取连接
         Connection connection = getConnection(nodes);
@@ -313,7 +318,7 @@ public class RpcClient extends AbstractRpc implements Client {
         return sendCommand(command, connection, callback, requestTimeout);
     }
 
-    private ResponseFuture sendCommand(Command command, Connection connection,
+    private ResponseFuture sendCommand(Command<?> command, Connection connection,
                                        RpcCallback callback, Integer requestTimeout) {
         connection.send(command);
         return new ResponseFuture(command.getSeq(), requestTimeout,
