@@ -1,6 +1,7 @@
 package com.hex.netty.loadbalance;
 
-import java.net.InetSocketAddress;
+import com.hex.netty.node.HostAndPort;
+
 import java.util.List;
 
 /**
@@ -9,6 +10,6 @@ import java.util.List;
  */
 public interface LoadBalancer {
 
-    InetSocketAddress choose(List<InetSocketAddress> servers);
+    HostAndPort choose(List<HostAndPort> nodes);
 
 }

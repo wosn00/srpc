@@ -1,9 +1,9 @@
 package com.hex.netty.reflection;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.base.Throwables;
 import com.hex.netty.annotation.RouteBody;
 import com.hex.netty.protocol.Command;
+import com.hex.netty.utils.SerializerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class RouterTarget {
 
     public String invoke(Command<String> command) {
         if (paramAnnotationPos != null) {
-            args[paramAnnotationPos] = JSON.parseObject(command.getBody(), paramAnnotationType);
+            args[paramAnnotationPos] = SerializerUtil.deserialize(command.getBody(), paramAnnotationType);
         }
 
         Object result = null;
@@ -53,6 +53,6 @@ public class RouterTarget {
         } catch (IllegalAccessException | InvocationTargetException e) {
             logger.error(Throwables.getStackTraceAsString(e));
         }
-        return JSON.toJSONString(result);
+        return SerializerUtil.serialize(result);
     }
 }

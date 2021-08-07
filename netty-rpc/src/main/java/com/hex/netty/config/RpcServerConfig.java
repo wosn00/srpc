@@ -1,15 +1,20 @@
 package com.hex.netty.config;
 
 
+import com.hex.netty.constant.RpcConstant;
+
 /**
  * @author: hs
  */
 public class RpcServerConfig {
 
     private Integer port = 8008; //绑定端口
-    private Integer selectorThreads = 8; //io线程数
-    private Integer workerThreads = 8; //工作线程数
+    private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
+    private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
+
     private Integer connectionTimeout = 5000; //连接超时时间(ms)
+    private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
+
     private Integer sendBuf = 65535; //tcp发送缓冲区
     private Integer receiveBuf = 65535; //tcp接收缓冲区
     private Integer lowWaterLevel = 1024 * 1024; //低水位
@@ -156,5 +161,14 @@ public class RpcServerConfig {
 
     public void setPreventDuplicateEnable(Boolean preventDuplicateEnable) {
         this.preventDuplicateEnable = preventDuplicateEnable;
+    }
+
+    public Integer getConnectionIdleTime() {
+        return connectionIdleTime;
+    }
+
+    public RpcServerConfig setConnectionIdleTime(Integer connectionIdleTime) {
+        this.connectionIdleTime = connectionIdleTime;
+        return this;
     }
 }

@@ -1,19 +1,20 @@
 package com.hex.netty.rpc.server;
 
 import com.google.common.base.Throwables;
-import com.hex.netty.reflection.RouteScanner;
-import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
-import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.config.RpcServerConfig;
-import com.hex.netty.connection.ServerManager;
-import com.hex.netty.connection.ServerManagerImpl;
+import com.hex.netty.config.RpcThreadFactory;
+import com.hex.netty.node.INodeManager;
+import com.hex.netty.node.NodeManager;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyProcessHandler;
 import com.hex.netty.handler.NettyServerConnManagerHandler;
 import com.hex.netty.protocol.pb.proto.Rpc;
+import com.hex.netty.reflection.RouteScanner;
 import com.hex.netty.rpc.AbstractRpc;
 import com.hex.netty.rpc.Server;
-import com.hex.netty.util.Util;
+import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
+import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
+import com.hex.netty.rpc.task.ConnectionNumCountTask;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
@@ -34,15 +35,12 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author hs
@@ -56,7 +54,7 @@ public class RpcServer extends AbstractRpc implements Server {
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupSelector;
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
-    private ServerManager serverManager = new ServerManagerImpl(false);
+    private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
 
     public RpcServer config(RpcServerConfig config) {
@@ -102,7 +100,7 @@ public class RpcServer extends AbstractRpc implements Server {
         logger.info("RpcServer stopping...");
         try {
             // 关闭连接管理器
-            serverManager.closeManager();
+            nodeManager.closeManager();
 
             if (this.defaultEventExecutorGroup != null) {
                 this.defaultEventExecutorGroup.shutdownGracefully();
@@ -134,7 +132,8 @@ public class RpcServer extends AbstractRpc implements Server {
 
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getWorkerThreads());
         // 流控
-        buildTrafficMonitor(defaultEventExecutorGroup, config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
+        buildTrafficMonitor(defaultEventExecutorGroup,
+                config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
 
         boolean useEpolll = useEpoll();
         this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)
@@ -147,7 +146,8 @@ public class RpcServer extends AbstractRpc implements Server {
                 .childOption(ChannelOption.SO_SNDBUF, config.getSendBuf())
                 .childOption(ChannelOption.SO_RCVBUF, config.getReceiveBuf())
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(config.getLowWaterLevel(), config.getHighWaterLevel()))
+                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
+                        new WriteBufferWaterMark(config.getLowWaterLevel(), config.getHighWaterLevel()))
                 .childHandler(new ServerChannel());
 
         if (useEpolll) {
@@ -161,32 +161,10 @@ public class RpcServer extends AbstractRpc implements Server {
         }
 
         logger.info("RpcServer started success!  Listening port:{}", config.getPort());
-        countConnectionNum(serverManager);
+        Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
+                .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
 
     }
-
-    private void countConnectionNum(ServerManager serverManager) {
-        new Timer("connection monitor", true)
-                .scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        Map<String, AtomicInteger> nodeConnectionSizeMap = serverManager.getConnectionSize();
-                        if (MapUtils.isEmpty(nodeConnectionSizeMap)) {
-                            logger.info("服务端当前总连接数: 0");
-                            return;
-                        }
-                        //排除掉连接数为0的节点
-                        for (Map.Entry<String, AtomicInteger> entry : nodeConnectionSizeMap.entrySet()) {
-                            if (entry.getValue().get() == 0) {
-                                nodeConnectionSizeMap.remove(entry.getKey());
-                            }
-                        }
-                        int sum = nodeConnectionSizeMap.values().stream().mapToInt(AtomicInteger::get).sum();
-                        logger.info("服务端当前总连接数量: {}, 客户端地址: {}", sum, Util.jsonSerializePretty(nodeConnectionSizeMap));
-                    }
-                }, 3 * 1000L, 60 * 1000L);
-    }
-
 
     /**
      * RPC服务端channel
@@ -195,7 +173,7 @@ public class RpcServer extends AbstractRpc implements Server {
         private final int idleTimeSeconds = 180;
 
         @Override
-        public void initChannel(SocketChannel ch) throws Exception {
+        public void initChannel(SocketChannel ch) {
             ChannelPipeline pipeline = ch.pipeline();
             // 流控
             if (null != trafficShapingHandler) {
@@ -225,8 +203,8 @@ public class RpcServer extends AbstractRpc implements Server {
                     defaultEventExecutorGroup,
                     // 3min没收到或没发送数据则认为空闲
                     new IdleStateHandler(idleTimeSeconds, idleTimeSeconds, 0),
-                    new NettyServerConnManagerHandler(serverManager, config),
-                    new NettyProcessHandler(serverManager, config.getPreventDuplicateEnable()));
+                    new NettyServerConnManagerHandler(nodeManager, config),
+                    new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable()));
         }
     }
 

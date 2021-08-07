@@ -1,27 +1,26 @@
-package com.hex.netty.connection;
+package com.hex.netty.node;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author guohs
  * @date 2021/7/15
  */
-public class ServerStatus {
+public class NodeStatus {
 
-    private InetSocketAddress server;
+    private HostAndPort node;
     private AtomicInteger errorTimes = new AtomicInteger(0);
 
-    public ServerStatus(InetSocketAddress server) {
-        this.server = server;
+    public NodeStatus(HostAndPort node) {
+        this.node = node;
     }
 
-    public InetSocketAddress getServer() {
-        return server;
+    public HostAndPort getNode() {
+        return node;
     }
 
-    public void setServer(InetSocketAddress server) {
-        this.server = server;
+    public void setNode(HostAndPort node) {
+        this.node = node;
     }
 
     public int getErrorTimes() {

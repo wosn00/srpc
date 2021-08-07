@@ -1,29 +1,30 @@
 package com.hex.netty.handler;
 
-import com.hex.netty.connection.Connection;
-import com.hex.netty.connection.ConnectionPool;
-import com.hex.netty.connection.ServerManager;
+import com.hex.netty.connection.IConnection;
+import com.hex.netty.connection.IConnectionPool;
+import com.hex.netty.node.HostAndPort;
+import com.hex.netty.node.INodeManager;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.net.InetSocketAddress;
 
-import static com.hex.netty.connection.NettyConnection.CONN;
+import static com.hex.netty.connection.Connection.CONN;
 
 /**
  * @author: hs
  */
 abstract class AbstractConnManagerHandler extends ChannelDuplexHandler {
 
-    ServerManager serverManager;
+    INodeManager nodeManager;
 
     void close(ChannelHandlerContext ctx) {
         //获取连接
-        Connection connection = ctx.channel().attr(CONN).get();
+        IConnection connection = ctx.channel().attr(CONN).get();
 
-        InetSocketAddress node = (InetSocketAddress) ctx.channel().remoteAddress();
+        HostAndPort node = HostAndPort.from((InetSocketAddress) ctx.channel().remoteAddress());
         //获取对应节点的连接池
-        ConnectionPool connectionPool = serverManager.getConnectionPool(node);
+        IConnectionPool connectionPool = nodeManager.getConnectionPool(node);
         //关闭连接
         connectionPool.releaseConnection(connection.getId());
     }

@@ -1,12 +1,12 @@
 package com.hex.netty.invoke;
 
-import com.hex.netty.connection.ServerManagerImpl;
+import com.hex.netty.node.HostAndPort;
+import com.hex.netty.node.NodeManager;
 import com.hex.netty.protocol.Command;
 import com.hex.netty.protocol.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -21,15 +21,15 @@ public class ResponseFuture {
     private RpcCallback rpcCallback;
     private CountDownLatch latch;
     private int requestTimeout = 30;
-    private InetSocketAddress remoteAddress;
+    private HostAndPort remoteAddress;
 
-    public ResponseFuture(String requestSeq, int requestTimeout, InetSocketAddress remoteAddress) {
+    public ResponseFuture(String requestSeq, int requestTimeout, HostAndPort remoteAddress) {
         this.requestSeq = requestSeq;
         this.requestTimeout = requestTimeout;
         this.remoteAddress = remoteAddress;
     }
 
-    public ResponseFuture(String requestSeq, int requestTimeout, InetSocketAddress remoteAddress, RpcCallback rpcCallback) {
+    public ResponseFuture(String requestSeq, int requestTimeout, HostAndPort remoteAddress, RpcCallback rpcCallback) {
         this.requestSeq = requestSeq;
         this.requestTimeout = requestTimeout;
         this.rpcCallback = rpcCallback;
@@ -54,7 +54,7 @@ public class ResponseFuture {
             // 响应超时
             logger.error("Request timed out! seq:{}, max wait time:{}s", requestSeq, requestTimeout);
             // 记录错误次数
-            ServerManagerImpl.serverError(remoteAddress);
+            NodeManager.serverError(remoteAddress);
             return RpcResponse.requestTimeout(requestSeq);
         }
     }

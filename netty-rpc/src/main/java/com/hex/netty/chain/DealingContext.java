@@ -1,8 +1,8 @@
 package com.hex.netty.chain;
 
 import com.google.common.collect.Maps;
-import com.hex.netty.connection.Connection;
-import com.hex.netty.connection.ServerManager;
+import com.hex.netty.connection.IConnection;
+import com.hex.netty.node.INodeManager;
 import com.hex.netty.protocol.Command;
 
 import java.util.Map;
@@ -16,9 +16,9 @@ public class DealingContext {
 
     private DealingChain dealingChain;
 
-    private ServerManager serverManager;
+    private INodeManager nodeManager;
 
-    private Connection connection;
+    private IConnection connection;
 
     private long createTime = System.currentTimeMillis();
 
@@ -66,19 +66,19 @@ public class DealingContext {
         this.dealingChain = dealingChain;
     }
 
-    public ServerManager getServerManager() {
-        return serverManager;
+    public INodeManager getNodeManager() {
+        return nodeManager;
     }
 
-    public void setServerManager(ServerManager serverManager) {
-        this.serverManager = serverManager;
+    public void setNodeManager(INodeManager nodeManager) {
+        this.nodeManager = nodeManager;
     }
 
-    public Connection getConnection() {
+    public IConnection getConnection() {
         return connection;
     }
 
-    public void setConnection(Connection connection) {
+    public void setConnection(IConnection connection) {
         this.connection = connection;
     }
 }

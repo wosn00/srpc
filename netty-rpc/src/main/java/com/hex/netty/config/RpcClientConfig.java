@@ -2,19 +2,22 @@ package com.hex.netty.config;
 
 
 import com.hex.netty.constant.LoadBalanceRule;
+import com.hex.netty.constant.RpcConstant;
 
 /**
  * @author: hs
  */
 public class RpcClientConfig {
 
-    private Integer selectorThreads = 8; //io线程数
-    private Integer workerThreads = 8; //工作线程数
+    private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
+    private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
 
     private Integer connectionTimeout = 5000; //连接超时时间(ms)
     private Integer requestTimeout = 30; //请求超时时间(s)
     private Integer connectionSizePerHost = 5; //每个节点连接数
     private LoadBalanceRule loadBalanceRule = LoadBalanceRule.ROUND; //集群负载均衡策略
+    private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
+    private Integer heartBeatTimeInterval = 30;//发送心跳包间隔时间(秒)
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
     private Integer receiveBuf = 65535; //tcp接收缓冲区
@@ -172,5 +175,23 @@ public class RpcClientConfig {
 
     public void setLoadBalanceRule(LoadBalanceRule loadBalanceRule) {
         this.loadBalanceRule = loadBalanceRule;
+    }
+
+    public Integer getConnectionIdleTime() {
+        return connectionIdleTime;
+    }
+
+    public RpcClientConfig setConnectionIdleTime(Integer connectionIdleTime) {
+        this.connectionIdleTime = connectionIdleTime;
+        return this;
+    }
+
+    public Integer getHeartBeatTimeInterval() {
+        return heartBeatTimeInterval;
+    }
+
+    public RpcClientConfig setHeartBeatTimeInterval(Integer heartBeatTimeInterval) {
+        this.heartBeatTimeInterval = heartBeatTimeInterval;
+        return this;
     }
 }

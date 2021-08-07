@@ -2,8 +2,9 @@ package com.hex.netty.chain.dealing;
 
 import com.hex.netty.chain.Dealing;
 import com.hex.netty.chain.DealingContext;
-import com.hex.netty.connection.Connection;
+import com.hex.netty.connection.IConnection;
 import com.hex.netty.constant.CommandType;
+import com.hex.netty.constant.RpcConstant;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.invoke.ResponseFuture;
 import com.hex.netty.invoke.ResponseMapping;
@@ -12,7 +13,6 @@ import com.hex.netty.protocol.RpcRequest;
 import com.hex.netty.protocol.RpcResponse;
 import com.hex.netty.reflection.RouterFactory;
 import com.hex.netty.reflection.RouterTarget;
-import com.hex.netty.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,23 +52,23 @@ public class DispatchDealing implements Dealing {
         }
     }
 
-    private void requestDispatch(RpcRequest rpcRequest, String cmd, Connection connection) {
+    private void requestDispatch(RpcRequest rpcRequest, String cmd, IConnection connection) {
         // 获取对应router
         RouterTarget target = RouterFactory.getRouter(cmd);
         if (target == null) {
             RpcResponse.serverError(rpcRequest.getSeq());
             return;
         }
-        String jsonResult;
+        String result;
         try {
-            jsonResult = target.invoke(rpcRequest);
+            result = target.invoke(rpcRequest);
         } catch (Exception e) {
             logger.error("error occurred on the RpcServer", e);
             connection.send(RpcResponse.serverError(rpcRequest.getSeq()));
             return;
         }
         // 响应
-        connection.send(RpcResponse.success(rpcRequest.getSeq(), jsonResult));
+        connection.send(RpcResponse.success(rpcRequest.getSeq(), result));
     }
 
     private void responseProcess(Command rpcResponse) {
@@ -84,15 +84,15 @@ public class DispatchDealing implements Dealing {
         responseFuture.receipt();
     }
 
-    private void heartBeatProcess(Command<String> command, Connection connection) {
+    private void heartBeatProcess(Command<String> command, IConnection connection) {
         String body = command.getBody();
-        if ("ping".equals(body)) {
+        if (RpcConstant.PING.equals(body)) {
             //服务端收到ping处理
             logger.info("-----connection:[{}] receive a heartbeat packet from client", connection.getId());
             Command<String> pong = new Command<>();
             pong.setSeq(command.getSeq());
             pong.setCommandType(CommandType.HEARTBEAT.getValue());
-            pong.setBody("pong");
+            pong.setBody(RpcConstant.PONG);
             connection.send(pong);
         } else {
             //客户端收到pong处理

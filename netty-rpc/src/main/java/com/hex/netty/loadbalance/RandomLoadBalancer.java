@@ -1,7 +1,8 @@
 package com.hex.netty.loadbalance;
 
 
-import java.net.InetSocketAddress;
+import com.hex.netty.node.HostAndPort;
+
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
 public class RandomLoadBalancer implements LoadBalancer {
 
     @Override
-    public InetSocketAddress choose(List<InetSocketAddress> servers) {
+    public HostAndPort choose(List<HostAndPort> servers) {
         return null;
     }
 }

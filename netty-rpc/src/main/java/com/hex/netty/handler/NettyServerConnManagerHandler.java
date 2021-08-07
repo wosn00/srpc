@@ -1,10 +1,11 @@
 package com.hex.netty.handler;
 
 import com.hex.netty.config.RpcServerConfig;
-import com.hex.netty.connection.ConnectionPool;
-import com.hex.netty.connection.ServerManager;
-import com.hex.netty.connection.NettyConnection;
-import com.hex.netty.util.Util;
+import com.hex.netty.connection.IConnectionPool;
+import com.hex.netty.node.HostAndPort;
+import com.hex.netty.node.INodeManager;
+import com.hex.netty.connection.Connection;
+import com.hex.netty.utils.IdUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
-import static com.hex.netty.connection.NettyConnection.CONN;
+import static com.hex.netty.connection.Connection.CONN;
 
 /**
  * @author: hs
@@ -22,8 +23,8 @@ public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
 
     private RpcServerConfig serverConfig;
 
-    public NettyServerConnManagerHandler(ServerManager serverManager, RpcServerConfig serverConfig) {
-        super.serverManager = serverManager;
+    public NettyServerConnManagerHandler(INodeManager nodeManager, RpcServerConfig serverConfig) {
+        super.nodeManager = nodeManager;
         this.serverConfig = serverConfig;
     }
 
@@ -47,10 +48,10 @@ public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        NettyConnection conn = new NettyConnection(Util.genSeq(), ctx.channel());
-        InetSocketAddress node = (InetSocketAddress) ctx.channel().remoteAddress();
-        serverManager.addNode(node);
-        ConnectionPool connectionPool = serverManager.getConnectionPool(node);
+        Connection conn = new Connection(IdUtil.getId(), ctx.channel());
+        HostAndPort node = HostAndPort.from((InetSocketAddress) ctx.channel().remoteAddress());
+        nodeManager.addNode(node);
+        IConnectionPool connectionPool = nodeManager.getConnectionPool(node);
         if (connectionPool != null) {
             connectionPool.addConnection(conn);
         } else {

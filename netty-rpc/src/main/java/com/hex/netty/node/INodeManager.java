@@ -1,54 +1,56 @@
-package com.hex.netty.connection;
+package com.hex.netty.node;
 
+import com.hex.netty.connection.IConnection;
+import com.hex.netty.connection.IConnectionPool;
 import com.hex.netty.rpc.Client;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author: hs
+ * 节点管理器
  */
-public interface ServerManager {
+public interface INodeManager {
 
-    void addNode(InetSocketAddress nodeAddress);
+    void addNode(HostAndPort node);
 
-    void addCluster(List<InetSocketAddress> cluster);
+    void addCluster(List<HostAndPort> nodes);
 
-    void removeNode(InetSocketAddress nodeAddress);
+    void removeNode(HostAndPort node);
 
-    InetSocketAddress[] getAllRemoteNodes();
+    HostAndPort[] getAllRemoteNodes();
 
     int getNodesSize();
 
-    ConnectionPool getConnectionPool(InetSocketAddress node);
+    IConnectionPool getConnectionPool(HostAndPort node);
 
     Map<String, AtomicInteger> getConnectionSize();
 
-    Map<InetSocketAddress, ServerStatus> getServerStatusMap();
+    Map<HostAndPort, NodeStatus> getNodeStatusMap();
 
     Client getClient();
 
     /**
      * 根据集群节点选择高可用服务，负载均衡
      */
-    InetSocketAddress chooseHANode(List<InetSocketAddress> cluster);
+    HostAndPort chooseHANode(List<HostAndPort> nodes);
 
     /**
      * 根据集群节点选择出高可用连接，支持节点负载均衡，高可用性
      */
-    Connection chooseHAConnection(List<InetSocketAddress> cluster);
+    IConnection chooseHAConnection(List<HostAndPort> nodes);
 
     /**
      * 选择默认集群高可用连接，适用于Client只连接向一个集群的服务
      */
-    Connection chooseHAConnection();
+    IConnection chooseHAConnection();
 
     /**
      * 指定节点选择连接，不支持高可用
      */
-    Connection chooseConnection(InetSocketAddress node);
+    IConnection chooseConnection(HostAndPort node);
 
     void closeManager();
 

@@ -1,10 +1,10 @@
 package com.hex.netty.rpc;
 
-import com.hex.netty.connection.Connection;
+import com.hex.netty.connection.IConnection;
+import com.hex.netty.node.HostAndPort;
 import com.hex.netty.invoke.RpcCallback;
 import com.hex.netty.protocol.RpcResponse;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 
 
@@ -24,29 +24,29 @@ public interface Client {
     void stop();
 
     /**
-     * 连接集群（支持高可用，负载均衡）
+     * 连接多服务节点（支持高可用，负载均衡）
      */
-    Client contactCluster(InetSocketAddress... cluster);
+    Client contactCluster(List<HostAndPort> nodes);
 
     /**
-     * 连接单机
+     * 连接单服务节点
      */
-    Client contact(InetSocketAddress node);
+    Client contact(HostAndPort node);
 
     /**
      * 根据节点发送心跳，探测节点是否能访问
      */
-    boolean sendHeartBeat(InetSocketAddress node);
+    boolean sendHeartBeat(HostAndPort node);
 
     /**
      * 指定连接发送心跳，探测节点是否能访问
      */
-    boolean sendHeartBeat(Connection connection);
+    boolean sendHeartBeat(IConnection connection);
 
     /**
      * 根据host port发起连接
      */
-    Connection connect(String host, int port);
+    IConnection connect(String host, int port);
 
     /**
      * 同步调用，返回整个响应内容，使用默认集群
@@ -56,7 +56,7 @@ public interface Client {
     /**
      * 同步调用，返回整个响应内容，指定集群
      */
-    RpcResponse invoke(String cmd, Object body, List<InetSocketAddress> cluster);
+    RpcResponse invoke(String cmd, Object body, List<HostAndPort> cluster);
 
     /**
      * 同步调用, 并将成功响应的body自动转换为T类型
@@ -66,7 +66,7 @@ public interface Client {
     /**
      * 同步调用, 并将成功响应的body自动转换为T类型，指定集群
      */
-    <T> T invoke(String cmd, Object body, Class<T> resultType, List<InetSocketAddress> cluster);
+    <T> T invoke(String cmd, Object body, Class<T> resultType, List<HostAndPort> cluster);
 
     /**
      * 异步调用
@@ -76,7 +76,7 @@ public interface Client {
     /**
      * 异步调用，指定集群
      */
-    void invokeAsync(String cmd, Object body, List<InetSocketAddress> cluster);
+    void invokeAsync(String cmd, Object body, List<HostAndPort> cluster);
 
     /**
      * 异步调用，带响应回调方法
@@ -86,6 +86,6 @@ public interface Client {
     /**
      * 异步调用，带响应回调方法，指定集群
      */
-    void invokeAsync(String cmd, Object body, RpcCallback callback, List<InetSocketAddress> cluster);
+    void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> cluster);
 
 }

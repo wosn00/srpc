@@ -1,8 +1,8 @@
 package com.hex.netty.loadbalance;
 
+import com.hex.netty.node.HostAndPort;
 import org.apache.commons.lang3.StringUtils;
 
-import java.net.InetSocketAddress;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +21,9 @@ public class RoundLoadBalancer implements LoadBalancer {
 
     @Override
 
-    public InetSocketAddress choose(List<InetSocketAddress> servers) {
-        servers.sort(Comparator.comparing(InetSocketAddress::toString));
-        String serverJoin = StringUtils.join(servers.toArray(), ";");
+    public HostAndPort choose(List<HostAndPort> nodes) {
+        nodes.sort(Comparator.comparing(HostAndPort::toString));
+        String serverJoin = StringUtils.join(nodes.toArray(), ";");
         AtomicInteger counter = counterMap.get(serverJoin);
         if (counter == null) {
             synchronized (counterMap) {
@@ -33,7 +33,7 @@ public class RoundLoadBalancer implements LoadBalancer {
                 }
             }
         }
-        return servers.get(incrementAndGetModulo(servers.size(), counter));
+        return nodes.get(incrementAndGetModulo(nodes.size(), counter));
     }
 
     private int incrementAndGetModulo(int modulo, AtomicInteger counter) {
