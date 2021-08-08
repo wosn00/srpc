@@ -1,7 +1,8 @@
 package com.hex.netty.connection;
 
 import com.hex.netty.node.HostAndPort;
-import com.hex.netty.rpc.Client;
+import com.hex.netty.node.NodeManager;
+import com.hex.netty.rpc.client.RpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,14 +18,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * @author guohs
  * @date 2021/7/15
- * 连接池,每个server一个连接池
+ * 连接池,每个rpc server(node)一个连接池
  */
 public class ConnectionPool implements IConnectionPool {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
     private int maxSize;
     private HostAndPort remoteAddress;
-    private Client client;
+    private RpcClient client;
     private final List<IConnection> connections = new CopyOnWriteArrayList<>();
     private final AtomicInteger counter = new AtomicInteger(0);
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
@@ -34,7 +35,7 @@ public class ConnectionPool implements IConnectionPool {
     private final Lock writeLock = lock.writeLock();
 
 
-    public ConnectionPool(int maxSize, HostAndPort remoteAddress, Client client) {
+    public ConnectionPool(int maxSize, HostAndPort remoteAddress, RpcClient client) {
         this.maxSize = maxSize;
         this.remoteAddress = remoteAddress;
         this.client = client;
@@ -73,7 +74,7 @@ public class ConnectionPool implements IConnectionPool {
     }
 
     @Override
-    public void releaseConnection(String id) {
+    public void releaseConnection(Long id) {
         writeLock.lock();
         try {
             for (IConnection connection : connections) {
@@ -135,6 +136,7 @@ public class ConnectionPool implements IConnectionPool {
                     }
                 } catch (Exception e) {
                     retryTimes++;
+                    NodeManager.serverError(new HostAndPort(remoteAddress.getHost(), remoteAddress.getPort()));
                     logger.error("server [{}] connectionPool init failed", remoteAddress, e);
                 }
             }

@@ -23,33 +23,42 @@ public final class Rpc {
      * 序列
      * </pre>
      *
-     * <code>string seq = 1;</code>
+     * <code>int64 seq = 1;</code>
      */
-    java.lang.String getSeq();
+    long getSeq();
+
     /**
      * <pre>
-     * 序列
+     * packet头部信息，可用于扩展
      * </pre>
      *
-     * <code>string seq = 1;</code>
+     * <code>string header = 2;</code>
+     */
+    String getHeader();
+    /**
+     * <pre>
+     * packet头部信息，可用于扩展
+     * </pre>
+     *
+     * <code>string header = 2;</code>
      */
     com.google.protobuf.ByteString
-        getSeqBytes();
+        getHeaderBytes();
 
     /**
      * <pre>
      * 指令，用于服务端分发请求，类似http url
      * </pre>
      *
-     * <code>string cmd = 2;</code>
+     * <code>string cmd = 3;</code>
      */
-    java.lang.String getCmd();
+    String getCmd();
     /**
      * <pre>
      * 指令，用于服务端分发请求，类似http url
      * </pre>
      *
-     * <code>string cmd = 2;</code>
+     * <code>string cmd = 3;</code>
      */
     com.google.protobuf.ByteString
         getCmdBytes();
@@ -59,7 +68,7 @@ public final class Rpc {
      * 指令类型，0=心跳，1=请求，2=响应
      * </pre>
      *
-     * <code>int32 commandType = 3;</code>
+     * <code>int32 commandType = 4;</code>
      */
     int getCommandType();
 
@@ -68,7 +77,7 @@ public final class Rpc {
      * 结果码，作为response时才具备
      * </pre>
      *
-     * <code>int32 code = 4;</code>
+     * <code>int32 code = 5;</code>
      */
     int getCode();
 
@@ -77,7 +86,7 @@ public final class Rpc {
      * 时间戳
      * </pre>
      *
-     * <code>int64 ts = 5;</code>
+     * <code>int64 ts = 6;</code>
      */
     long getTs();
 
@@ -86,15 +95,15 @@ public final class Rpc {
      * 内容
      * </pre>
      *
-     * <code>string body = 6;</code>
+     * <code>string body = 7;</code>
      */
-    java.lang.String getBody();
+    String getBody();
     /**
      * <pre>
      * 内容
      * </pre>
      *
-     * <code>string body = 6;</code>
+     * <code>string body = 7;</code>
      */
     com.google.protobuf.ByteString
         getBodyBytes();
@@ -111,7 +120,8 @@ public final class Rpc {
       super(builder);
     }
     private Packet() {
-      seq_ = "";
+      seq_ = 0L;
+      header_ = "";
       cmd_ = "";
       commandType_ = 0;
       code_ = 0;
@@ -119,7 +129,7 @@ public final class Rpc {
       body_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -144,35 +154,40 @@ public final class Rpc {
               }
               break;
             }
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 8: {
 
-              seq_ = s;
+              seq_ = input.readInt64();
               break;
             }
             case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
+
+              header_ = s;
+              break;
+            }
+            case 26: {
+              String s = input.readStringRequireUtf8();
 
               cmd_ = s;
               break;
             }
-            case 24: {
+            case 32: {
 
               commandType_ = input.readInt32();
               break;
             }
-            case 32: {
+            case 40: {
 
               code_ = input.readInt32();
               break;
             }
-            case 40: {
+            case 48: {
 
               ts_ = input.readInt64();
               break;
             }
-            case 50: {
-              java.lang.String s = input.readStringRequireUtf8();
+            case 58: {
+              String s = input.readStringRequireUtf8();
 
               body_ = s;
               break;
@@ -190,75 +205,88 @@ public final class Rpc {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_descriptor;
+      return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_fieldAccessorTable
+      return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.hex.netty.protocol.pb.proto.Rpc.Packet.class, com.hex.netty.protocol.pb.proto.Rpc.Packet.Builder.class);
+              Packet.class, Builder.class);
     }
 
     public static final int SEQ_FIELD_NUMBER = 1;
-    private volatile java.lang.Object seq_;
+    private long seq_;
     /**
      * <pre>
      * 序列
      * </pre>
      *
-     * <code>string seq = 1;</code>
+     * <code>int64 seq = 1;</code>
      */
-    public java.lang.String getSeq() {
-      java.lang.Object ref = seq_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public long getSeq() {
+      return seq_;
+    }
+
+    public static final int HEADER_FIELD_NUMBER = 2;
+    private volatile Object header_;
+    /**
+     * <pre>
+     * packet头部信息，可用于扩展
+     * </pre>
+     *
+     * <code>string header = 2;</code>
+     */
+    public String getHeader() {
+      Object ref = header_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        seq_ = s;
+        String s = bs.toStringUtf8();
+        header_ = s;
         return s;
       }
     }
     /**
      * <pre>
-     * 序列
+     * packet头部信息，可用于扩展
      * </pre>
      *
-     * <code>string seq = 1;</code>
+     * <code>string header = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getSeqBytes() {
-      java.lang.Object ref = seq_;
-      if (ref instanceof java.lang.String) {
+        getHeaderBytes() {
+      Object ref = header_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        seq_ = b;
+                (String) ref);
+        header_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
 
-    public static final int CMD_FIELD_NUMBER = 2;
-    private volatile java.lang.Object cmd_;
+    public static final int CMD_FIELD_NUMBER = 3;
+    private volatile Object cmd_;
     /**
      * <pre>
      * 指令，用于服务端分发请求，类似http url
      * </pre>
      *
-     * <code>string cmd = 2;</code>
+     * <code>string cmd = 3;</code>
      */
-    public java.lang.String getCmd() {
-      java.lang.Object ref = cmd_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getCmd() {
+      Object ref = cmd_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         cmd_ = s;
         return s;
       }
@@ -268,15 +296,15 @@ public final class Rpc {
      * 指令，用于服务端分发请求，类似http url
      * </pre>
      *
-     * <code>string cmd = 2;</code>
+     * <code>string cmd = 3;</code>
      */
     public com.google.protobuf.ByteString
         getCmdBytes() {
-      java.lang.Object ref = cmd_;
-      if (ref instanceof java.lang.String) {
+      Object ref = cmd_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         cmd_ = b;
         return b;
       } else {
@@ -284,62 +312,62 @@ public final class Rpc {
       }
     }
 
-    public static final int COMMANDTYPE_FIELD_NUMBER = 3;
+    public static final int COMMANDTYPE_FIELD_NUMBER = 4;
     private int commandType_;
     /**
      * <pre>
      * 指令类型，0=心跳，1=请求，2=响应
      * </pre>
      *
-     * <code>int32 commandType = 3;</code>
+     * <code>int32 commandType = 4;</code>
      */
     public int getCommandType() {
       return commandType_;
     }
 
-    public static final int CODE_FIELD_NUMBER = 4;
+    public static final int CODE_FIELD_NUMBER = 5;
     private int code_;
     /**
      * <pre>
      * 结果码，作为response时才具备
      * </pre>
      *
-     * <code>int32 code = 4;</code>
+     * <code>int32 code = 5;</code>
      */
     public int getCode() {
       return code_;
     }
 
-    public static final int TS_FIELD_NUMBER = 5;
+    public static final int TS_FIELD_NUMBER = 6;
     private long ts_;
     /**
      * <pre>
      * 时间戳
      * </pre>
      *
-     * <code>int64 ts = 5;</code>
+     * <code>int64 ts = 6;</code>
      */
     public long getTs() {
       return ts_;
     }
 
-    public static final int BODY_FIELD_NUMBER = 6;
-    private volatile java.lang.Object body_;
+    public static final int BODY_FIELD_NUMBER = 7;
+    private volatile Object body_;
     /**
      * <pre>
      * 内容
      * </pre>
      *
-     * <code>string body = 6;</code>
+     * <code>string body = 7;</code>
      */
-    public java.lang.String getBody() {
-      java.lang.Object ref = body_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getBody() {
+      Object ref = body_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         body_ = s;
         return s;
       }
@@ -349,15 +377,15 @@ public final class Rpc {
      * 内容
      * </pre>
      *
-     * <code>string body = 6;</code>
+     * <code>string body = 7;</code>
      */
     public com.google.protobuf.ByteString
         getBodyBytes() {
-      java.lang.Object ref = body_;
-      if (ref instanceof java.lang.String) {
+      Object ref = body_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         body_ = b;
         return b;
       } else {
@@ -377,23 +405,26 @@ public final class Rpc {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!getSeqBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, seq_);
+      if (seq_ != 0L) {
+        output.writeInt64(1, seq_);
+      }
+      if (!getHeaderBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, header_);
       }
       if (!getCmdBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, cmd_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, cmd_);
       }
       if (commandType_ != 0) {
-        output.writeInt32(3, commandType_);
+        output.writeInt32(4, commandType_);
       }
       if (code_ != 0) {
-        output.writeInt32(4, code_);
+        output.writeInt32(5, code_);
       }
       if (ts_ != 0L) {
-        output.writeInt64(5, ts_);
+        output.writeInt64(6, ts_);
       }
       if (!getBodyBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 6, body_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, body_);
       }
     }
 
@@ -402,45 +433,51 @@ public final class Rpc {
       if (size != -1) return size;
 
       size = 0;
-      if (!getSeqBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, seq_);
+      if (seq_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, seq_);
+      }
+      if (!getHeaderBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, header_);
       }
       if (!getCmdBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, cmd_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, cmd_);
       }
       if (commandType_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, commandType_);
+          .computeInt32Size(4, commandType_);
       }
       if (code_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(4, code_);
+          .computeInt32Size(5, code_);
       }
       if (ts_ != 0L) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(5, ts_);
+          .computeInt64Size(6, ts_);
       }
       if (!getBodyBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, body_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, body_);
       }
       memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.hex.netty.protocol.pb.proto.Rpc.Packet)) {
+      if (!(obj instanceof Packet)) {
         return super.equals(obj);
       }
-      com.hex.netty.protocol.pb.proto.Rpc.Packet other = (com.hex.netty.protocol.pb.proto.Rpc.Packet) obj;
+      Packet other = (Packet) obj;
 
       boolean result = true;
-      result = result && getSeq()
-          .equals(other.getSeq());
+      result = result && (getSeq()
+          == other.getSeq());
+      result = result && getHeader()
+          .equals(other.getHeader());
       result = result && getCmd()
           .equals(other.getCmd());
       result = result && (getCommandType()
@@ -454,7 +491,7 @@ public final class Rpc {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -462,7 +499,10 @@ public final class Rpc {
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + SEQ_FIELD_NUMBER;
-      hash = (53 * hash) + getSeq().hashCode();
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getSeq());
+      hash = (37 * hash) + HEADER_FIELD_NUMBER;
+      hash = (53 * hash) + getHeader().hashCode();
       hash = (37 * hash) + CMD_FIELD_NUMBER;
       hash = (53 * hash) + getCmd().hashCode();
       hash = (37 * hash) + COMMANDTYPE_FIELD_NUMBER;
@@ -479,58 +519,58 @@ public final class Rpc {
       return hash;
     }
 
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseFrom(
+    public static Packet parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseFrom(
+    public static Packet parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseFrom(byte[] data)
+    public static Packet parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseFrom(
+    public static Packet parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseFrom(java.io.InputStream input)
+    public static Packet parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseFrom(
+    public static Packet parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseDelimitedFrom(java.io.InputStream input)
+    public static Packet parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseDelimitedFrom(
+    public static Packet parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseFrom(
+    public static Packet parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet parseFrom(
+    public static Packet parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -542,7 +582,7 @@ public final class Rpc {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.hex.netty.protocol.pb.proto.Rpc.Packet prototype) {
+    public static Builder newBuilder(Packet prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -550,9 +590,9 @@ public final class Rpc {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -562,17 +602,17 @@ public final class Rpc {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:com.hex.netty.protocol.pb.proto.Packet)
-        com.hex.netty.protocol.pb.proto.Rpc.PacketOrBuilder {
+        PacketOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_descriptor;
+        return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_fieldAccessorTable
+        return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.hex.netty.protocol.pb.proto.Rpc.Packet.class, com.hex.netty.protocol.pb.proto.Rpc.Packet.Builder.class);
+                Packet.class, Builder.class);
       }
 
       // Construct using com.hex.netty.protocol.pb.proto.Rpc.Packet.newBuilder()
@@ -581,7 +621,7 @@ public final class Rpc {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -592,7 +632,9 @@ public final class Rpc {
       }
       public Builder clear() {
         super.clear();
-        seq_ = "";
+        seq_ = 0L;
+
+        header_ = "";
 
         cmd_ = "";
 
@@ -609,24 +651,25 @@ public final class Rpc {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_descriptor;
+        return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Packet_descriptor;
       }
 
-      public com.hex.netty.protocol.pb.proto.Rpc.Packet getDefaultInstanceForType() {
-        return com.hex.netty.protocol.pb.proto.Rpc.Packet.getDefaultInstance();
+      public Packet getDefaultInstanceForType() {
+        return Packet.getDefaultInstance();
       }
 
-      public com.hex.netty.protocol.pb.proto.Rpc.Packet build() {
-        com.hex.netty.protocol.pb.proto.Rpc.Packet result = buildPartial();
+      public Packet build() {
+        Packet result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.hex.netty.protocol.pb.proto.Rpc.Packet buildPartial() {
-        com.hex.netty.protocol.pb.proto.Rpc.Packet result = new com.hex.netty.protocol.pb.proto.Rpc.Packet(this);
+      public Packet buildPartial() {
+        Packet result = new Packet(this);
         result.seq_ = seq_;
+        result.header_ = header_;
         result.cmd_ = cmd_;
         result.commandType_ = commandType_;
         result.code_ = code_;
@@ -663,18 +706,21 @@ public final class Rpc {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.hex.netty.protocol.pb.proto.Rpc.Packet) {
-          return mergeFrom((com.hex.netty.protocol.pb.proto.Rpc.Packet)other);
+        if (other instanceof Packet) {
+          return mergeFrom((Packet)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.hex.netty.protocol.pb.proto.Rpc.Packet other) {
-        if (other == com.hex.netty.protocol.pb.proto.Rpc.Packet.getDefaultInstance()) return this;
-        if (!other.getSeq().isEmpty()) {
-          seq_ = other.seq_;
+      public Builder mergeFrom(Packet other) {
+        if (other == Packet.getDefaultInstance()) return this;
+        if (other.getSeq() != 0L) {
+          setSeq(other.getSeq());
+        }
+        if (!other.getHeader().isEmpty()) {
+          header_ = other.header_;
           onChanged();
         }
         if (!other.getCmd().isEmpty()) {
@@ -706,11 +752,11 @@ public final class Rpc {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.hex.netty.protocol.pb.proto.Rpc.Packet parsedMessage = null;
+        Packet parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.hex.netty.protocol.pb.proto.Rpc.Packet) e.getUnfinishedMessage();
+          parsedMessage = (Packet) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -720,41 +766,79 @@ public final class Rpc {
         return this;
       }
 
-      private java.lang.Object seq_ = "";
+      private long seq_ ;
       /**
        * <pre>
        * 序列
        * </pre>
        *
-       * <code>string seq = 1;</code>
+       * <code>int64 seq = 1;</code>
        */
-      public java.lang.String getSeq() {
-        java.lang.Object ref = seq_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          seq_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      public long getSeq() {
+        return seq_;
       }
       /**
        * <pre>
        * 序列
        * </pre>
        *
-       * <code>string seq = 1;</code>
+       * <code>int64 seq = 1;</code>
+       */
+      public Builder setSeq(long value) {
+        
+        seq_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 序列
+       * </pre>
+       *
+       * <code>int64 seq = 1;</code>
+       */
+      public Builder clearSeq() {
+        
+        seq_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private Object header_ = "";
+      /**
+       * <pre>
+       * packet头部信息，可用于扩展
+       * </pre>
+       *
+       * <code>string header = 2;</code>
+       */
+      public String getHeader() {
+        Object ref = header_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          header_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * packet头部信息，可用于扩展
+       * </pre>
+       *
+       * <code>string header = 2;</code>
        */
       public com.google.protobuf.ByteString
-          getSeqBytes() {
-        java.lang.Object ref = seq_;
+          getHeaderBytes() {
+        Object ref = header_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          seq_ = b;
+                  (String) ref);
+          header_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
@@ -762,71 +846,71 @@ public final class Rpc {
       }
       /**
        * <pre>
-       * 序列
+       * packet头部信息，可用于扩展
        * </pre>
        *
-       * <code>string seq = 1;</code>
+       * <code>string header = 2;</code>
        */
-      public Builder setSeq(
-          java.lang.String value) {
+      public Builder setHeader(
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   
-        seq_ = value;
+        header_ = value;
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * 序列
+       * packet头部信息，可用于扩展
        * </pre>
        *
-       * <code>string seq = 1;</code>
+       * <code>string header = 2;</code>
        */
-      public Builder clearSeq() {
+      public Builder clearHeader() {
         
-        seq_ = getDefaultInstance().getSeq();
+        header_ = getDefaultInstance().getHeader();
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * 序列
+       * packet头部信息，可用于扩展
        * </pre>
        *
-       * <code>string seq = 1;</code>
+       * <code>string header = 2;</code>
        */
-      public Builder setSeqBytes(
+      public Builder setHeaderBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
         
-        seq_ = value;
+        header_ = value;
         onChanged();
         return this;
       }
 
-      private java.lang.Object cmd_ = "";
+      private Object cmd_ = "";
       /**
        * <pre>
        * 指令，用于服务端分发请求，类似http url
        * </pre>
        *
-       * <code>string cmd = 2;</code>
+       * <code>string cmd = 3;</code>
        */
-      public java.lang.String getCmd() {
-        java.lang.Object ref = cmd_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getCmd() {
+        Object ref = cmd_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           cmd_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -834,15 +918,15 @@ public final class Rpc {
        * 指令，用于服务端分发请求，类似http url
        * </pre>
        *
-       * <code>string cmd = 2;</code>
+       * <code>string cmd = 3;</code>
        */
       public com.google.protobuf.ByteString
           getCmdBytes() {
-        java.lang.Object ref = cmd_;
+        Object ref = cmd_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           cmd_ = b;
           return b;
         } else {
@@ -854,10 +938,10 @@ public final class Rpc {
        * 指令，用于服务端分发请求，类似http url
        * </pre>
        *
-       * <code>string cmd = 2;</code>
+       * <code>string cmd = 3;</code>
        */
       public Builder setCmd(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -871,7 +955,7 @@ public final class Rpc {
        * 指令，用于服务端分发请求，类似http url
        * </pre>
        *
-       * <code>string cmd = 2;</code>
+       * <code>string cmd = 3;</code>
        */
       public Builder clearCmd() {
         
@@ -884,7 +968,7 @@ public final class Rpc {
        * 指令，用于服务端分发请求，类似http url
        * </pre>
        *
-       * <code>string cmd = 2;</code>
+       * <code>string cmd = 3;</code>
        */
       public Builder setCmdBytes(
           com.google.protobuf.ByteString value) {
@@ -904,7 +988,7 @@ public final class Rpc {
        * 指令类型，0=心跳，1=请求，2=响应
        * </pre>
        *
-       * <code>int32 commandType = 3;</code>
+       * <code>int32 commandType = 4;</code>
        */
       public int getCommandType() {
         return commandType_;
@@ -914,7 +998,7 @@ public final class Rpc {
        * 指令类型，0=心跳，1=请求，2=响应
        * </pre>
        *
-       * <code>int32 commandType = 3;</code>
+       * <code>int32 commandType = 4;</code>
        */
       public Builder setCommandType(int value) {
         
@@ -927,7 +1011,7 @@ public final class Rpc {
        * 指令类型，0=心跳，1=请求，2=响应
        * </pre>
        *
-       * <code>int32 commandType = 3;</code>
+       * <code>int32 commandType = 4;</code>
        */
       public Builder clearCommandType() {
         
@@ -942,7 +1026,7 @@ public final class Rpc {
        * 结果码，作为response时才具备
        * </pre>
        *
-       * <code>int32 code = 4;</code>
+       * <code>int32 code = 5;</code>
        */
       public int getCode() {
         return code_;
@@ -952,7 +1036,7 @@ public final class Rpc {
        * 结果码，作为response时才具备
        * </pre>
        *
-       * <code>int32 code = 4;</code>
+       * <code>int32 code = 5;</code>
        */
       public Builder setCode(int value) {
         
@@ -965,7 +1049,7 @@ public final class Rpc {
        * 结果码，作为response时才具备
        * </pre>
        *
-       * <code>int32 code = 4;</code>
+       * <code>int32 code = 5;</code>
        */
       public Builder clearCode() {
         
@@ -980,7 +1064,7 @@ public final class Rpc {
        * 时间戳
        * </pre>
        *
-       * <code>int64 ts = 5;</code>
+       * <code>int64 ts = 6;</code>
        */
       public long getTs() {
         return ts_;
@@ -990,7 +1074,7 @@ public final class Rpc {
        * 时间戳
        * </pre>
        *
-       * <code>int64 ts = 5;</code>
+       * <code>int64 ts = 6;</code>
        */
       public Builder setTs(long value) {
         
@@ -1003,7 +1087,7 @@ public final class Rpc {
        * 时间戳
        * </pre>
        *
-       * <code>int64 ts = 5;</code>
+       * <code>int64 ts = 6;</code>
        */
       public Builder clearTs() {
         
@@ -1012,24 +1096,24 @@ public final class Rpc {
         return this;
       }
 
-      private java.lang.Object body_ = "";
+      private Object body_ = "";
       /**
        * <pre>
        * 内容
        * </pre>
        *
-       * <code>string body = 6;</code>
+       * <code>string body = 7;</code>
        */
-      public java.lang.String getBody() {
-        java.lang.Object ref = body_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getBody() {
+        Object ref = body_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           body_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -1037,15 +1121,15 @@ public final class Rpc {
        * 内容
        * </pre>
        *
-       * <code>string body = 6;</code>
+       * <code>string body = 7;</code>
        */
       public com.google.protobuf.ByteString
           getBodyBytes() {
-        java.lang.Object ref = body_;
+        Object ref = body_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           body_ = b;
           return b;
         } else {
@@ -1057,10 +1141,10 @@ public final class Rpc {
        * 内容
        * </pre>
        *
-       * <code>string body = 6;</code>
+       * <code>string body = 7;</code>
        */
       public Builder setBody(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1074,7 +1158,7 @@ public final class Rpc {
        * 内容
        * </pre>
        *
-       * <code>string body = 6;</code>
+       * <code>string body = 7;</code>
        */
       public Builder clearBody() {
         
@@ -1087,7 +1171,7 @@ public final class Rpc {
        * 内容
        * </pre>
        *
-       * <code>string body = 6;</code>
+       * <code>string body = 7;</code>
        */
       public Builder setBodyBytes(
           com.google.protobuf.ByteString value) {
@@ -1115,12 +1199,12 @@ public final class Rpc {
     }
 
     // @@protoc_insertion_point(class_scope:com.hex.netty.protocol.pb.proto.Packet)
-    private static final com.hex.netty.protocol.pb.proto.Rpc.Packet DEFAULT_INSTANCE;
+    private static final Packet DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.hex.netty.protocol.pb.proto.Rpc.Packet();
+      DEFAULT_INSTANCE = new Packet();
     }
 
-    public static com.hex.netty.protocol.pb.proto.Rpc.Packet getDefaultInstance() {
+    public static Packet getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1138,12 +1222,12 @@ public final class Rpc {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<Packet> getParserForType() {
       return PARSER;
     }
 
-    public com.hex.netty.protocol.pb.proto.Rpc.Packet getDefaultInstanceForType() {
+    public Packet getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1161,7 +1245,7 @@ public final class Rpc {
     /**
      * <code>string key = 2;</code>
      */
-    java.lang.String getKey();
+    String getKey();
     /**
      * <code>string key = 2;</code>
      */
@@ -1184,7 +1268,7 @@ public final class Rpc {
       key_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -1215,7 +1299,7 @@ public final class Rpc {
               break;
             }
             case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               key_ = s;
               break;
@@ -1233,14 +1317,14 @@ public final class Rpc {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_descriptor;
+      return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_fieldAccessorTable
+      return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.hex.netty.protocol.pb.proto.Rpc.Err.class, com.hex.netty.protocol.pb.proto.Rpc.Err.Builder.class);
+              Err.class, Builder.class);
     }
 
     public static final int CODE_FIELD_NUMBER = 1;
@@ -1253,18 +1337,18 @@ public final class Rpc {
     }
 
     public static final int KEY_FIELD_NUMBER = 2;
-    private volatile java.lang.Object key_;
+    private volatile Object key_;
     /**
      * <code>string key = 2;</code>
      */
-    public java.lang.String getKey() {
-      java.lang.Object ref = key_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getKey() {
+      Object ref = key_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         key_ = s;
         return s;
       }
@@ -1274,11 +1358,11 @@ public final class Rpc {
      */
     public com.google.protobuf.ByteString
         getKeyBytes() {
-      java.lang.Object ref = key_;
-      if (ref instanceof java.lang.String) {
+      Object ref = key_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         key_ = b;
         return b;
       } else {
@@ -1323,15 +1407,15 @@ public final class Rpc {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.hex.netty.protocol.pb.proto.Rpc.Err)) {
+      if (!(obj instanceof Err)) {
         return super.equals(obj);
       }
-      com.hex.netty.protocol.pb.proto.Rpc.Err other = (com.hex.netty.protocol.pb.proto.Rpc.Err) obj;
+      Err other = (Err) obj;
 
       boolean result = true;
       result = result && (getCode()
@@ -1341,7 +1425,7 @@ public final class Rpc {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1357,58 +1441,58 @@ public final class Rpc {
       return hash;
     }
 
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseFrom(
+    public static Err parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseFrom(
+    public static Err parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseFrom(byte[] data)
+    public static Err parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseFrom(
+    public static Err parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseFrom(java.io.InputStream input)
+    public static Err parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseFrom(
+    public static Err parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseDelimitedFrom(java.io.InputStream input)
+    public static Err parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseDelimitedFrom(
+    public static Err parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseFrom(
+    public static Err parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err parseFrom(
+    public static Err parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1420,7 +1504,7 @@ public final class Rpc {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.hex.netty.protocol.pb.proto.Rpc.Err prototype) {
+    public static Builder newBuilder(Err prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1428,9 +1512,9 @@ public final class Rpc {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1440,17 +1524,17 @@ public final class Rpc {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:com.hex.netty.protocol.pb.proto.Err)
-        com.hex.netty.protocol.pb.proto.Rpc.ErrOrBuilder {
+        ErrOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_descriptor;
+        return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_fieldAccessorTable
+        return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.hex.netty.protocol.pb.proto.Rpc.Err.class, com.hex.netty.protocol.pb.proto.Rpc.Err.Builder.class);
+                Err.class, Builder.class);
       }
 
       // Construct using com.hex.netty.protocol.pb.proto.Rpc.Err.newBuilder()
@@ -1459,7 +1543,7 @@ public final class Rpc {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1479,23 +1563,23 @@ public final class Rpc {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.hex.netty.protocol.pb.proto.Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_descriptor;
+        return Rpc.internal_static_com_hex_netty_protocol_pb_proto_Err_descriptor;
       }
 
-      public com.hex.netty.protocol.pb.proto.Rpc.Err getDefaultInstanceForType() {
-        return com.hex.netty.protocol.pb.proto.Rpc.Err.getDefaultInstance();
+      public Err getDefaultInstanceForType() {
+        return Err.getDefaultInstance();
       }
 
-      public com.hex.netty.protocol.pb.proto.Rpc.Err build() {
-        com.hex.netty.protocol.pb.proto.Rpc.Err result = buildPartial();
+      public Err build() {
+        Err result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.hex.netty.protocol.pb.proto.Rpc.Err buildPartial() {
-        com.hex.netty.protocol.pb.proto.Rpc.Err result = new com.hex.netty.protocol.pb.proto.Rpc.Err(this);
+      public Err buildPartial() {
+        Err result = new Err(this);
         result.code_ = code_;
         result.key_ = key_;
         onBuilt();
@@ -1529,16 +1613,16 @@ public final class Rpc {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.hex.netty.protocol.pb.proto.Rpc.Err) {
-          return mergeFrom((com.hex.netty.protocol.pb.proto.Rpc.Err)other);
+        if (other instanceof Err) {
+          return mergeFrom((Err)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.hex.netty.protocol.pb.proto.Rpc.Err other) {
-        if (other == com.hex.netty.protocol.pb.proto.Rpc.Err.getDefaultInstance()) return this;
+      public Builder mergeFrom(Err other) {
+        if (other == Err.getDefaultInstance()) return this;
         if (other.getCode() != 0) {
           setCode(other.getCode());
         }
@@ -1558,11 +1642,11 @@ public final class Rpc {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.hex.netty.protocol.pb.proto.Rpc.Err parsedMessage = null;
+        Err parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.hex.netty.protocol.pb.proto.Rpc.Err) e.getUnfinishedMessage();
+          parsedMessage = (Err) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1598,20 +1682,20 @@ public final class Rpc {
         return this;
       }
 
-      private java.lang.Object key_ = "";
+      private Object key_ = "";
       /**
        * <code>string key = 2;</code>
        */
-      public java.lang.String getKey() {
-        java.lang.Object ref = key_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getKey() {
+        Object ref = key_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           key_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -1619,11 +1703,11 @@ public final class Rpc {
        */
       public com.google.protobuf.ByteString
           getKeyBytes() {
-        java.lang.Object ref = key_;
+        Object ref = key_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           key_ = b;
           return b;
         } else {
@@ -1634,7 +1718,7 @@ public final class Rpc {
        * <code>string key = 2;</code>
        */
       public Builder setKey(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1681,12 +1765,12 @@ public final class Rpc {
     }
 
     // @@protoc_insertion_point(class_scope:com.hex.netty.protocol.pb.proto.Err)
-    private static final com.hex.netty.protocol.pb.proto.Rpc.Err DEFAULT_INSTANCE;
+    private static final Err DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.hex.netty.protocol.pb.proto.Rpc.Err();
+      DEFAULT_INSTANCE = new Err();
     }
 
-    public static com.hex.netty.protocol.pb.proto.Rpc.Err getDefaultInstance() {
+    public static Err getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1704,12 +1788,12 @@ public final class Rpc {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<Err> getParserForType() {
       return PARSER;
     }
 
-    public com.hex.netty.protocol.pb.proto.Rpc.Err getDefaultInstanceForType() {
+    public Err getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1733,12 +1817,12 @@ public final class Rpc {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n\tRpc.proto\022\037com.hex.netty.protocol.pb.p" +
-      "roto\"_\n\006Packet\022\013\n\003seq\030\001 \001(\t\022\013\n\003cmd\030\002 \001(\t" +
-      "\022\023\n\013commandType\030\003 \001(\005\022\014\n\004code\030\004 \001(\005\022\n\n\002t" +
-      "s\030\005 \001(\003\022\014\n\004body\030\006 \001(\t\" \n\003Err\022\014\n\004code\030\001 \001" +
-      "(\005\022\013\n\003key\030\002 \001(\tb\006proto3"
+      "roto\"o\n\006Packet\022\013\n\003seq\030\001 \001(\003\022\016\n\006header\030\002 " +
+      "\001(\t\022\013\n\003cmd\030\003 \001(\t\022\023\n\013commandType\030\004 \001(\005\022\014\n" +
+      "\004code\030\005 \001(\005\022\n\n\002ts\030\006 \001(\003\022\014\n\004body\030\007 \001(\t\" \n" +
+      "\003Err\022\014\n\004code\030\001 \001(\005\022\013\n\003key\030\002 \001(\tb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1757,13 +1841,13 @@ public final class Rpc {
     internal_static_com_hex_netty_protocol_pb_proto_Packet_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_hex_netty_protocol_pb_proto_Packet_descriptor,
-        new java.lang.String[] { "Seq", "Cmd", "CommandType", "Code", "Ts", "Body", });
+        new String[] { "Seq", "Header", "Cmd", "CommandType", "Code", "Ts", "Body", });
     internal_static_com_hex_netty_protocol_pb_proto_Err_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_com_hex_netty_protocol_pb_proto_Err_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_hex_netty_protocol_pb_proto_Err_descriptor,
-        new java.lang.String[] { "Code", "Key", });
+        new String[] { "Code", "Key", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.hex.netty.config.RpcClientConfig;
 import com.hex.netty.config.RpcThreadFactory;
 import com.hex.netty.connection.IConnection;
+import com.hex.netty.id.IdGenerator;
 import com.hex.netty.node.HostAndPort;
 import com.hex.netty.connection.Connection;
 import com.hex.netty.node.INodeManager;
@@ -25,9 +26,8 @@ import com.hex.netty.rpc.Client;
 import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.netty.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.netty.rpc.task.HeartBeatTask;
-import com.hex.netty.rpc.task.ServerHealthCheckTask;
+import com.hex.netty.rpc.task.NodeHealthCheckTask;
 import com.hex.netty.utils.SerializerUtil;
-import com.hex.netty.utils.IdUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -121,12 +121,12 @@ public class RpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public Client contactCluster(List<HostAndPort> cluster) {
-        if (CollectionUtils.isEmpty(cluster) || cluster.size() < 1) {
+    public Client contactCluster(List<HostAndPort> nodes) {
+        if (CollectionUtils.isEmpty(nodes) || nodes.size() <= 1) {
             throw new RpcException("node size must be greater 1");
         }
         try {
-            nodeManager.addCluster(cluster);
+            nodeManager.addCluster(nodes);
         } catch (Exception e) {
             logger.error("add server cluster failed", e);
         }
@@ -144,16 +144,15 @@ public class RpcClient extends AbstractRpc implements Client {
     }
 
     /**
-     * 根据host port发起连接
+     * 根据host port发起连接, 内部使用
      */
-    @Override
     public IConnection connect(String host, int port) {
         logger.info("RpcClient connect to host:[{}] port:[{}]", host, port);
         ChannelFuture future = this.bootstrap.connect(host, port);
         Connection conn = null;
-        if (future.awaitUninterruptibly(config.getConnectionTimeout())) {
+        if (future.awaitUninterruptibly(TimeUnit.SECONDS.toMillis(config.getConnectionTimeout()))) {
             if (future.channel() != null && future.channel().isActive()) {
-                conn = new Connection(IdUtil.getId(), future.channel());
+                conn = new Connection(IdGenerator.getId(), future.channel());
                 future.channel().attr(CONN).set(conn);
             } else {
                 logger.error("RpcClient connect fail host:[{}] port:[{}]", host, port);
@@ -187,7 +186,7 @@ public class RpcClient extends AbstractRpc implements Client {
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_KEEPALIVE, false)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.config.getConnectionTimeout())
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) TimeUnit.SECONDS.toMillis(config.getConnectionTimeout()))
                 .option(ChannelOption.SO_SNDBUF, this.config.getSendBuf())
                 .option(ChannelOption.SO_RCVBUF, this.config.getReceiveBuf())
                 .option(ChannelOption.WRITE_BUFFER_WATER_MARK,
@@ -196,7 +195,8 @@ public class RpcClient extends AbstractRpc implements Client {
 
         // 心跳保活
         Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
-                .scheduleAtFixedRate(new HeartBeatTask(this.nodeManager, this), 3, 30, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(new HeartBeatTask(this.nodeManager, this), 3, config.getHeartBeatTimeInterval(),
+                        TimeUnit.SECONDS);
         logger.info("RpcClient init success!");
     }
 
@@ -299,8 +299,8 @@ public class RpcClient extends AbstractRpc implements Client {
     private RpcRequest buildRequest(String cmd, Object body) {
         String requestBody = SerializerUtil.serialize(body);
         RpcRequest request = new RpcRequest();
-        if (StringUtils.isBlank(request.getSeq())) {
-            request.setSeq(IdUtil.getId());
+        if (request.getSeq() == null || request.getSeq() == 0L) {
+            request.setSeq(IdGenerator.getId());
         }
         if (StringUtils.isBlank(cmd)) {
             throw new IllegalArgumentException("cmd can not be null");
@@ -345,25 +345,24 @@ public class RpcClient extends AbstractRpc implements Client {
 
     private Command<String> buildHeartBeatPacket() {
         Command<String> ping = new Command<>();
-        ping.setSeq(IdUtil.getId());
+        ping.setSeq(IdGenerator.getId());
         ping.setCommandType(CommandType.HEARTBEAT.getValue());
         ping.setBody(RpcConstant.PING);
         return ping;
     }
 
     private void initNodeManager() {
-        nodeManager = new NodeManager(true, this, config.getConnectionSizePerHost(),
+        nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode(),
                 config.getLoadBalanceRule());
         //rpc服务健康检查
         Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
-                .scheduleAtFixedRate(new ServerHealthCheckTask(nodeManager), 5000, 60 * 1000L, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);
     }
 
     /**
      * Rpc客户端channel
      */
     class ClientChannel extends ChannelInitializer<SocketChannel> {
-        private final int idleTimeSeconds = 180;
 
         @Override
         public void initChannel(SocketChannel ch) {
@@ -394,7 +393,7 @@ public class RpcClient extends AbstractRpc implements Client {
             pipeline.addLast(
                     defaultEventExecutorGroup,
                     // 3min内没收到或没发送数据则认为空闲
-                    new IdleStateHandler(idleTimeSeconds, idleTimeSeconds, 0),
+                    new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyClientConnManageHandler(nodeManager),
                     new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable()));
         }

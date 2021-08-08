@@ -12,12 +12,13 @@ public class RpcClientConfig {
     private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
     private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
 
-    private Integer connectionTimeout = 5000; //连接超时时间(ms)
-    private Integer requestTimeout = 30; //请求超时时间(s)
-    private Integer connectionSizePerHost = 5; //每个节点连接数
-    private LoadBalanceRule loadBalanceRule = LoadBalanceRule.ROUND; //集群负载均衡策略
-    private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
-    private Integer heartBeatTimeInterval = 30;//发送心跳包间隔时间(秒)
+    private Integer connectionTimeout = 5; //连接超时时间(秒)
+    private Integer requestTimeout = 10; //请求超时时间(秒)
+    private Integer connectionSizePerNode = 5; //每个节点连接数
+    private LoadBalanceRule loadBalanceRule = LoadBalanceRule.ROUND; //多节点负载均衡策略
+    private Integer connectionIdleTime = 180; //超过连接空闲时间(秒)未收发数据则关闭连接
+    private Integer heartBeatTimeInterval = 30; //发送心跳包间隔时间(秒)
+    private Integer serverHealthCheckTimeInterval = 30; //rpc服务健康检查周期(秒),恢复不可用的rpc服务
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
     private Integer receiveBuf = 65535; //tcp接收缓冲区
@@ -161,12 +162,12 @@ public class RpcClientConfig {
         this.preventDuplicateEnable = preventDuplicateEnable;
     }
 
-    public Integer getConnectionSizePerHost() {
-        return connectionSizePerHost;
+    public Integer getConnectionSizePerNode() {
+        return connectionSizePerNode;
     }
 
-    public void setConnectionSizePerHost(Integer connectionSizePerHost) {
-        this.connectionSizePerHost = connectionSizePerHost;
+    public void setConnectionSizePerNode(Integer connectionSizePerNode) {
+        this.connectionSizePerNode = connectionSizePerNode;
     }
 
     public LoadBalanceRule getLoadBalanceRule() {
@@ -192,6 +193,15 @@ public class RpcClientConfig {
 
     public RpcClientConfig setHeartBeatTimeInterval(Integer heartBeatTimeInterval) {
         this.heartBeatTimeInterval = heartBeatTimeInterval;
+        return this;
+    }
+
+    public Integer getServerHealthCheckTimeInterval() {
+        return serverHealthCheckTimeInterval;
+    }
+
+    public RpcClientConfig setServerHealthCheckTimeInterval(Integer serverHealthCheckTimeInterval) {
+        this.serverHealthCheckTimeInterval = serverHealthCheckTimeInterval;
         return this;
     }
 }

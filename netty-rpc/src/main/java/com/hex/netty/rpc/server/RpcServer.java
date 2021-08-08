@@ -3,11 +3,11 @@ package com.hex.netty.rpc.server;
 import com.google.common.base.Throwables;
 import com.hex.netty.config.RpcServerConfig;
 import com.hex.netty.config.RpcThreadFactory;
-import com.hex.netty.node.INodeManager;
-import com.hex.netty.node.NodeManager;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyProcessHandler;
 import com.hex.netty.handler.NettyServerConnManagerHandler;
+import com.hex.netty.node.INodeManager;
+import com.hex.netty.node.NodeManager;
 import com.hex.netty.protocol.pb.proto.Rpc;
 import com.hex.netty.reflection.RouteScanner;
 import com.hex.netty.rpc.AbstractRpc;
@@ -78,6 +78,7 @@ public class RpcServer extends AbstractRpc implements Server {
     public Server start() {
         if (isServerStart.compareAndSet(false, true)) {
             serverStart();
+            printConnectionNum();
         } else {
             logger.warn("RpcServer has started!");
         }
@@ -161,16 +162,19 @@ public class RpcServer extends AbstractRpc implements Server {
         }
 
         logger.info("RpcServer started success!  Listening port:{}", config.getPort());
-        Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
-                .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
+    }
 
+    private void printConnectionNum() {
+        if (config.getPrintConnectionNumInterval() != null && config.getPrintConnectionNumInterval() > 0) {
+            Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
+                    .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
+        }
     }
 
     /**
      * RPC服务端channel
      */
     class ServerChannel extends ChannelInitializer<SocketChannel> {
-        private final int idleTimeSeconds = 180;
 
         @Override
         public void initChannel(SocketChannel ch) {
@@ -202,7 +206,7 @@ public class RpcServer extends AbstractRpc implements Server {
             pipeline.addLast(
                     defaultEventExecutorGroup,
                     // 3min没收到或没发送数据则认为空闲
-                    new IdleStateHandler(idleTimeSeconds, idleTimeSeconds, 0),
+                    new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyServerConnManagerHandler(nodeManager, config),
                     new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable()));
         }

@@ -23,42 +23,42 @@ public class RpcResponse extends Command<String> {
     public RpcResponse() {
     }
 
-    public RpcResponse(String seq, String cmd, Integer code, String body) {
+    public RpcResponse(Long seq, String cmd, Integer code, String body) {
         super(seq, cmd, CommandType.RESPONSE_COMMAND.getValue(), code, System.currentTimeMillis(), body);
     }
 
     /**
      * 客户端错误响应
      */
-    public static RpcResponse clientError(String requestSeq) {
+    public static RpcResponse clientError(Long requestSeq) {
         return new RpcResponse(requestSeq, null, CLIENT_ERROR_CODE, null);
     }
 
     /**
      * 服务端错误响应
      */
-    public static RpcResponse serverError(String requestSeq) {
+    public static RpcResponse serverError(Long requestSeq) {
         return new RpcResponse(requestSeq, null, SERVER_ERROR_CODE, null);
     }
 
     /**
      * 请求超时响应
      */
-    public static RpcResponse requestTimeout(String requestSeq) {
+    public static RpcResponse requestTimeout(Long requestSeq) {
         return new RpcResponse(requestSeq, null, REQUEST_TIMEOUT, null);
     }
 
     /**
      * 重复请求
      */
-    public static RpcResponse duplicateRequest(String requestSeq) {
+    public static RpcResponse duplicateRequest(Long requestSeq) {
         return new RpcResponse(requestSeq, null, REQUEST_DUPLICATE, null);
     }
 
     /**
      * 失败响应
      */
-    public static RpcResponse failedResponse(String requestSeq, Integer code) {
+    public static RpcResponse failedResponse(Long requestSeq, Integer code) {
         return new RpcResponse(requestSeq, null, REQUEST_DUPLICATE, null);
     }
 
@@ -69,7 +69,7 @@ public class RpcResponse extends Command<String> {
      * @param responseBody 响应内容
      * @return RpcResponse
      */
-    public static RpcResponse success(String requestSeq, String responseBody) {
+    public static RpcResponse success(Long requestSeq, String responseBody) {
         return new RpcResponse(requestSeq, null, SUCCESS_CODE, responseBody);
     }
 

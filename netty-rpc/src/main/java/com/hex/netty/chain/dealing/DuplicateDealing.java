@@ -20,7 +20,7 @@ import java.time.Duration;
 public class DuplicateDealing implements Dealing {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final Cache<String, Boolean> DUPLICATE_CACHE = Caffeine.newBuilder()
+    private static final Cache<Long, Boolean> DUPLICATE_CACHE = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofSeconds(30))
             .build();
 
@@ -29,7 +29,7 @@ public class DuplicateDealing implements Dealing {
         Command<String> command = context.getCommand();
         // 只有是请求才需要去重
         if (CommandType.REQUEST_COMMAND.getValue().equals(command.getCommandType())) {
-            String seq = command.getSeq();
+            Long seq = command.getSeq();
             Boolean seqPresent = DUPLICATE_CACHE.getIfPresent(seq);
             boolean isDuplicated = false;
             if (seqPresent == null) {

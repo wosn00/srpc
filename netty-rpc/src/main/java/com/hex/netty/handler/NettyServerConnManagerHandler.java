@@ -1,11 +1,11 @@
 package com.hex.netty.handler;
 
 import com.hex.netty.config.RpcServerConfig;
+import com.hex.netty.connection.Connection;
 import com.hex.netty.connection.IConnectionPool;
+import com.hex.netty.id.IdGenerator;
 import com.hex.netty.node.HostAndPort;
 import com.hex.netty.node.INodeManager;
-import com.hex.netty.connection.Connection;
-import com.hex.netty.utils.IdUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        Connection conn = new Connection(IdUtil.getId(), ctx.channel());
+        Connection conn = new Connection(IdGenerator.getId(), ctx.channel());
         HostAndPort node = HostAndPort.from((InetSocketAddress) ctx.channel().remoteAddress());
         nodeManager.addNode(node);
         IConnectionPool connectionPool = nodeManager.getConnectionPool(node);

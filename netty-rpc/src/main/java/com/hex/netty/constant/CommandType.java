@@ -1,5 +1,7 @@
 package com.hex.netty.constant;
 
+import com.hex.netty.exception.RpcException;
+
 /**
  * @author: hs
  */
@@ -40,7 +42,7 @@ public enum CommandType {
                 return commandType;
             }
         }
-        return null;
+        throw new RpcException("commandType" + value + " not support");
     }
 
 }

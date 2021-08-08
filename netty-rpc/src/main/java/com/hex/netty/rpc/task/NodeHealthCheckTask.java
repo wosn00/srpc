@@ -11,11 +11,11 @@ import java.util.Map;
  * <p>
  * 服务健康状态检查
  */
-public class ServerHealthCheckTask implements Runnable {
+public class NodeHealthCheckTask implements Runnable {
 
     private INodeManager nodeManager;
 
-    public ServerHealthCheckTask(INodeManager nodeManager) {
+    public NodeHealthCheckTask(INodeManager nodeManager) {
         this.nodeManager = nodeManager;
     }
 

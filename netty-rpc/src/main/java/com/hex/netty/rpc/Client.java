@@ -44,19 +44,14 @@ public interface Client {
     boolean sendHeartBeat(IConnection connection);
 
     /**
-     * 根据host port发起连接
-     */
-    IConnection connect(String host, int port);
-
-    /**
      * 同步调用，返回整个响应内容，使用默认集群
      */
     RpcResponse invoke(String cmd, Object body);
 
     /**
-     * 同步调用，返回整个响应内容，指定集群
+     * 同步调用，返回整个响应内容，指定rpc服务节点
      */
-    RpcResponse invoke(String cmd, Object body, List<HostAndPort> cluster);
+    RpcResponse invoke(String cmd, Object body, List<HostAndPort> nodes);
 
     /**
      * 同步调用, 并将成功响应的body自动转换为T类型
@@ -64,9 +59,9 @@ public interface Client {
     <T> T invoke(String cmd, Object body, Class<T> resultType);
 
     /**
-     * 同步调用, 并将成功响应的body自动转换为T类型，指定集群
+     * 同步调用, 并将成功响应的body自动转换为T类型，指定节点
      */
-    <T> T invoke(String cmd, Object body, Class<T> resultType, List<HostAndPort> cluster);
+    <T> T invoke(String cmd, Object body, Class<T> resultType, List<HostAndPort> nodes);
 
     /**
      * 异步调用
@@ -74,9 +69,9 @@ public interface Client {
     void invokeAsync(String cmd, Object body);
 
     /**
-     * 异步调用，指定集群
+     * 异步调用，指定rpc服务节点
      */
-    void invokeAsync(String cmd, Object body, List<HostAndPort> cluster);
+    void invokeAsync(String cmd, Object body, List<HostAndPort> nodes);
 
     /**
      * 异步调用，带响应回调方法
@@ -84,8 +79,8 @@ public interface Client {
     void invokeAsync(String cmd, Object body, RpcCallback callback);
 
     /**
-     * 异步调用，带响应回调方法，指定集群
+     * 异步调用，带响应回调方法，指定rpc服务节点
      */
-    void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> cluster);
+    void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> nodes);
 
 }

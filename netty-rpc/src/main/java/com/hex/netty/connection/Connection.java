@@ -20,7 +20,7 @@ public class Connection implements IConnection {
 
     public static final AttributeKey<IConnection> CONN = AttributeKey.valueOf("CONNECTION");
 
-    private String id;
+    private Long id;
 
     private Channel channel;
 
@@ -28,17 +28,17 @@ public class Connection implements IConnection {
 
     private long lastSendTime = System.currentTimeMillis();
 
-    public Connection(String id) {
+    public Connection(Long id) {
         this.id = id;
     }
 
-    public Connection(String id, Channel channel) {
+    public Connection(Long id, Channel channel) {
         this.id = id;
         this.channel = channel;
     }
 
     @Override
-    public String getId() {
+    public Long getId() {
         return this.id;
     }
 
@@ -82,8 +82,12 @@ public class Connection implements IConnection {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Connection that = (Connection) o;
         return Objects.equals(id, that.id);
     }

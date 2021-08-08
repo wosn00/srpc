@@ -30,9 +30,6 @@ public class DispatchDealing implements Dealing {
             throw new RpcException("commandType is null");
         }
         CommandType type = CommandType.getType(command.getCommandType());
-        if (type == null) {
-            throw new RpcException("commandType" + command.getCommandType() + " not support");
-        }
 
         switch (type) {
             case HEARTBEAT:

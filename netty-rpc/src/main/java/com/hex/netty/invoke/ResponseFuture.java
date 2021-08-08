@@ -16,20 +16,20 @@ import java.util.concurrent.TimeUnit;
 public class ResponseFuture {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private String requestSeq;
+    private Long requestSeq;
     private Command<String> rpcResponse;
     private RpcCallback rpcCallback;
     private CountDownLatch latch;
     private int requestTimeout = 30;
     private HostAndPort remoteAddress;
 
-    public ResponseFuture(String requestSeq, int requestTimeout, HostAndPort remoteAddress) {
+    public ResponseFuture(Long requestSeq, int requestTimeout, HostAndPort remoteAddress) {
         this.requestSeq = requestSeq;
         this.requestTimeout = requestTimeout;
         this.remoteAddress = remoteAddress;
     }
 
-    public ResponseFuture(String requestSeq, int requestTimeout, HostAndPort remoteAddress, RpcCallback rpcCallback) {
+    public ResponseFuture(Long requestSeq, int requestTimeout, HostAndPort remoteAddress, RpcCallback rpcCallback) {
         this.requestSeq = requestSeq;
         this.requestTimeout = requestTimeout;
         this.rpcCallback = rpcCallback;
@@ -80,11 +80,11 @@ public class ResponseFuture {
         this.rpcResponse = rpcResponse;
     }
 
-    public String getRequestSeq() {
+    public Long getRequestSeq() {
         return requestSeq;
     }
 
-    public void setRequestSeq(String requestSeq) {
+    public void setRequestSeq(Long requestSeq) {
         this.requestSeq = requestSeq;
     }
 }

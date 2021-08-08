@@ -32,7 +32,7 @@ public class PbProtocolAdapter implements ProtocolAdapter<Command<String>, Rpc.P
     @Override
     public Rpc.Packet encode(Command command) {
         Rpc.Packet.Builder builder = Rpc.Packet.newBuilder();
-        if (StringUtils.isBlank(command.getSeq())) {
+        if (command.getSeq() == null || command.getSeq() == 0L) {
             throw new RpcException("seq can not be null!");
         }
         builder.setSeq(command.getSeq());

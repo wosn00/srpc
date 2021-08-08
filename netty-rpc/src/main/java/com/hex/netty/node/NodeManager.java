@@ -8,6 +8,7 @@ import com.hex.netty.exception.RpcException;
 import com.hex.netty.loadbalance.LoadBalanceFactory;
 import com.hex.netty.loadbalance.LoadBalancer;
 import com.hex.netty.rpc.Client;
+import com.hex.netty.rpc.client.RpcClient;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class NodeManager implements INodeManager {
     private final Map<HostAndPort, IConnectionPool> connectionPoolMap = new ConcurrentHashMap<>();
     private static final Map<HostAndPort, NodeStatus> nodeStatusMap = new ConcurrentHashMap<>();
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
-    private Client client;
+    private RpcClient client;
     private int poolSizePerServer;
     private LoadBalanceRule loadBalanceRule;
 
@@ -42,7 +43,7 @@ public class NodeManager implements INodeManager {
         this.isClient = isClient;
     }
 
-    public NodeManager(boolean isClient, Client client, int poolSizePerServer, LoadBalanceRule loadBalanceRule) {
+    public NodeManager(boolean isClient, RpcClient client, int poolSizePerServer, LoadBalanceRule loadBalanceRule) {
         this.isClient = isClient;
         this.client = client;
         this.poolSizePerServer = poolSizePerServer;

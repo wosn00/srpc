@@ -13,7 +13,7 @@ public class ResponseMapping {
     /**
      * 响应最长等待时间30s
      */
-    private static Cache<String, ResponseFuture> futureCache = Caffeine.newBuilder()
+    private static Cache<Long, ResponseFuture> futureCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofSeconds(30))
             .build();
 
@@ -21,11 +21,11 @@ public class ResponseMapping {
 
     }
 
-    public static void putResponseFuture(String requestId, ResponseFuture responseFuture) {
-        futureCache.put(requestId, responseFuture);
+    public static void putResponseFuture(Long requestSeq, ResponseFuture responseFuture) {
+        futureCache.put(requestSeq, responseFuture);
     }
 
-    public static ResponseFuture getResponseFuture(String requestId) {
+    public static ResponseFuture getResponseFuture(Long requestId) {
         ResponseFuture responseFuture = futureCache.getIfPresent(requestId);
         futureCache.invalidate(requestId);
         return responseFuture;

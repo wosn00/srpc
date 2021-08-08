@@ -8,7 +8,12 @@ public class Command<T> {
     /**
      * 序号，唯一标识
      */
-    protected String seq;
+    protected Long seq;
+
+    /**
+     * 指令头部信息，可用于扩展
+     */
+    protected String header;
 
     /**
      * 用于服务端分发请求，类似http url
@@ -38,7 +43,7 @@ public class Command<T> {
     public Command() {
     }
 
-    public Command(String seq, String cmd, Integer commandType, Integer code, Long ts, T body) {
+    public Command(Long seq, String cmd, Integer commandType, Integer code, Long ts, T body) {
         this.seq = seq;
         this.cmd = cmd;
         this.commandType = commandType;
@@ -56,11 +61,11 @@ public class Command<T> {
         this.code = code;
     }
 
-    public String getSeq() {
+    public Long getSeq() {
         return seq;
     }
 
-    public void setSeq(String seq) {
+    public void setSeq(Long seq) {
         this.seq = seq;
     }
 
@@ -94,6 +99,15 @@ public class Command<T> {
 
     public void setBody(T body) {
         this.body = body;
+    }
+
+    public String getHeader() {
+        return header;
+    }
+
+    public Command setHeader(String header) {
+        this.header = header;
+        return this;
     }
 
     @Override
