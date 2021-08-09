@@ -1,4 +1,4 @@
-package com.hex.netty.reflection;
+package com.hex.netty.reflect;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

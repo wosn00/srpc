@@ -1,4 +1,4 @@
-package com.hex.netty.reflection;
+package com.hex.netty.reflect;
 
 import com.hex.netty.annotation.RouteMapping;
 import com.hex.netty.annotation.RouteScan;

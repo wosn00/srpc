@@ -1,4 +1,4 @@
-package com.hex.netty.reflection;
+package com.hex.netty.reflect;
 
 import com.google.common.base.Throwables;
 import com.hex.netty.annotation.RouteBody;

@@ -9,7 +9,7 @@ import com.hex.netty.handler.NettyServerConnManagerHandler;
 import com.hex.netty.node.INodeManager;
 import com.hex.netty.node.NodeManager;
 import com.hex.netty.protocol.pb.proto.Rpc;
-import com.hex.netty.reflection.RouteScanner;
+import com.hex.netty.reflect.RouteScanner;
 import com.hex.netty.rpc.AbstractRpc;
 import com.hex.netty.rpc.Server;
 import com.hex.netty.rpc.compress.JdkZlibExtendDecoder;

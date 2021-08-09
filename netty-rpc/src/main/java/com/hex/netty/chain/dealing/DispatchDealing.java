@@ -11,8 +11,8 @@ import com.hex.netty.invoke.ResponseMapping;
 import com.hex.netty.protocol.Command;
 import com.hex.netty.protocol.RpcRequest;
 import com.hex.netty.protocol.RpcResponse;
-import com.hex.netty.reflection.RouterFactory;
-import com.hex.netty.reflection.RouterTarget;
+import com.hex.netty.reflect.RouterFactory;
+import com.hex.netty.reflect.RouterTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
