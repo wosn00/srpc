@@ -8,6 +8,9 @@ import java.lang.annotation.Target;
 
 /**
  * @author: hs
+ * <p>
+ * example:
+ * @RpcClient({"ip:port","ip:port"})
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -15,9 +18,7 @@ import java.lang.annotation.Target;
 public @interface RpcClient {
 
     /**
-     * rpc服务route
-     *
-     * @return
+     * rpc服务节点地址
      */
-    String[] rpcServers() default {};
+    String[] servers() default {};
 }

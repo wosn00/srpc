@@ -44,7 +44,7 @@ public class DuplicateDealing implements Dealing {
                 isDuplicated = true;
             }
             if (isDuplicated) {
-                logger.warn("Received duplicate request seq=[{}], ignore it", seq);
+                logger.warn("Received duplicate request seq={}, ignore it", seq);
                 RpcResponse response = RpcResponse.duplicateRequest(seq);
                 context.getConnection().send(response);
             } else {
