@@ -38,6 +38,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,6 +51,7 @@ public class RpcServer extends AbstractRpc implements Server {
 
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private Class<?> primarySource;
+    private Set<String> scanPackages;
     private RpcServerConfig config;
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupSelector;
@@ -65,7 +67,7 @@ public class RpcServer extends AbstractRpc implements Server {
     private RpcServer() {
     }
 
-    public static RpcServer newBuilder() {
+    public static RpcServer builder() {
         return new RpcServer();
     }
 
@@ -74,9 +76,15 @@ public class RpcServer extends AbstractRpc implements Server {
         return this;
     }
 
+    public RpcServer configScanPackages(Set<String> packages) {
+        this.scanPackages = packages;
+        return this;
+    }
+
     @Override
     public Server start() {
         if (isServerStart.compareAndSet(false, true)) {
+            scanRpcServer();
             serverStart();
             printConnectionNum();
         } else {
@@ -119,9 +127,6 @@ public class RpcServer extends AbstractRpc implements Server {
     }
 
     private void serverStart() {
-        logger.info("RpcRouter scanning ...");
-        new RouteScanner(this.primarySource).san();
-
         logger.info("RpcServer server init");
         if (useEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(1);
@@ -162,6 +167,13 @@ public class RpcServer extends AbstractRpc implements Server {
         }
 
         logger.info("RpcServer started success!  Listening port:{}", config.getPort());
+    }
+
+    private void scanRpcServer() {
+        logger.info("RpcRouter scanning ...");
+        new RouteScanner(this.primarySource)
+                .setBasePackages(scanPackages)
+                .san();
     }
 
     private void printConnectionNum() {

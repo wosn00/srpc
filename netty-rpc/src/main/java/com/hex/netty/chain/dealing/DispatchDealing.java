@@ -85,7 +85,7 @@ public class DispatchDealing implements Dealing {
         String body = command.getBody();
         if (RpcConstant.PING.equals(body)) {
             //服务端收到ping处理
-            logger.info("-----connection:[{}] receive a heartbeat packet from client", connection.getId());
+            logger.info("[heartBeat]connection:{} receive a heartbeat packet from client", connection.getId());
             Command<String> pong = new Command<>();
             pong.setSeq(command.getSeq());
             pong.setCommandType(CommandType.HEARTBEAT.getValue());

@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Import(RpcClientRegistrar.class)
 @Documented
-public @interface EnableRpcClients {
+public @interface EnableRpc {
 
     /**
      * 需扫描包路径

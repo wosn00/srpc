@@ -29,7 +29,7 @@ public class RouterFactory {
             try {
                 return clazz.getConstructor().newInstance();
             } catch (Exception e) {
-                logger.error("Router [{}] instantiation failed", clazz.getName(), e);
+                logger.error("Router {} instantiation failed", clazz.getName(), e);
                 return null;
             }
         });

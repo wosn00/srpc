@@ -1,5 +1,7 @@
 package com.hex.netty.node;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
@@ -19,6 +21,14 @@ public class HostAndPort {
 
     public static HostAndPort from(InetSocketAddress socketAddress) {
         return new HostAndPort(socketAddress.getHostString(), socketAddress.getPort());
+    }
+
+    public static HostAndPort from(String address) {
+        if (StringUtils.isNotBlank(address)) {
+            String[] split = address.split(":");
+            return new HostAndPort(split[0], Integer.valueOf(split[1]));
+        }
+        return null;
     }
 
     public String getHost() {

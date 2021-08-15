@@ -23,7 +23,7 @@ public class ClusterClientTest {
         nodes.add(new HostAndPort("127.0.0.1", 8007));
 
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
-        Client rpcClient = RpcClient.newBuilder()
+        Client rpcClient = RpcClient.builder()
                 .config(new RpcClientConfig())
                 .contactCluster(nodes)
                 .start();

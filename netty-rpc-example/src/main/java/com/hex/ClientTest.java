@@ -16,7 +16,7 @@ public class ClientTest {
         System.out.println("---------------------客户端初始化----------------------");
 
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
-        Client rpcClient = RpcClient.newBuilder()
+        Client rpcClient = RpcClient.builder()
                 .config(new RpcClientConfig())
                 .contact(new HostAndPort("127.0.0.1", 8005))
                 .start();

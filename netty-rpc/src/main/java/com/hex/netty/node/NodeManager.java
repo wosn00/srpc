@@ -53,7 +53,7 @@ public class NodeManager implements INodeManager {
     @Override
     public synchronized void addNode(HostAndPort node) {
         if (isClosed.get()) {
-            logger.error("nodeManager closed, add server [{}] failed", node);
+            logger.error("nodeManager closed, add server {} failed", node);
         }
         if (!servers.contains(node)) {
             servers.add(node);

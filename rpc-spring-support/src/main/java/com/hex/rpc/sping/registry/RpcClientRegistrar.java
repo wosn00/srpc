@@ -1,14 +1,19 @@
 package com.hex.rpc.sping.registry;
 
-import com.hex.rpc.sping.annotation.EnableRpcClients;
+import com.hex.rpc.sping.annotation.EnableRpc;
 import com.hex.rpc.sping.annotation.RpcClient;
 import com.hex.rpc.sping.factory.RpcClientFactoryBean;
 import com.hex.rpc.sping.scanner.RpcClientScanner;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.support.*;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -16,6 +21,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import java.util.HashSet;
@@ -26,6 +32,7 @@ import java.util.Set;
  * @author: hs
  */
 public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
+    private static final Logger logger = LoggerFactory.getLogger(RpcClientRegistrar.class);
 
     private ResourceLoader resourceLoader;
 
@@ -48,7 +55,7 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
         //获取需要扫描的包路径
         Set<String> basePackages = new HashSet<>();
         Map<String, Object> attributes = metadata
-                .getAnnotationAttributes(EnableRpcClients.class.getName());
+                .getAnnotationAttributes(EnableRpc.class.getName());
         if (attributes != null && attributes.get(BASE_PACKAGES) != null) {
             String[] packages = (String[]) attributes.get(BASE_PACKAGES);
             if (packages != null && packages.length > 0) {
@@ -78,7 +85,11 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
                 if (candidateComponent instanceof AnnotatedBeanDefinition) {
                     AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
                     AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
-//                    beanDefinition.
+                    Assert.isTrue(annotationMetadata.isInterface(),
+                            "@RpcClient can only be specified on an interface");
+                    //注册server address
+                    RpcServerAddressRegistry.register(annotationMetadata);
+                    //注册bean
                     registerClient(registry, annotationMetadata);
                 }
             }

@@ -113,9 +113,9 @@ public class ConnectionPool implements IConnectionPool {
                     iterator.remove();
                 }
                 connections.clear();
-                logger.info("connectionPool [{}]  closed, release all connections", remoteAddress);
+                logger.info("connectionPool {}  closed, release all connections", remoteAddress);
             } catch (Exception e) {
-                logger.error("connectionPool [{}]  closed failed!", remoteAddress, e);
+                logger.error("connectionPool {}  closed failed!", remoteAddress, e);
             } finally {
                 writeLock.unlock();
             }
@@ -137,7 +137,7 @@ public class ConnectionPool implements IConnectionPool {
                 } catch (Exception e) {
                     retryTimes++;
                     NodeManager.serverError(new HostAndPort(remoteAddress.getHost(), remoteAddress.getPort()));
-                    logger.error("server [{}] connectionPool init failed", remoteAddress, e);
+                    logger.error("server {} connectionPool init failed", remoteAddress, e);
                 }
             }
         } finally {

@@ -83,7 +83,7 @@ public class RpcClient extends AbstractRpc implements Client {
         return this;
     }
 
-    public static RpcClient newBuilder() {
+    public static RpcClient builder() {
         return new RpcClient();
     }
 
@@ -147,7 +147,7 @@ public class RpcClient extends AbstractRpc implements Client {
      * 根据host port发起连接, 内部使用
      */
     public IConnection connect(String host, int port) {
-        logger.info("RpcClient connect to host:[{}] port:[{}]", host, port);
+        logger.info("RpcClient connect to host:{} port:{}", host, port);
         ChannelFuture future = this.bootstrap.connect(host, port);
         Connection conn = null;
         if (future.awaitUninterruptibly(TimeUnit.SECONDS.toMillis(config.getConnectionTimeout()))) {
@@ -155,12 +155,12 @@ public class RpcClient extends AbstractRpc implements Client {
                 conn = new Connection(IdGenerator.getId(), future.channel());
                 future.channel().attr(CONN).set(conn);
             } else {
-                logger.error("RpcClient connect fail host:[{}] port:[{}]", host, port);
+                logger.error("RpcClient connect fail host:{} port:{}", host, port);
                 // 记录失败次数
                 NodeManager.serverError(new HostAndPort(host, port));
             }
         } else {
-            logger.error("RpcClient connect fail host:[{}] port:[{}]", host, port);
+            logger.error("RpcClient connect fail host:{} port:{}", host, port);
             // 记录失败次数
             NodeManager.serverError(new HostAndPort(host, port));
         }
@@ -261,7 +261,7 @@ public class RpcClient extends AbstractRpc implements Client {
             String responseBody = response.getBody();
             return SerializerUtil.deserialize(responseBody, resultType);
         } else {
-            logger.warn("The response code to this request [{}] is [{}]", response.getSeq(), response.getCode());
+            logger.warn("The response code to this request {} is {}", response.getSeq(), response.getCode());
             return null;
         }
     }

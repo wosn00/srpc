@@ -45,7 +45,7 @@ public class Connection implements IConnection {
     @Override
     public void close() {
         if (isClosed.compareAndSet(false, true)) {
-            logger.warn("connection close! id=[{}]", id);
+            logger.warn("connection close! id={}", id);
             try {
                 this.channel.close();
             } catch (Exception e) {
@@ -70,7 +70,7 @@ public class Connection implements IConnection {
             this.channel.writeAndFlush(PbProtocolAdapter.getAdapter().encode(command));
             this.lastSendTime = System.currentTimeMillis();
         } else {
-            logger.warn("connection is unWritable now ,id=[{}], command=[{}]", id, command);
+            logger.warn("connection is unWritable now ,id={}, command={}", id, command);
             close();
         }
     }

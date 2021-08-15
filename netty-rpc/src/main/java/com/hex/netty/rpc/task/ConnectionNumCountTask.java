@@ -35,6 +35,9 @@ public class ConnectionNumCountTask implements Runnable {
             }
         }
         int sum = nodeConnectionSizeMap.values().stream().mapToInt(AtomicInteger::get).sum();
-        logger.info("服务端当前总连接数量: {}, 客户端地址: {}", sum, SerializerUtil.serializePretty(nodeConnectionSizeMap));
+
+        if (logger.isInfoEnabled()) {
+            logger.info("服务端当前总连接数量: {}, 客户端地址: {}", sum, SerializerUtil.serializePretty(nodeConnectionSizeMap));
+        }
     }
 }

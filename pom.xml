@@ -15,7 +15,7 @@
         <module>thrift-demo</module>
         <module>gRPC-demo</module>
         <module>dubbo-demo</module>
-        <module>rpc-spring</module>
+        <module>rpc-spring-support</module>
     </modules>
 
     <properties>

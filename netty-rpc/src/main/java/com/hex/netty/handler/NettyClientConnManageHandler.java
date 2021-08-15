@@ -22,7 +22,7 @@ public class NettyClientConnManageHandler extends AbstractConnManagerHandler {
 
     @Override
     public void connect(ChannelHandlerContext ctx, SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) throws Exception {
-        logger.info("rpc client connect to remote:[{}]", remoteAddress);
+        logger.info("rpc client connect to remote:{}", remoteAddress);
         super.connect(ctx, remoteAddress, localAddress, promise);
     }
 
@@ -44,7 +44,9 @@ public class NettyClientConnManageHandler extends AbstractConnManagerHandler {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state().equals(IdleState.ALL_IDLE)) {
-                logger.warn("netty rpc client channel idle [{}]", ctx.channel().remoteAddress());
+                if (logger.isWarnEnabled()) {
+                    logger.warn("netty rpc client channel idle {}", ctx.channel().remoteAddress());
+                }
                 ctx.channel().close();
             }
         }

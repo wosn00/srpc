@@ -3,6 +3,7 @@ package com.hex.netty.reflect;
 import com.hex.netty.annotation.RouteMapping;
 import com.hex.netty.annotation.RouteScan;
 import com.hex.netty.annotation.RpcRoute;
+import com.hex.netty.exception.RpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,32 +31,42 @@ public class RouteScanner {
         this.primarySources = primarySources;
     }
 
+    public RouteScanner setBasePackages(Set<String> basePackages) {
+        this.basePackages = basePackages;
+        return this;
+    }
+
     /**
      * 扫描并注册所有路由
      */
     public synchronized void san() {
-        if (primarySources.isAnnotationPresent(RouteScan.class)) {
-            RouteScan routeScan = primarySources.getDeclaredAnnotation(RouteScan.class);
-            if (routeScan.value().length == 0) {
-                basePackages.add(primarySources.getPackage().getName());
-            } else {
-                basePackages.addAll(Arrays.asList(routeScan.value()));
+        if (basePackages.isEmpty()) {
+            if (primarySources == null) {
+                throw new RpcException("please add an Class with annotation @RouteScan");
             }
-        } else {
-            logger.error("Class [{}] doesn't have @RouteScan annotation", primarySources.getSimpleName());
-            return;
+            if (primarySources.isAnnotationPresent(RouteScan.class)) {
+                RouteScan routeScan = primarySources.getDeclaredAnnotation(RouteScan.class);
+                if (routeScan.value().length == 0) {
+                    basePackages.add(primarySources.getPackage().getName());
+                } else {
+                    basePackages.addAll(Arrays.asList(routeScan.value()));
+                }
+            } else {
+                logger.error("Class [{}] doesn't have @RouteScan annotation", primarySources.getSimpleName());
+                return;
+            }
         }
         for (String basePackage : basePackages) {
             basePackage = basePackage.replace(".", "/");
             URL resource = classLoader.getResource(basePackage);
             if (resource == null) {
-                logger.warn("this package [{}] dose not exist", basePackage);
+                logger.warn("this package {} dose not exist", basePackage);
                 continue;
             }
             File file = new File(resource.getFile());
             File[] files = file.listFiles();
             if (files == null) {
-                logger.warn("the package [{}] does not have any class or package", basePackage);
+                logger.warn("the package {} does not have any class or package", basePackage);
                 return;
             }
             loadAndRegister(files);
@@ -96,7 +107,7 @@ public class RouteScanner {
                     RouteMapping routeMapping = method.getDeclaredAnnotation(RouteMapping.class);
                     String route = routeMapping.value();
                     if (route.length() == 0) {
-                        logger.warn("Class [{}] Method [{}] does not have clearly routeMapping, skip register", clazz, method);
+                        logger.warn("Class {} Method {} does not have clearly routeMapping, skip register", clazz, method);
                         continue;
                     }
                     // 注册进容器
