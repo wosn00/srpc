@@ -25,7 +25,7 @@ public class ClusterClientTest {
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
         Client rpcClient = RpcClient.builder()
                 .config(new RpcClientConfig())
-                .contactCluster(nodes)
+                .contactNodes(nodes)
                 .start();
 
         System.out.println("---------------------同步调用测试请求----------------------");

@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.type.AnnotationMetadata;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author: hs
@@ -44,6 +46,10 @@ public class RpcServerAddressRegistry {
 
     public static List<HostAndPort> getHostAndPorts(String className) {
         return CLASS_ADDRESS_MAP.get(className);
+    }
+
+    public static List<HostAndPort> getAll() {
+        return CLASS_ADDRESS_MAP.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
     }
 
 }

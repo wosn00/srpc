@@ -3,20 +3,20 @@ package com.hex.netty.rpc.client;
 import com.google.common.collect.Lists;
 import com.hex.netty.config.RpcClientConfig;
 import com.hex.netty.config.RpcThreadFactory;
-import com.hex.netty.connection.IConnection;
-import com.hex.netty.id.IdGenerator;
-import com.hex.netty.node.HostAndPort;
 import com.hex.netty.connection.Connection;
-import com.hex.netty.node.INodeManager;
-import com.hex.netty.node.NodeManager;
+import com.hex.netty.connection.IConnection;
 import com.hex.netty.constant.CommandType;
 import com.hex.netty.constant.RpcConstant;
 import com.hex.netty.exception.RpcException;
 import com.hex.netty.handler.NettyClientConnManageHandler;
 import com.hex.netty.handler.NettyProcessHandler;
+import com.hex.netty.id.IdGenerator;
 import com.hex.netty.invoke.ResponseFuture;
 import com.hex.netty.invoke.ResponseMapping;
 import com.hex.netty.invoke.RpcCallback;
+import com.hex.netty.node.HostAndPort;
+import com.hex.netty.node.INodeManager;
+import com.hex.netty.node.NodeManager;
 import com.hex.netty.protocol.Command;
 import com.hex.netty.protocol.RpcRequest;
 import com.hex.netty.protocol.RpcResponse;
@@ -121,10 +121,7 @@ public class RpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public Client contactCluster(List<HostAndPort> nodes) {
-        if (CollectionUtils.isEmpty(nodes) || nodes.size() <= 1) {
-            throw new RpcException("node size must be greater 1");
-        }
+    public Client contactNodes(List<HostAndPort> nodes) {
         try {
             nodeManager.addCluster(nodes);
         } catch (Exception e) {
@@ -135,12 +132,7 @@ public class RpcClient extends AbstractRpc implements Client {
 
     @Override
     public Client contact(HostAndPort node) {
-        try {
-            nodeManager.addNode(node);
-        } catch (Exception e) {
-            logger.error("add server node failed, node:{}", node, e);
-        }
-        return this;
+        return contactNodes(Lists.newArrayList(node));
     }
 
     /**

@@ -26,7 +26,7 @@ public interface Client {
     /**
      * 连接多服务节点（支持高可用，负载均衡）
      */
-    Client contactCluster(List<HostAndPort> nodes);
+    Client contactNodes(List<HostAndPort> nodes);
 
     /**
      * 连接单服务节点
