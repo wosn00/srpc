@@ -4,6 +4,7 @@ import com.hex.netty.annotation.RouteMapping;
 import com.hex.netty.annotation.RouteScan;
 import com.hex.netty.annotation.RpcRoute;
 import com.hex.netty.exception.RpcException;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,9 @@ public class RouteScanner {
     }
 
     public RouteScanner setBasePackages(Set<String> basePackages) {
-        this.basePackages = basePackages;
+        if (CollectionUtils.isNotEmpty(basePackages)) {
+            this.basePackages = basePackages;
+        }
         return this;
     }
 

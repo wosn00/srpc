@@ -1,9 +1,16 @@
 package com.hex.netty.rpc;
 
+import java.util.Set;
+
 /**
  * @author hs
  */
 public interface Server {
+
+    /**
+     * 手动添加扫描包路径[可选]
+     */
+    Server configScanPackages(Set<String> packages);
 
     /**
      * 启动服务端，使用配置里的端口

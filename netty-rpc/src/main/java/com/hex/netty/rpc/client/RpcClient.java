@@ -90,8 +90,13 @@ public class RpcClient extends AbstractRpc implements Client {
     @Override
     public Client start() {
         if (isClientStart.compareAndSet(false, true)) {
-            //启动客户端
-            clientStart();
+            try {
+                //启动客户端
+                clientStart();
+            } catch (Exception e) {
+                logger.error("RpcClient started failed");
+                throw e;
+            }
         } else {
             logger.warn("RpcClient already started!");
         }

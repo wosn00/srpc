@@ -76,7 +76,8 @@ public class RpcServer extends AbstractRpc implements Server {
         return this;
     }
 
-    public RpcServer configScanPackages(Set<String> packages) {
+    @Override
+    public Server configScanPackages(Set<String> packages) {
         this.scanPackages = packages;
         return this;
     }
@@ -84,9 +85,14 @@ public class RpcServer extends AbstractRpc implements Server {
     @Override
     public Server start() {
         if (isServerStart.compareAndSet(false, true)) {
-            scanRpcServer();
-            serverStart();
-            printConnectionNum();
+            try {
+                scanRpcServer();
+                serverStart();
+                printConnectionNum();
+            } catch (Exception e) {
+                logger.error("RpcServer started failed");
+                throw e;
+            }
         } else {
             logger.warn("RpcServer has started!");
         }

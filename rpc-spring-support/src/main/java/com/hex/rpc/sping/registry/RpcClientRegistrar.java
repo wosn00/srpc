@@ -3,6 +3,7 @@ package com.hex.rpc.sping.registry;
 import com.hex.rpc.sping.annotation.EnableRpc;
 import com.hex.rpc.sping.annotation.RpcClient;
 import com.hex.rpc.sping.factory.RpcClientFactoryBean;
+import com.hex.rpc.sping.processor.RpcPostProcessor;
 import com.hex.rpc.sping.scanner.RpcClientScanner;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -69,8 +71,17 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
         if (basePackages.isEmpty()) {
             basePackages.add(ClassUtils.getPackageName(metadata.getClassName()));
         }
+        RpcPostProcessor.registerBasePackages(basePackages);
         //扫描并注册
         doScanAndRegister(basePackages, registry);
+        //注册rpc后置处理器
+        registerRpcProcess(registry);
+    }
+
+    private void registerRpcProcess(BeanDefinitionRegistry registry) {
+        BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(RpcPostProcessor.class);
+        AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
+        registry.registerBeanDefinition("rpcPostProcessor", beanDefinition);
     }
 
     private void doScanAndRegister(Set<String> basePackages, BeanDefinitionRegistry registry) {

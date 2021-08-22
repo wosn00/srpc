@@ -16,6 +16,7 @@
         <module>gRPC-demo</module>
         <module>dubbo-demo</module>
         <module>rpc-spring-support</module>
+        <module>rpc-spring-boot-starter</module>
     </modules>
 
     <properties>
@@ -33,10 +34,19 @@
 
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>com.hex</groupId>
                 <artifactId>netty-rpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hex</groupId>
+                <artifactId>rpc-spring-support</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hex</groupId>
+                <artifactId>rpc-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
