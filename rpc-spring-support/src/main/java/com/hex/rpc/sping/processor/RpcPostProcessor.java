@@ -31,12 +31,10 @@ public class RpcPostProcessor implements BeanPostProcessor {
                 if (CollectionUtils.isEmpty(allNodes)) {
                     throw new RpcException("No rpc server node address was found");
                 }
-                ((Client) bean).contactNodes(allNodes)
-                        .start();
+                ((Client) bean).contactNodes(allNodes).start();
             }
             if (bean instanceof Server) {
-                ((Server) bean).configScanPackages(scanBasePackages)
-                        .start();
+                ((Server) bean).configScanPackages(scanBasePackages).start();
             }
         } catch (RpcException e) {
             logger.error("Rpc postProcess failed", e);
@@ -45,6 +43,6 @@ public class RpcPostProcessor implements BeanPostProcessor {
     }
 
     public static void registerBasePackages(Set<String> basePackages) {
-        scanBasePackages = basePackages;
+        scanBasePackages.addAll(basePackages);
     }
 }

@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -80,8 +79,7 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
 
     private void registerRpcProcess(BeanDefinitionRegistry registry) {
         BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(RpcPostProcessor.class);
-        AbstractBeanDefinition beanDefinition = definition.getBeanDefinition();
-        registry.registerBeanDefinition("rpcPostProcessor", beanDefinition);
+        registry.registerBeanDefinition("rpcPostProcessor", definition.getBeanDefinition());
     }
 
     private void doScanAndRegister(Set<String> basePackages, BeanDefinitionRegistry registry) {
