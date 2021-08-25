@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @date 2021/7/14
  */
 public class RpcServerImpl extends TestRpcGrpc.TestRpcImplBase {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RpcServerImpl.class);
 
 
     public void getData(TestRequest request, StreamObserver<TestResponse> responseObserver) {

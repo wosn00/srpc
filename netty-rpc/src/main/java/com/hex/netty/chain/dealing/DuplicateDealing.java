@@ -18,7 +18,7 @@ import java.time.Duration;
  * 去重处理器(30s内)，集群部署模式需使用redis实现去重
  */
 public class DuplicateDealing implements Dealing {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DuplicateDealing.class);
 
     private static final Cache<Long, Boolean> DUPLICATE_CACHE = Caffeine.newBuilder()
             .expireAfterAccess(Duration.ofSeconds(30))

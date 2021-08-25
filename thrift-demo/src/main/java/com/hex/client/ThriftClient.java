@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * @date 2021/7/14
  */
 public class ThriftClient {
-    private static Logger logger = LoggerFactory.getLogger(ThriftClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(ThriftClient.class);
 
     private PRCDataService.Client client;
     private TSocket transport;

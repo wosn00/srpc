@@ -20,7 +20,7 @@ import java.util.Set;
  * 路由扫描器
  */
 public class RouteScanner {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RouteScanner.class);
 
     private Class<?> primarySources;
 

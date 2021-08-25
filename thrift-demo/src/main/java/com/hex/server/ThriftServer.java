@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * @date 2021/7/14
  */
 public class ThriftServer {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ThriftServer.class);
 
     private int port = 8007;
 

@@ -3,6 +3,8 @@ package com.hex.netty.rpc;
 import io.netty.channel.epoll.Epoll;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.apache.commons.lang3.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -10,6 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * @author: hs
  */
 public abstract class AbstractRpc {
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractRpc.class);
 
     protected GlobalTrafficShapingHandler trafficShapingHandler;
 

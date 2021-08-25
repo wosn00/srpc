@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * 维护各个server连接
  */
 public class NodeManager implements INodeManager {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(NodeManager.class);
 
     private boolean isClient;
     private final List<HostAndPort> servers = new CopyOnWriteArrayList<>();

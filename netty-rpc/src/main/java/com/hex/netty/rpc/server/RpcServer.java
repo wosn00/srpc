@@ -47,7 +47,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author hs
  */
 public class RpcServer extends AbstractRpc implements Server {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private Class<?> primarySource;

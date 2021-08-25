@@ -19,7 +19,7 @@ import static com.hex.netty.connection.Connection.CONN;
  * @author: hs
  */
 public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet> {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(NettyProcessHandler.class);
 
     private INodeManager nodeManager;
 

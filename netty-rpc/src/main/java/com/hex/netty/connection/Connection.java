@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author: hs
  */
 public class Connection implements IConnection {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
     public static final AttributeKey<IConnection> CONN = AttributeKey.valueOf("CONNECTION");
 

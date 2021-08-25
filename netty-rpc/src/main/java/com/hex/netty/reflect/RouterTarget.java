@@ -17,7 +17,7 @@ import java.lang.reflect.Type;
  * @author: hs
  */
 public class RouterTarget {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(RouterTarget.class);
 
     private Object router;
     private Method method;

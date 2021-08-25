@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * @author: hs
  */
 public class ResponseFuture {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ResponseFuture.class);
 
     private Long requestSeq;
     private Command<String> rpcResponse;

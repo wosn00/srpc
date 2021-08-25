@@ -14,7 +14,7 @@ import java.net.SocketAddress;
  * @author: hs
  */
 public class NettyClientConnManageHandler extends AbstractConnManagerHandler {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(NettyClientConnManageHandler.class);
 
     public NettyClientConnManageHandler(INodeManager nodeManager) {
         super.nodeManager = nodeManager;

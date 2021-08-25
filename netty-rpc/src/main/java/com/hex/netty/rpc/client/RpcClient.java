@@ -64,7 +64,6 @@ import static com.hex.netty.connection.Connection.CONN;
  * @author hs
  */
 public class RpcClient extends AbstractRpc implements Client {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Bootstrap bootstrap = new Bootstrap();
     private RpcClientConfig config;
