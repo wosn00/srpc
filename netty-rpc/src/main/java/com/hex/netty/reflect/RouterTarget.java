@@ -2,6 +2,7 @@ package com.hex.netty.reflect;
 
 import com.google.common.base.Throwables;
 import com.hex.netty.annotation.RouteBody;
+import com.hex.netty.exception.RpcException;
 import com.hex.netty.protocol.Command;
 import com.hex.netty.utils.SerializerUtil;
 import org.slf4j.Logger;
@@ -19,20 +20,16 @@ public class RouterTarget {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Object router;
-
     private Method method;
-
     private Integer paramAnnotationPos;
-
-    private Object[] args;
-
+    private int length;
     private Type paramAnnotationType;
 
     public RouterTarget(Object router, Method method) {
         this.router = router;
         this.method = method;
         Parameter[] parameters = method.getParameters();
-        args = new Object[parameters.length];
+        length = parameters.length;
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i].isAnnotationPresent(RouteBody.class)) {
                 paramAnnotationPos = i;
@@ -43,9 +40,12 @@ public class RouterTarget {
     }
 
     public String invoke(Command<String> command) {
-        if (paramAnnotationPos != null) {
-            args[paramAnnotationPos] = SerializerUtil.deserialize(command.getBody(), paramAnnotationType);
+        if (paramAnnotationPos == null) {
+            logger.error("method {} not found annotation @RouteBody", method.getName());
+            throw new RpcException();
         }
+        Object[] args = new Object[length];
+        args[paramAnnotationPos] = SerializerUtil.deserialize(command.getBody(), paramAnnotationType);
 
         Object result = null;
         try {
