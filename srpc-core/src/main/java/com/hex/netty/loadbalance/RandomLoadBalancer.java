@@ -4,6 +4,7 @@ package com.hex.netty.loadbalance;
 import com.hex.netty.node.HostAndPort;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author guohs
@@ -13,6 +14,7 @@ public class RandomLoadBalancer implements LoadBalancer {
 
     @Override
     public HostAndPort choose(List<HostAndPort> servers) {
-        return null;
+        int randomCur = ThreadLocalRandom.current().nextInt(servers.size());
+        return servers.get(randomCur);
     }
 }
