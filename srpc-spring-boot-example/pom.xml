@@ -9,17 +9,16 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.hex</groupId>
-    <artifactId>rpc-spring-boot-example</artifactId>
+    <artifactId>srpc-spring-boot-example</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>rpc-spring-boot-example</name>
-    <description>Demo project for Spring Boot</description>
+
     <properties>
         <java.version>1.8</java.version>
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.hex</groupId>
-            <artifactId>rpc-spring-boot-starter</artifactId>
+            <groupId>com.hs</groupId>
+            <artifactId>srpc-spring-boot-starter</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -30,11 +29,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

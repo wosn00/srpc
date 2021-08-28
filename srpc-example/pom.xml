@@ -5,14 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>THOC</artifactId>
-        <groupId>com.hex</groupId>
+        <artifactId>srpc</artifactId>
+        <groupId>com.hs</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>thrift-demo</artifactId>
-
-    <name>thrift-demo</name>
+    <artifactId>netty-rpc-example</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -22,11 +20,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.thrift</groupId>
-            <artifactId>libthrift</artifactId>
-            <version>0.14.2</version>
+            <groupId>com.hs</groupId>
+            <artifactId>srpc-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
-
 
 </project>

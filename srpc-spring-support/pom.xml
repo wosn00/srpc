@@ -3,18 +3,18 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>THOC</artifactId>
-        <groupId>com.hex</groupId>
+        <artifactId>srpc</artifactId>
+        <groupId>com.hs</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>rpc-spring-support</artifactId>
+    <artifactId>srpc-spring-support</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>com.hex</groupId>
-            <artifactId>netty-rpc</artifactId>
+            <groupId>com.hs</groupId>
+            <artifactId>srpc-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

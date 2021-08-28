@@ -4,19 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.hex</groupId>
-    <artifactId>THOC</artifactId>
+    <groupId>com.hs</groupId>
+    <artifactId>srpc</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>netty-rpc</module>
-        <module>vertx-demo</module>
-        <module>netty-rpc-example</module>
-        <module>thrift-demo</module>
-        <module>gRPC-demo</module>
-        <module>dubbo-demo</module>
-        <module>rpc-spring-support</module>
-        <module>rpc-spring-boot-starter</module>
+        <module>srpc-core</module>
+        <module>srpc-spring-support</module>
+        <module>srpc-spring-boot-starter</module>
     </modules>
 
     <properties>
@@ -35,18 +30,18 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.hex</groupId>
-                <artifactId>netty-rpc</artifactId>
+                <groupId>com.hs</groupId>
+                <artifactId>srpc-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.hex</groupId>
-                <artifactId>rpc-spring-support</artifactId>
+                <groupId>com.hs</groupId>
+                <artifactId>srpc-spring-support</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.hex</groupId>
-                <artifactId>rpc-spring-boot-starter</artifactId>
+                <groupId>com.hs</groupId>
+                <artifactId>srpc-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
