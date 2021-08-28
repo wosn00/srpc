@@ -49,8 +49,6 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -388,7 +386,6 @@ public class RpcClient extends AbstractRpc implements Client {
             }
             pipeline.addLast(
                     defaultEventExecutorGroup,
-                    // 3min内没收到或没发送数据则认为空闲
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyClientConnManageHandler(nodeManager),
                     new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable()));

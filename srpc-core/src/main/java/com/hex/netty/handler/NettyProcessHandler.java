@@ -22,12 +22,18 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
     private static final Logger logger = LoggerFactory.getLogger(NettyProcessHandler.class);
 
     private INodeManager nodeManager;
-
     private boolean enablePreventDuplicate;
+    private boolean isPrintHearBeatInfo;
 
     public NettyProcessHandler(INodeManager nodeManager, boolean enablePreventDuplicate) {
         this.nodeManager = nodeManager;
         this.enablePreventDuplicate = enablePreventDuplicate;
+    }
+
+    public NettyProcessHandler(INodeManager nodeManager, boolean enablePreventDuplicate, boolean isPrintHearBeatInfo) {
+        this.nodeManager = nodeManager;
+        this.enablePreventDuplicate = enablePreventDuplicate;
+        this.isPrintHearBeatInfo = isPrintHearBeatInfo;
     }
 
     @Override
@@ -44,6 +50,7 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
         context.setDealingChain(chain);
         context.setNodeManager(nodeManager);
         context.setConnection(ctx.channel().attr(CONN).get());
+        context.setPrintHeartbeatInfo(isPrintHearBeatInfo);
         // 开始执行责任链
         chain.deal(context);
     }

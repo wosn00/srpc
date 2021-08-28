@@ -13,15 +13,11 @@ import java.util.Map;
 public class DealingContext {
 
     private Command<String> command;
-
     private DealingChain dealingChain;
-
     private INodeManager nodeManager;
-
     private IConnection connection;
-
     private long createTime = System.currentTimeMillis();
-
+    private boolean isPrintHeartbeatInfo;
     /**
      * 用于各个dealing自定义存放内容
      */
@@ -80,5 +76,14 @@ public class DealingContext {
 
     public void setConnection(IConnection connection) {
         this.connection = connection;
+    }
+
+    public boolean isPrintHeartbeatInfo() {
+        return isPrintHeartbeatInfo;
+    }
+
+    public DealingContext setPrintHeartbeatInfo(boolean printHeartbeatInfo) {
+        isPrintHeartbeatInfo = printHeartbeatInfo;
+        return this;
     }
 }

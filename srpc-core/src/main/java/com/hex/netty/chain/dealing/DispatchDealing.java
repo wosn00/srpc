@@ -34,7 +34,7 @@ public class DispatchDealing implements Dealing {
         switch (type) {
             case HEARTBEAT:
                 // 链路心跳包处理
-                heartBeatProcess(command, context.getConnection());
+                heartBeatProcess(command, context);
                 break;
             case REQUEST_COMMAND:
                 // 请求分发处理
@@ -81,16 +81,18 @@ public class DispatchDealing implements Dealing {
         responseFuture.receipt();
     }
 
-    private void heartBeatProcess(Command<String> command, IConnection connection) {
+    private void heartBeatProcess(Command<String> command, DealingContext context) {
         String body = command.getBody();
         if (RpcConstant.PING.equals(body)) {
             //服务端收到ping处理
-            logger.info("[heartBeat]connection:{} receive a heartbeat packet from client", connection.getId());
+            if (context.isPrintHeartbeatInfo()) {
+                logger.info("[heartBeat]connection:{} receive a heartbeat packet from client", context.getConnection().getId());
+            }
             Command<String> pong = new Command<>();
             pong.setSeq(command.getSeq());
             pong.setCommandType(CommandType.HEARTBEAT.getValue());
             pong.setBody(RpcConstant.PONG);
-            connection.send(pong);
+            context.getConnection().send(pong);
         } else {
             //客户端收到pong处理
             responseProcess(command);

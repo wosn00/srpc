@@ -225,7 +225,7 @@ public class RpcServer extends AbstractRpc implements Server {
                     // 3min没收到或没发送数据则认为空闲
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyServerConnManagerHandler(nodeManager, config),
-                    new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable()));
+                    new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable(), config.getPrintHearBeatPacketInfo()));
         }
     }
 
