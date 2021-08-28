@@ -7,6 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author: hs
@@ -15,6 +18,8 @@ public abstract class AbstractRpc {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractRpc.class);
 
     protected GlobalTrafficShapingHandler trafficShapingHandler;
+
+    protected Thread shutdownHook;
 
     protected boolean useEpoll() {
         return SystemUtils.IS_OS_LINUX && Epoll.isAvailable();
@@ -29,6 +34,18 @@ public abstract class AbstractRpc {
                 maxWriteSpeed = 0L;
             }
             trafficShapingHandler = new GlobalTrafficShapingHandler(executor, maxWriteSpeed, maxReadSpeed);
+        }
+    }
+
+    protected void registerShutdownHook(Runnable runnable) {
+        if (this.shutdownHook == null) {
+            this.shutdownHook = new Thread("sRpcShutdownHook") {
+                @Override
+                public void run() {
+                    runnable.run();
+                }
+            };
+            Runtime.getRuntime().addShutdownHook(this.shutdownHook);
         }
     }
 

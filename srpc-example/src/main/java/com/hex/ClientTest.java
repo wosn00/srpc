@@ -12,7 +12,7 @@ import com.hex.netty.rpc.client.RpcClient;
  * 单机连接模式 [单个服务端节点]
  */
 public class ClientTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.out.println("---------------------客户端初始化----------------------");
 
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
@@ -35,5 +35,8 @@ public class ClientTest {
         // 异步发送请求，发送完成即返回，不阻塞等待响应结果，等回调
         rpcClient.invokeAsync("test2", request,
                 rpcResponse -> System.out.println("收到响应，开始执行回调方法" + rpcResponse));
+
+        Thread.sleep(2000);
+        System.exit(0);
     }
 }

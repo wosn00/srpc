@@ -88,6 +88,7 @@ public class RpcServer extends AbstractRpc implements Server {
                 scanRpcServer();
                 serverStart();
                 printConnectionNum();
+                registerShutdownHook(this::stop);
             } catch (Exception e) {
                 logger.error("RpcServer started failed");
                 throw e;
@@ -128,7 +129,7 @@ public class RpcServer extends AbstractRpc implements Server {
         } catch (Exception e) {
             logger.error("RpcServer stop exception, {}", Throwables.getStackTraceAsString(e));
         }
-        logger.info("RpcServer stop success!");
+        logger.info("RpcServer stop success");
     }
 
     private void serverStart() {

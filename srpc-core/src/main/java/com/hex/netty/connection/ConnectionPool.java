@@ -110,7 +110,7 @@ public class ConnectionPool implements IConnectionPool {
                     if (connection.isAvailable()) {
                         connection.close();
                     }
-                    iterator.remove();
+                    connections.remove(connection);
                 }
                 connections.clear();
                 logger.info("connectionPool {}  closed, release all connections", remoteAddress);

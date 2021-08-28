@@ -90,6 +90,7 @@ public class RpcClient extends AbstractRpc implements Client {
             try {
                 //启动客户端
                 clientStart();
+                registerShutdownHook(this::stop);
             } catch (Exception e) {
                 logger.error("RpcClient started failed");
                 throw e;
@@ -119,7 +120,7 @@ public class RpcClient extends AbstractRpc implements Client {
         } catch (Exception e) {
             logger.error("Failed to stop RpcClient!", e);
         }
-        logger.info("RpcClient stop");
+        logger.info("RpcClient stop success");
     }
 
     @Override
