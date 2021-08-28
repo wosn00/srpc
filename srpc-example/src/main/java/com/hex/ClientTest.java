@@ -5,7 +5,7 @@ import com.hex.entity.TestResponse;
 import com.hex.netty.config.RpcClientConfig;
 import com.hex.netty.node.HostAndPort;
 import com.hex.netty.rpc.Client;
-import com.hex.netty.rpc.client.RpcClient;
+import com.hex.netty.rpc.client.SRpcClient;
 
 
 /**
@@ -16,7 +16,7 @@ public class ClientTest {
         System.out.println("---------------------客户端初始化----------------------");
 
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
-        Client rpcClient = RpcClient.builder()
+        Client rpcClient = SRpcClient.builder()
                 .config(new RpcClientConfig())
                 .contact(new HostAndPort("127.0.0.1", 8005))
                 .start();

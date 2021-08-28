@@ -30,6 +30,14 @@ public class RpcServerProperties {
     private Long minThreshold = -1L; //开启压缩最低阈值(byte)
     private Long maxThreshold = -1L; //开启压缩最高阈值(byte)
 
+    // tls加密部分配置
+    private Boolean useTLS = false; //是否开启tls加密
+    private String keyPath; //私钥文件路径
+    private String keyPwd; //密码
+    private String certPath; //证书文件路径
+    private String trustCertPath; //受信任ca证书路径
+    private String clientAuth; //是否要求客户端认证
+
     public RpcServerProperties() {
     }
 
@@ -170,6 +178,60 @@ public class RpcServerProperties {
 
     public RpcServerProperties setPrintConnectionNumInterval(Integer printConnectionNumInterval) {
         this.printConnectionNumInterval = printConnectionNumInterval;
+        return this;
+    }
+
+    public Boolean getUseTLS() {
+        return useTLS;
+    }
+
+    public RpcServerProperties setUseTLS(Boolean useTLS) {
+        this.useTLS = useTLS;
+        return this;
+    }
+
+    public String getKeyPath() {
+        return keyPath;
+    }
+
+    public RpcServerProperties setKeyPath(String keyPath) {
+        this.keyPath = keyPath;
+        return this;
+    }
+
+    public String getKeyPwd() {
+        return keyPwd;
+    }
+
+    public RpcServerProperties setKeyPwd(String keyPwd) {
+        this.keyPwd = keyPwd;
+        return this;
+    }
+
+    public String getCertPath() {
+        return certPath;
+    }
+
+    public RpcServerProperties setCertPath(String certPath) {
+        this.certPath = certPath;
+        return this;
+    }
+
+    public String getTrustCertPath() {
+        return trustCertPath;
+    }
+
+    public RpcServerProperties setTrustCertPath(String trustCertPath) {
+        this.trustCertPath = trustCertPath;
+        return this;
+    }
+
+    public String getClientAuth() {
+        return clientAuth;
+    }
+
+    public RpcServerProperties setClientAuth(String clientAuth) {
+        this.clientAuth = clientAuth;
         return this;
     }
 }

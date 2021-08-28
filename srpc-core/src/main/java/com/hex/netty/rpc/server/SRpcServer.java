@@ -35,8 +35,6 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -46,7 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author hs
  */
-public class RpcServer extends AbstractRpc implements Server {
+public class SRpcServer extends AbstractRpc implements Server {
 
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private Class<?> primarySource;
@@ -58,19 +56,19 @@ public class RpcServer extends AbstractRpc implements Server {
     private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
 
-    public RpcServer config(RpcServerConfig config) {
+    public SRpcServer config(RpcServerConfig config) {
         this.config = config;
         return this;
     }
 
-    private RpcServer() {
+    private SRpcServer() {
     }
 
-    public static RpcServer builder() {
-        return new RpcServer();
+    public static SRpcServer builder() {
+        return new SRpcServer();
     }
 
-    public RpcServer source(Class<?> source) {
+    public SRpcServer source(Class<?> source) {
         primarySource = source;
         return this;
     }
@@ -147,6 +145,15 @@ public class RpcServer extends AbstractRpc implements Server {
         buildTrafficMonitor(defaultEventExecutorGroup,
                 config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
 
+        //tls加密
+        if (config.getUseTLS() != null && config.getUseTLS()) {
+            try {
+                buildSSLContext(false, config);
+            } catch (Exception e) {
+                throw new RpcException("sRpcServer initialize SSLContext fail!", e);
+            }
+        }
+
         boolean useEpolll = useEpoll();
         this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)
                 .channel(useEpolll ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
@@ -200,6 +207,10 @@ public class RpcServer extends AbstractRpc implements Server {
             // 流控
             if (null != trafficShapingHandler) {
                 pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
+            }
+            //tls加密
+            if (null != sslContext) {
+                pipeline.addLast(defaultEventExecutorGroup, "sslHandler", sslContext.newHandler(ch.alloc()));
             }
             // 编解码
             if (config.getCompressEnable() != null && config.getCompressEnable()) {

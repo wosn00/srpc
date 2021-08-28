@@ -4,8 +4,8 @@ import com.hex.netty.config.RpcClientConfig;
 import com.hex.netty.config.RpcServerConfig;
 import com.hex.netty.rpc.Client;
 import com.hex.netty.rpc.Server;
-import com.hex.netty.rpc.client.RpcClient;
-import com.hex.netty.rpc.server.RpcServer;
+import com.hex.netty.rpc.client.SRpcClient;
+import com.hex.netty.rpc.server.SRpcServer;
 import com.hex.rpc.spring.starter.properties.RpcClientProperties;
 import com.hex.rpc.spring.starter.properties.RpcServerProperties;
 import org.springframework.beans.BeanUtils;
@@ -26,7 +26,7 @@ public class RpcAutoConfiguration {
     public Server rpcServer(RpcServerProperties rpcServerProperties) {
         RpcServerConfig config = new RpcServerConfig();
         BeanUtils.copyProperties(rpcServerProperties, config);
-        return RpcServer.builder()
+        return SRpcServer.builder()
                 .config(config);
     }
 
@@ -36,7 +36,7 @@ public class RpcAutoConfiguration {
     public Client rpcClient(RpcClientProperties rpcClientProperties) {
         RpcClientConfig config = new RpcClientConfig();
         BeanUtils.copyProperties(rpcClientProperties, config);
-        return RpcClient.builder()
+        return SRpcClient.builder()
                 .config(config);
     }
 

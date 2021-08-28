@@ -7,7 +7,7 @@ import com.hex.netty.constant.RpcConstant;
 /**
  * @author: hs
  */
-public class RpcClientConfig {
+public class RpcClientConfig extends TLSConfig {
 
     private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
     private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数

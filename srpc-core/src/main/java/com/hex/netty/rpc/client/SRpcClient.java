@@ -61,7 +61,7 @@ import static com.hex.netty.connection.Connection.CONN;
 /**
  * @author hs
  */
-public class RpcClient extends AbstractRpc implements Client {
+public class SRpcClient extends AbstractRpc implements Client {
 
     private final Bootstrap bootstrap = new Bootstrap();
     private RpcClientConfig config;
@@ -70,7 +70,7 @@ public class RpcClient extends AbstractRpc implements Client {
     private INodeManager nodeManager;
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
 
-    private RpcClient() {
+    private SRpcClient() {
     }
 
     public Client config(RpcClientConfig config) {
@@ -80,8 +80,8 @@ public class RpcClient extends AbstractRpc implements Client {
         return this;
     }
 
-    public static RpcClient builder() {
-        return new RpcClient();
+    public static SRpcClient builder() {
+        return new SRpcClient();
     }
 
     @Override
@@ -174,6 +174,14 @@ public class RpcClient extends AbstractRpc implements Client {
         // 流控
         buildTrafficMonitor(defaultEventExecutorGroup,
                 config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
+
+        if (config.getUseTLS() != null && config.getUseTLS()) {
+            try {
+                buildSSLContext(true, config);
+            } catch (Exception e) {
+                throw new RpcException("sRpcClient initialize SSLContext fail!", e);
+            }
+        }
 
         boolean useEpoll = useEpoll();
         this.bootstrap.group(this.eventLoopGroupSelector)
@@ -365,6 +373,10 @@ public class RpcClient extends AbstractRpc implements Client {
             // 流控
             if (null != trafficShapingHandler) {
                 pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
+            }
+            //tls加密
+            if (null != sslContext) {
+                pipeline.addLast(defaultEventExecutorGroup, "sslHandler", sslContext.newHandler(ch.alloc()));
             }
             if (config.getCompressEnable() != null && config.getCompressEnable()) {
                 // 添加压缩编解码

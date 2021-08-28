@@ -6,7 +6,7 @@ import com.hex.netty.constant.RpcConstant;
 /**
  * @author: hs
  */
-public class RpcServerConfig {
+public class RpcServerConfig extends TLSConfig {
 
     private Integer port = 8008; //绑定端口
     private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
