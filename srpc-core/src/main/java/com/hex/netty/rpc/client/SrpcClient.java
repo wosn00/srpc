@@ -47,10 +47,8 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +59,7 @@ import static com.hex.netty.connection.Connection.CONN;
 /**
  * @author hs
  */
-public class SRpcClient extends AbstractRpc implements Client {
+public class SrpcClient extends AbstractRpc implements Client {
 
     private final Bootstrap bootstrap = new Bootstrap();
     private RpcClientConfig config;
@@ -70,7 +68,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private INodeManager nodeManager;
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
 
-    private SRpcClient() {
+    private SrpcClient() {
     }
 
     public Client config(RpcClientConfig config) {
@@ -80,8 +78,8 @@ public class SRpcClient extends AbstractRpc implements Client {
         return this;
     }
 
-    public static SRpcClient builder() {
-        return new SRpcClient();
+    public static SrpcClient builder() {
+        return new SrpcClient();
     }
 
     @Override
@@ -227,10 +225,10 @@ public class SRpcClient extends AbstractRpc implements Client {
         return RpcConstant.PONG.equals(command.getBody());
     }
 
-
     @Override
-    public RpcResponse invoke(String cmd, Object body) {
-        return invoke(cmd, body, Collections.emptyList());
+    public RpcResponse invoke(String cmd, Object body, HostAndPort... nodes) {
+        assertNodesNotNull(nodes);
+        return invoke(cmd, body, Lists.newArrayList(nodes));
     }
 
     @Override
@@ -253,8 +251,9 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public <T> T invoke(String cmd, Object body, Class<T> resultType) {
-        return invoke(cmd, body, resultType, Collections.emptyList());
+    public <T> T invoke(String cmd, Object body, Class<T> resultType, HostAndPort... nodes) {
+        assertNodesNotNull(nodes);
+        return invoke(cmd, body, resultType, Lists.newArrayList(nodes));
     }
 
     @Override
@@ -270,8 +269,9 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public void invokeAsync(String cmd, Object body) {
-        invokeAsync(cmd, body, null, null);
+    public void invokeAsync(String cmd, Object body, HostAndPort... nodes) {
+        assertNodesNotNull(nodes);
+        invokeAsync(cmd, body, Lists.newArrayList(nodes));
     }
 
     @Override
@@ -280,18 +280,19 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public void invokeAsync(String cmd, Object body, RpcCallback callback) {
-        invokeAsync(cmd, body, callback, Collections.emptyList());
+    public void invokeAsync(String cmd, Object body, RpcCallback callback, HostAndPort... nodes) {
+        assertNodesNotNull(nodes);
+        invokeAsync(cmd, body, callback, Lists.newArrayList(nodes));
     }
 
     @Override
-    public void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> cluster) {
+    public void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> nodes) {
         // 构造请求
         RpcRequest request = buildRequest(cmd, body);
         ResponseFuture responseFuture = null;
         // 发送请求
         try {
-            responseFuture = sendCommand(request, cluster, callback, config.getRequestTimeout());
+            responseFuture = sendCommand(request, nodes, callback, config.getRequestTimeout());
         } catch (Exception e) {
             // 未发送成功
             logger.error("Async send request error, requestId:{}", request.getSeq(), e);
@@ -330,10 +331,7 @@ public class SRpcClient extends AbstractRpc implements Client {
 
     private IConnection getConnection(List<HostAndPort> nodes) {
         IConnection connection;
-        if (CollectionUtils.isEmpty(nodes)) {
-            // 获取节点选择连接,支持高可用
-            connection = nodeManager.chooseHAConnection();
-        } else if (nodes.size() == 1) {
+        if (nodes.size() == 1) {
             // 不支持高可用
             connection = nodeManager.chooseConnection(nodes.get(0));
         } else {
@@ -360,6 +358,12 @@ public class SRpcClient extends AbstractRpc implements Client {
         //rpc服务健康检查
         Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);
+    }
+
+    private void assertNodesNotNull(HostAndPort... nodes) {
+        if (nodes == null) {
+            throw new IllegalArgumentException("nodes can not be null");
+        }
     }
 
     /**

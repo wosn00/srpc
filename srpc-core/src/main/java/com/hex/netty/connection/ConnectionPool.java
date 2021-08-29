@@ -2,7 +2,7 @@ package com.hex.netty.connection;
 
 import com.hex.netty.node.HostAndPort;
 import com.hex.netty.node.NodeManager;
-import com.hex.netty.rpc.client.SRpcClient;
+import com.hex.netty.rpc.client.SrpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class ConnectionPool implements IConnectionPool {
 
     private int maxSize;
     private HostAndPort remoteAddress;
-    private SRpcClient client;
+    private SrpcClient client;
     private final List<IConnection> connections = new CopyOnWriteArrayList<>();
     private final AtomicInteger counter = new AtomicInteger(0);
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
@@ -35,7 +35,7 @@ public class ConnectionPool implements IConnectionPool {
     private final Lock writeLock = lock.writeLock();
 
 
-    public ConnectionPool(int maxSize, HostAndPort remoteAddress, SRpcClient client) {
+    public ConnectionPool(int maxSize, HostAndPort remoteAddress, SrpcClient client) {
         this.maxSize = maxSize;
         this.remoteAddress = remoteAddress;
         this.client = client;

@@ -46,7 +46,7 @@ public interface Client {
     /**
      * 同步调用，返回整个响应内容，使用默认集群
      */
-    RpcResponse invoke(String cmd, Object body);
+    RpcResponse invoke(String cmd, Object body, HostAndPort... nodes);
 
     /**
      * 同步调用，返回整个响应内容，指定rpc服务节点
@@ -56,7 +56,7 @@ public interface Client {
     /**
      * 同步调用, 并将成功响应的body自动转换为T类型
      */
-    <T> T invoke(String cmd, Object body, Class<T> resultType);
+    <T> T invoke(String cmd, Object body, Class<T> resultType, HostAndPort... nodes);
 
     /**
      * 同步调用, 并将成功响应的body自动转换为T类型，指定节点
@@ -66,7 +66,7 @@ public interface Client {
     /**
      * 异步调用
      */
-    void invokeAsync(String cmd, Object body);
+    void invokeAsync(String cmd, Object body, HostAndPort... nodes);
 
     /**
      * 异步调用，指定rpc服务节点
@@ -76,7 +76,7 @@ public interface Client {
     /**
      * 异步调用，带响应回调方法
      */
-    void invokeAsync(String cmd, Object body, RpcCallback callback);
+    void invokeAsync(String cmd, Object body, RpcCallback callback, HostAndPort... nodes);
 
     /**
      * 异步调用，带响应回调方法，指定rpc服务节点

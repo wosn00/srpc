@@ -43,11 +43,6 @@ public interface INodeManager {
     IConnection chooseHAConnection(List<HostAndPort> nodes);
 
     /**
-     * 选择默认集群高可用连接，适用于Client只连接向一个集群的服务
-     */
-    IConnection chooseHAConnection();
-
-    /**
      * 指定节点选择连接，不支持高可用
      */
     IConnection chooseConnection(HostAndPort node);

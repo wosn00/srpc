@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author hs
  */
-public class SRpcServer extends AbstractRpc implements Server {
+public class SrpcServer extends AbstractRpc implements Server {
 
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private Class<?> primarySource;
@@ -56,19 +56,19 @@ public class SRpcServer extends AbstractRpc implements Server {
     private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
 
-    public SRpcServer config(RpcServerConfig config) {
+    public SrpcServer config(RpcServerConfig config) {
         this.config = config;
         return this;
     }
 
-    private SRpcServer() {
+    private SrpcServer() {
     }
 
-    public static SRpcServer builder() {
-        return new SRpcServer();
+    public static SrpcServer builder() {
+        return new SrpcServer();
     }
 
-    public SRpcServer source(Class<?> source) {
+    public SrpcServer source(Class<?> source) {
         primarySource = source;
         return this;
     }
