@@ -1,9 +1,9 @@
 package com.hex.rpc.sping.reflect;
 
-import com.hex.netty.annotation.RouteMapping;
-import com.hex.netty.exception.RpcException;
-import com.hex.netty.node.HostAndPort;
-import com.hex.netty.rpc.Client;
+import com.hex.common.annotation.RouteMapping;
+import com.hex.common.exception.RpcException;
+import com.hex.srpc.core.node.HostAndPort;
+import com.hex.srpc.core.rpc.Client;
 import com.hex.rpc.sping.registry.RpcServerAddressRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

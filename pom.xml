@@ -12,6 +12,10 @@
         <module>srpc-core</module>
         <module>srpc-spring-support</module>
         <module>srpc-spring-boot-starter</module>
+        <module>srpc-registry</module>
+        <module>srpc-spring-example</module>
+        <module>srpc-example</module>
+        <module>srpc-common</module>
     </modules>
 
     <properties>
@@ -29,6 +33,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.hs</groupId>
+                <artifactId>srpc-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.hs</groupId>
                 <artifactId>srpc-core</artifactId>

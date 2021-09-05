@@ -1,11 +1,11 @@
 package com.hex.rpc.spring.starter.config;
 
-import com.hex.netty.config.RpcClientConfig;
-import com.hex.netty.config.RpcServerConfig;
-import com.hex.netty.rpc.Client;
-import com.hex.netty.rpc.Server;
-import com.hex.netty.rpc.client.SrpcClient;
-import com.hex.netty.rpc.server.SrpcServer;
+import com.hex.srpc.core.config.RpcClientConfig;
+import com.hex.srpc.core.config.RpcServerConfig;
+import com.hex.srpc.core.rpc.Client;
+import com.hex.srpc.core.rpc.Server;
+import com.hex.srpc.core.rpc.client.SrpcClient;
+import com.hex.srpc.core.rpc.server.SrpcServer;
 import com.hex.rpc.spring.starter.properties.RpcClientProperties;
 import com.hex.rpc.spring.starter.properties.RpcServerProperties;
 import org.springframework.beans.BeanUtils;

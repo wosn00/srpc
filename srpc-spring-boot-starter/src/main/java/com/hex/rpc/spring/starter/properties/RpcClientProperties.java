@@ -1,7 +1,7 @@
 package com.hex.rpc.spring.starter.properties;
 
-import com.hex.netty.constant.LoadBalanceRule;
-import com.hex.netty.constant.RpcConstant;
+import com.hex.common.constant.LoadBalanceRule;
+import com.hex.common.constant.RpcConstant;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**

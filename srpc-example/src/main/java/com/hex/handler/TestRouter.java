@@ -2,9 +2,9 @@ package com.hex.handler;
 
 import com.hex.entity.TestRequest;
 import com.hex.entity.TestResponse;
-import com.hex.netty.annotation.RouteBody;
-import com.hex.netty.annotation.RouteMapping;
-import com.hex.netty.annotation.RpcRoute;
+import com.hex.common.annotation.RouteBody;
+import com.hex.common.annotation.RouteMapping;
+import com.hex.common.annotation.RpcRoute;
 
 /**
  * @author: hs

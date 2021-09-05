@@ -1,6 +1,6 @@
 package com.hex.rpc.sping.registry;
 
-import com.hex.netty.node.HostAndPort;
+import com.hex.srpc.core.node.HostAndPort;
 import com.hex.rpc.sping.annotation.RpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

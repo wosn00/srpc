@@ -2,10 +2,10 @@ package com.hex;
 
 import com.hex.entity.TestRequest;
 import com.hex.entity.TestResponse;
-import com.hex.netty.config.RpcClientConfig;
-import com.hex.netty.node.HostAndPort;
-import com.hex.netty.rpc.Client;
-import com.hex.netty.rpc.client.SrpcClient;
+import com.hex.srpc.core.config.RpcClientConfig;
+import com.hex.srpc.core.node.HostAndPort;
+import com.hex.srpc.core.rpc.Client;
+import com.hex.srpc.core.rpc.client.SrpcClient;
 
 
 /**
