@@ -2,7 +2,7 @@ package com.hex.srpc.core.rpc.server;
 
 import com.google.common.base.Throwables;
 import com.hex.srpc.core.config.RpcServerConfig;
-import com.hex.srpc.core.config.RpcThreadFactory;
+import com.hex.common.thread.SrpcThreadFactory;
 import com.hex.common.exception.RpcException;
 import com.hex.srpc.core.handler.NettyProcessHandler;
 import com.hex.srpc.core.handler.NettyServerConnManagerHandler;
@@ -36,6 +36,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author hs
  */
-public class SrpcServer extends AbstractRpc implements Server {
+public class SRpcServer extends AbstractRpc implements Server {
 
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private Class<?> primarySource;
@@ -56,19 +57,19 @@ public class SrpcServer extends AbstractRpc implements Server {
     private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
 
-    public SrpcServer config(RpcServerConfig config) {
+    public SRpcServer config(RpcServerConfig config) {
         this.config = config;
         return this;
     }
 
-    private SrpcServer() {
+    private SRpcServer() {
     }
 
-    public static SrpcServer builder() {
-        return new SrpcServer();
+    public static SRpcServer builder() {
+        return new SRpcServer();
     }
 
-    public SrpcServer source(Class<?> source) {
+    public SRpcServer source(Class<?> source) {
         primarySource = source;
         return this;
     }
@@ -76,6 +77,12 @@ public class SrpcServer extends AbstractRpc implements Server {
     @Override
     public Server configScanPackages(Set<String> packages) {
         this.scanPackages = packages;
+        return this;
+    }
+
+    @Override
+    public Server registryAddress(String schema, List<String> registryAddress) {
+        configRegistry(schema, registryAddress);
         return this;
     }
 
@@ -191,7 +198,7 @@ public class SrpcServer extends AbstractRpc implements Server {
 
     private void printConnectionNum() {
         if (config.getPrintConnectionNumInterval() != null && config.getPrintConnectionNumInterval() > 0) {
-            Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
+            Executors.newSingleThreadScheduledExecutor(SrpcThreadFactory.getDefault())
                     .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
         }
     }

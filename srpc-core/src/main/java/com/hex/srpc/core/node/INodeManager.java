@@ -1,5 +1,6 @@
 package com.hex.srpc.core.node;
 
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.connection.IConnectionPool;
 import com.hex.srpc.core.rpc.Client;
@@ -16,7 +17,7 @@ public interface INodeManager {
 
     void addNode(HostAndPort node);
 
-    void addCluster(List<HostAndPort> nodes);
+    void addNodes(List<HostAndPort> nodes);
 
     void removeNode(HostAndPort node);
 

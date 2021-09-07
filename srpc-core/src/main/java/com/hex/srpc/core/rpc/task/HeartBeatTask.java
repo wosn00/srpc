@@ -3,7 +3,7 @@ package com.hex.srpc.core.rpc.task;
 import com.google.common.base.Throwables;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.connection.IConnectionPool;
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.node.INodeManager;
 import com.hex.srpc.core.rpc.Client;
 import org.slf4j.Logger;

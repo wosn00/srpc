@@ -1,5 +1,7 @@
 package com.hex.srpc.core.rpc;
 
+import com.hex.common.exception.RegistryException;
+import com.hex.srpc.core.config.RegistryConfig;
 import com.hex.srpc.core.config.TLSConfig;
 import io.netty.channel.epoll.Epoll;
 import io.netty.handler.ssl.ClientAuth;
@@ -9,6 +11,8 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -27,10 +32,19 @@ public abstract class AbstractRpc {
     private static final String CLASSPATH = "classpath:";
 
     protected GlobalTrafficShapingHandler trafficShapingHandler;
-
-    protected SslContext sslContext;
-
     protected Thread shutdownHook;
+    protected SslContext sslContext;
+    protected RegistryConfig registryConfig;
+
+    protected void configRegistry(String schema, List<String> registryAddress) {
+        if (CollectionUtils.isEmpty(registryAddress) || StringUtils.isBlank(schema)) {
+            throw new RegistryException("Invalid schema or registryAddress");
+        }
+        this.registryConfig = new RegistryConfig()
+                .setEnableRegistry(true)
+                .setRegistrySchema(schema)
+                .setRegistryAddress(registryAddress);
+    }
 
     protected boolean useEpoll() {
         return SystemUtils.IS_OS_LINUX && Epoll.isAvailable();

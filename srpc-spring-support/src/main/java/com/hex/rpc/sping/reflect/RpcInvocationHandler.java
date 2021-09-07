@@ -2,9 +2,10 @@ package com.hex.rpc.sping.reflect;
 
 import com.hex.common.annotation.RouteMapping;
 import com.hex.common.exception.RpcException;
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.rpc.sping.registry.RpcServerAddressRegistry;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -32,7 +33,7 @@ public class RpcInvocationHandler implements InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args) {
         if (method.isAnnotationPresent(RouteMapping.class)) {
             getClientBean();
             RouteMapping routeMapping = method.getDeclaredAnnotation(RouteMapping.class);
@@ -42,7 +43,12 @@ public class RpcInvocationHandler implements InvocationHandler {
                 return null;
             }
             Class<?> returnType = method.getReturnType();
-            List<HostAndPort> hostAndPorts = RpcServerAddressRegistry.getHostAndPorts(type.getCanonicalName());
+            String canonicalName = type.getCanonicalName();
+            String serviceName = RpcServerAddressRegistry.getServiceName(canonicalName);
+            if (StringUtils.isNotBlank(serviceName)) {
+                return client.invokeWithRegistry(route, args[0], returnType, serviceName);
+            }
+            List<HostAndPort> hostAndPorts = RpcServerAddressRegistry.getHostAndPorts(canonicalName);
             return client.invoke(route, args[0], returnType, hostAndPorts);
         }
         return null;

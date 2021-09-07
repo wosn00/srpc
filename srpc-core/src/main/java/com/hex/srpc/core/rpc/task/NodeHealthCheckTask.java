@@ -1,6 +1,6 @@
 package com.hex.srpc.core.rpc.task;
 
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.node.NodeStatus;
 import com.hex.srpc.core.node.INodeManager;
 

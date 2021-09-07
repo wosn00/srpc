@@ -1,7 +1,7 @@
 package com.hex.rpc.sping.processor;
 
 import com.hex.common.exception.RpcException;
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.srpc.core.rpc.Server;
 import com.hex.rpc.sping.registry.RpcServerAddressRegistry;
@@ -27,11 +27,7 @@ public class RpcPostProcessor implements BeanPostProcessor {
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         try {
             if (bean instanceof Client) {
-                List<HostAndPort> allNodes = RpcServerAddressRegistry.getAll();
-                if (CollectionUtils.isEmpty(allNodes)) {
-                    throw new RpcException("No rpc server node address was found");
-                }
-                ((Client) bean).contactNodes(allNodes).start();
+                ((Client) bean).start();
             }
             if (bean instanceof Server) {
                 ((Server) bean).configScanPackages(scanBasePackages).start();

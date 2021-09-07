@@ -1,7 +1,7 @@
 package com.hex.srpc.core.rpc;
 
 import com.hex.srpc.core.connection.IConnection;
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.invoke.RpcCallback;
 import com.hex.srpc.core.protocol.RpcResponse;
 
@@ -31,7 +31,16 @@ public interface Client {
     /**
      * 连接单服务节点
      */
-    Client contact(HostAndPort node);
+    Client contactNode(HostAndPort node);
+
+    /**
+     * 设置注册中心地址
+     *
+     * @param schema          注册中心协议[默认zookeeper]
+     * @param registryAddress 注册中心地址
+     * @return
+     */
+    Client registryAddress(String schema, List<String> registryAddress);
 
     /**
      * 根据节点发送心跳，探测节点是否能访问
@@ -82,5 +91,25 @@ public interface Client {
      * 异步调用，带响应回调方法，指定rpc服务节点
      */
     void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> nodes);
+
+    /**
+     * 同步调用, 使用注册中心获取服务地址[需配置注册中心地址]
+     */
+    RpcResponse invokeWithRegistry(String cmd, Object body, String serviceName);
+
+    /**
+     * 同步调用, 使用注册中心获取服务地址[需配置注册中心地址]
+     */
+    <T> T invokeWithRegistry(String cmd, Object body, Class<T> resultType, String serviceName);
+
+    /**
+     * 异步调用, 使用注册中心获取服务地址[需配置注册中心地址]
+     */
+    void invokeAsyncWithRegistry(String cmd, Object body, String serviceName);
+
+    /**
+     * 异步调用, 使用注册中心获取服务地址[需配置注册中心地址]
+     */
+    void invokeAsyncWithRegistry(String cmd, Object body, RpcCallback callback, String serviceName);
 
 }

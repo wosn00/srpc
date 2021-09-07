@@ -1,7 +1,8 @@
 package com.hex.rpc.sping.registry;
 
-import com.hex.srpc.core.node.HostAndPort;
-import com.hex.rpc.sping.annotation.RpcClient;
+import com.hex.common.net.HostAndPort;
+import com.hex.rpc.sping.annotation.SRpcClient;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.type.AnnotationMetadata;
@@ -11,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -20,6 +22,7 @@ public class RpcServerAddressRegistry {
     private static final Logger logger = LoggerFactory.getLogger(RpcServerAddressRegistry.class);
 
     private static final Map<String, List<HostAndPort>> CLASS_ADDRESS_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, String> CLASS_SERVICE_NAME_MAP = new ConcurrentHashMap<>();
 
     public static void register(AnnotationMetadata annotationMetadata) {
         Class<?> clazz;
@@ -29,19 +32,30 @@ public class RpcServerAddressRegistry {
             logger.error("load client Class failed", e);
             return;
         }
-        if (!clazz.isAnnotationPresent(RpcClient.class)) {
+        if (!clazz.isAnnotationPresent(SRpcClient.class)) {
             logger.error("Class {} no @RpcClient annotation, register rpc server address failed", clazz);
             return;
         }
-        RpcClient annotation = clazz.getAnnotation(RpcClient.class);
-        String[] servers = annotation.servers();
-        if (servers.length == 0) {
-            logger.error("annotation @RpcClient must define attribute servers, the server address must be specified");
+        SRpcClient annotation = clazz.getAnnotation(SRpcClient.class);
+        String[] nodes = annotation.nodes();
+        String serviceName = annotation.serviceName();
+        if (nodes.length == 0 && StringUtils.isBlank(serviceName)) {
+            logger.error("annotation @RpcClient must define attribute nodes or serviceName, Class {}", clazz);
         }
-        List<HostAndPort> hostAndPorts = CLASS_ADDRESS_MAP.computeIfAbsent(clazz.getCanonicalName(), k -> new ArrayList<>());
-        for (String server : servers) {
-            hostAndPorts.add(HostAndPort.from(server));
+        if (nodes.length != 0) {
+            List<HostAndPort> hostAndPorts = CLASS_ADDRESS_MAP.computeIfAbsent(clazz.getCanonicalName(),
+                    k -> new CopyOnWriteArrayList<>());
+            for (String node : nodes) {
+                hostAndPorts.add(HostAndPort.from(node));
+            }
         }
+        if (StringUtils.isNotBlank(serviceName)) {
+            CLASS_SERVICE_NAME_MAP.put(clazz.getCanonicalName(), serviceName);
+        }
+    }
+
+    public static String getServiceName(String className) {
+        return CLASS_SERVICE_NAME_MAP.get(className);
     }
 
     public static List<HostAndPort> getHostAndPorts(String className) {

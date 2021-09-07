@@ -1,7 +1,7 @@
 package com.hex.rpc.sping.registry;
 
 import com.hex.rpc.sping.annotation.EnableRpc;
-import com.hex.rpc.sping.annotation.RpcClient;
+import com.hex.rpc.sping.annotation.SRpcClient;
 import com.hex.rpc.sping.factory.RpcClientFactoryBean;
 import com.hex.rpc.sping.processor.RpcPostProcessor;
 import com.hex.rpc.sping.scanner.RpcClientScanner;
@@ -85,7 +85,7 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
     private void doScanAndRegister(Set<String> basePackages, BeanDefinitionRegistry registry) {
         RpcClientScanner scanner = new RpcClientScanner(false, environment);
         scanner.setResourceLoader(resourceLoader);
-        AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(RpcClient.class);
+        AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(SRpcClient.class);
         scanner.addIncludeFilter(annotationTypeFilter);
 
         for (String basePackage : basePackages) {

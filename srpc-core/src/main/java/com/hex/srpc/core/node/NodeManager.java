@@ -1,5 +1,6 @@
 package com.hex.srpc.core.node;
 
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.connection.ConnectionPool;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.connection.IConnectionPool;
@@ -8,7 +9,7 @@ import com.hex.common.exception.RpcException;
 import com.hex.srpc.core.loadbalance.LoadBalanceFactory;
 import com.hex.srpc.core.loadbalance.LoadBalancer;
 import com.hex.srpc.core.rpc.Client;
-import com.hex.srpc.core.rpc.client.SrpcClient;
+import com.hex.srpc.core.rpc.client.SRpcClient;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public class NodeManager implements INodeManager {
     private final Map<HostAndPort, IConnectionPool> connectionPoolMap = new ConcurrentHashMap<>();
     private static final Map<HostAndPort, NodeStatus> nodeStatusMap = new ConcurrentHashMap<>();
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
-    private SrpcClient client;
+    private SRpcClient client;
     private int poolSizePerServer;
     private LoadBalanceRule loadBalanceRule;
 
@@ -43,7 +44,7 @@ public class NodeManager implements INodeManager {
         this.isClient = isClient;
     }
 
-    public NodeManager(boolean isClient, SrpcClient client, int poolSizePerServer, LoadBalanceRule loadBalanceRule) {
+    public NodeManager(boolean isClient, SRpcClient client, int poolSizePerServer, LoadBalanceRule loadBalanceRule) {
         this.isClient = isClient;
         this.client = client;
         this.poolSizePerServer = poolSizePerServer;
@@ -66,7 +67,7 @@ public class NodeManager implements INodeManager {
     }
 
     @Override
-    public void addCluster(List<HostAndPort> servers) {
+    public void addNodes(List<HostAndPort> servers) {
         for (HostAndPort server : servers) {
             addNode(server);
         }
@@ -116,9 +117,9 @@ public class NodeManager implements INodeManager {
     }
 
     @Override
-    public HostAndPort chooseHANode(List<HostAndPort> cluster) {
+    public HostAndPort chooseHANode(List<HostAndPort> nodes) {
         // 过滤出可用的server
-        List<HostAndPort> availableServers = cluster.stream()
+        List<HostAndPort> availableServers = nodes.stream()
                 .filter(server -> nodeStatusMap.get(server) == null || nodeStatusMap.get(server).isAvailable())
                 .collect(Collectors.toList());
         if (availableServers.isEmpty()) {
@@ -130,20 +131,22 @@ public class NodeManager implements INodeManager {
     }
 
     @Override
-    public IConnection chooseHAConnection(List<HostAndPort> cluster) {
+    public IConnection chooseHAConnection(List<HostAndPort> nodes) {
         if (isClosed.get()) {
             logger.error("nodeManager closed, choose connection failed");
         }
-        HostAndPort address = chooseHANode(cluster);
+        addNodes(nodes);
+        HostAndPort address = chooseHANode(nodes);
         return getConnectionFromPool(address);
     }
 
     @Override
-    public IConnection chooseConnection(HostAndPort address) {
+    public IConnection chooseConnection(HostAndPort node) {
         if (isClosed.get()) {
             logger.error("nodeManager closed, choose connection failed");
         }
-        return getConnectionFromPool(address);
+        addNode(node);
+        return getConnectionFromPool(node);
     }
 
     @Override

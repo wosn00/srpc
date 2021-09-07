@@ -1,4 +1,4 @@
-package com.hex.srpc.core.config;
+package com.hex.common.thread;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -6,12 +6,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author: hs
  */
-public class RpcThreadFactory implements ThreadFactory {
+public class SrpcThreadFactory implements ThreadFactory {
     private AtomicInteger threadNumber = new AtomicInteger(1);
     private String prefix;
-    private static volatile RpcThreadFactory defaultFactory;
+    private static volatile SrpcThreadFactory defaultFactory;
 
-    public RpcThreadFactory(String prefix) {
+    public SrpcThreadFactory(String prefix) {
         this.prefix = prefix + "-" + "-thread-";
     }
 
@@ -22,11 +22,11 @@ public class RpcThreadFactory implements ThreadFactory {
         return thread;
     }
 
-    public static RpcThreadFactory getDefault() {
+    public static SrpcThreadFactory getDefault() {
         if (defaultFactory == null) {
-            synchronized (RpcThreadFactory.class) {
+            synchronized (SrpcThreadFactory.class) {
                 if (defaultFactory == null) {
-                    defaultFactory = new RpcThreadFactory("rpc");
+                    defaultFactory = new SrpcThreadFactory("rpc");
                 }
             }
         }

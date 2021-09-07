@@ -1,6 +1,6 @@
 package com.hex.srpc.core.loadbalance;
 
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 
 import java.util.List;
 

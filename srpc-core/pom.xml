@@ -17,6 +17,10 @@
             <artifactId>srpc-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.hs</groupId>
+            <artifactId>srpc-registry</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
         </dependency>

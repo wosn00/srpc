@@ -4,7 +4,7 @@ import com.hex.srpc.core.config.RpcServerConfig;
 import com.hex.srpc.core.connection.Connection;
 import com.hex.srpc.core.connection.IConnectionPool;
 import com.hex.common.id.IdGenerator;
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.node.INodeManager;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;

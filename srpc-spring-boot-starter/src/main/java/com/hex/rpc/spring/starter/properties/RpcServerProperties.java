@@ -3,6 +3,8 @@ package com.hex.rpc.spring.starter.properties;
 import com.hex.common.constant.RpcConstant;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 /**
  * @author: hs
  */
@@ -37,6 +39,11 @@ public class RpcServerProperties {
     private String certPath; //证书文件路径
     private String trustCertPath; //受信任ca证书路径
     private String clientAuth; //是否要求客户端认证
+
+    // 注册中心配置部分
+    private Boolean enableRegistry = false; //是否使用注册中心
+    private String registrySchema; //注册中心模式名称
+    private List<String> registryAddress; //注册中心地址
 
     public RpcServerProperties() {
     }
@@ -232,6 +239,33 @@ public class RpcServerProperties {
 
     public RpcServerProperties setClientAuth(String clientAuth) {
         this.clientAuth = clientAuth;
+        return this;
+    }
+
+    public Boolean getEnableRegistry() {
+        return enableRegistry;
+    }
+
+    public RpcServerProperties setEnableRegistry(Boolean enableRegistry) {
+        this.enableRegistry = enableRegistry;
+        return this;
+    }
+
+    public String getRegistrySchema() {
+        return registrySchema;
+    }
+
+    public RpcServerProperties setRegistrySchema(String registrySchema) {
+        this.registrySchema = registrySchema;
+        return this;
+    }
+
+    public List<String> getRegistryAddress() {
+        return registryAddress;
+    }
+
+    public RpcServerProperties setRegistryAddress(List<String> registryAddress) {
+        this.registryAddress = registryAddress;
         return this;
     }
 }

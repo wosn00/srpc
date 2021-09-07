@@ -3,9 +3,9 @@ package com.hex.cluster;
 import com.hex.entity.TestRequest;
 import com.hex.entity.TestResponse;
 import com.hex.srpc.core.config.RpcClientConfig;
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.rpc.Client;
-import com.hex.srpc.core.rpc.client.SrpcClient;
+import com.hex.srpc.core.rpc.client.SRpcClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public class ClusterClientTest {
         nodes.add(new HostAndPort("127.0.0.1", 8007));
 
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
-        Client rpcClient = SrpcClient.builder()
+        Client rpcClient = SRpcClient.builder()
                 .config(new RpcClientConfig())
                 .contactNodes(nodes)
                 .start();

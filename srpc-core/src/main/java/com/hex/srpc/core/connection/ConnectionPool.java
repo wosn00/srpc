@@ -1,8 +1,8 @@
 package com.hex.srpc.core.connection;
 
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.node.NodeManager;
-import com.hex.srpc.core.rpc.client.SrpcClient;
+import com.hex.srpc.core.rpc.client.SRpcClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class ConnectionPool implements IConnectionPool {
 
     private int maxSize;
     private HostAndPort remoteAddress;
-    private SrpcClient client;
+    private SRpcClient client;
     private final List<IConnection> connections = new CopyOnWriteArrayList<>();
     private final AtomicInteger counter = new AtomicInteger(0);
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
@@ -35,7 +35,7 @@ public class ConnectionPool implements IConnectionPool {
     private final Lock writeLock = lock.writeLock();
 
 
-    public ConnectionPool(int maxSize, HostAndPort remoteAddress, SrpcClient client) {
+    public ConnectionPool(int maxSize, HostAndPort remoteAddress, SRpcClient client) {
         this.maxSize = maxSize;
         this.remoteAddress = remoteAddress;
         this.client = client;

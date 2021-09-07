@@ -1,6 +1,6 @@
 package com.hex.srpc.core.invoke;
 
-import com.hex.srpc.core.node.HostAndPort;
+import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.node.NodeManager;
 import com.hex.srpc.core.protocol.Command;
 import com.hex.srpc.core.protocol.RpcResponse;

@@ -15,10 +15,15 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RpcClient {
+public @interface SRpcClient {
 
     /**
      * rpc服务节点地址
      */
-    String[] servers() default {};
+    String[] nodes() default {};
+
+    /**
+     * rpc注册中心服务名称
+     */
+    String serviceName() default "";
 }

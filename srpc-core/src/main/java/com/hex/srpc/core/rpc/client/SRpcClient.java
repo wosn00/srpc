@@ -1,20 +1,24 @@
 package com.hex.srpc.core.rpc.client;
 
 import com.google.common.collect.Lists;
-import com.hex.srpc.core.config.RpcClientConfig;
-import com.hex.srpc.core.config.RpcThreadFactory;
-import com.hex.srpc.core.connection.Connection;
-import com.hex.srpc.core.connection.IConnection;
 import com.hex.common.constant.CommandType;
 import com.hex.common.constant.RpcConstant;
 import com.hex.common.exception.RpcException;
+import com.hex.common.id.IdGenerator;
+import com.hex.common.net.HostAndPort;
+import com.hex.common.spi.ExtensionLoader;
+import com.hex.common.thread.SrpcThreadFactory;
+import com.hex.common.utils.SerializerUtil;
+import com.hex.discovery.ServiceDiscovery;
+import com.hex.srpc.core.config.RegistryConfig;
+import com.hex.srpc.core.config.RpcClientConfig;
+import com.hex.srpc.core.connection.Connection;
+import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.handler.NettyClientConnManageHandler;
 import com.hex.srpc.core.handler.NettyProcessHandler;
-import com.hex.common.id.IdGenerator;
 import com.hex.srpc.core.invoke.ResponseFuture;
 import com.hex.srpc.core.invoke.ResponseMapping;
 import com.hex.srpc.core.invoke.RpcCallback;
-import com.hex.srpc.core.node.HostAndPort;
 import com.hex.srpc.core.node.INodeManager;
 import com.hex.srpc.core.node.NodeManager;
 import com.hex.srpc.core.protocol.Command;
@@ -27,7 +31,6 @@ import com.hex.srpc.core.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.srpc.core.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.srpc.core.rpc.task.HeartBeatTask;
 import com.hex.srpc.core.rpc.task.NodeHealthCheckTask;
-import com.hex.common.utils.SerializerUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -47,6 +50,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -59,7 +63,7 @@ import static com.hex.srpc.core.connection.Connection.CONN;
 /**
  * @author hs
  */
-public class SrpcClient extends AbstractRpc implements Client {
+public class SRpcClient extends AbstractRpc implements Client {
 
     private final Bootstrap bootstrap = new Bootstrap();
     private RpcClientConfig config;
@@ -68,7 +72,7 @@ public class SrpcClient extends AbstractRpc implements Client {
     private INodeManager nodeManager;
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
 
-    private SrpcClient() {
+    private SRpcClient() {
     }
 
     public Client config(RpcClientConfig config) {
@@ -78,8 +82,8 @@ public class SrpcClient extends AbstractRpc implements Client {
         return this;
     }
 
-    public static SrpcClient builder() {
-        return new SrpcClient();
+    public static SRpcClient builder() {
+        return new SRpcClient();
     }
 
     @Override
@@ -124,7 +128,7 @@ public class SrpcClient extends AbstractRpc implements Client {
     @Override
     public Client contactNodes(List<HostAndPort> nodes) {
         try {
-            nodeManager.addCluster(nodes);
+            nodeManager.addNodes(nodes);
         } catch (Exception e) {
             logger.error("add server cluster failed", e);
         }
@@ -132,8 +136,14 @@ public class SrpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public Client contact(HostAndPort node) {
+    public Client contactNode(HostAndPort node) {
         return contactNodes(Lists.newArrayList(node));
+    }
+
+    @Override
+    public Client registryAddress(String schema, List<String> registryAddress) {
+        configRegistry(schema, registryAddress);
+        return this;
     }
 
     /**
@@ -195,7 +205,7 @@ public class SrpcClient extends AbstractRpc implements Client {
                 .handler(new ClientChannel());
 
         // 心跳保活
-        Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
+        Executors.newSingleThreadScheduledExecutor(SrpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new HeartBeatTask(this.nodeManager, this), 3, config.getHeartBeatTimeInterval(),
                         TimeUnit.SECONDS);
         logger.info("RpcClient init success!");
@@ -300,6 +310,30 @@ public class SrpcClient extends AbstractRpc implements Client {
         ResponseMapping.putResponseFuture(request.getSeq(), responseFuture);
     }
 
+    @Override
+    public RpcResponse invokeWithRegistry(String cmd, Object body, String serviceName) {
+        registryConfigCheck();
+        return invoke(cmd, body, discoverRpcService(serviceName));
+    }
+
+    @Override
+    public <T> T invokeWithRegistry(String cmd, Object body, Class<T> resultType, String serviceName) {
+        registryConfigCheck();
+        return invoke(cmd, body, resultType, discoverRpcService(serviceName));
+    }
+
+    @Override
+    public void invokeAsyncWithRegistry(String cmd, Object body, String serviceName) {
+        registryConfigCheck();
+        invokeAsync(cmd, body, discoverRpcService(serviceName));
+    }
+
+    @Override
+    public void invokeAsyncWithRegistry(String cmd, Object body, RpcCallback callback, String serviceName) {
+        registryConfigCheck();
+        invokeAsync(cmd, body, callback, discoverRpcService(serviceName));
+    }
+
     private RpcRequest buildRequest(String cmd, Object body) {
         String requestBody = SerializerUtil.serialize(body);
         RpcRequest request = new RpcRequest();
@@ -356,13 +390,37 @@ public class SrpcClient extends AbstractRpc implements Client {
         nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode(),
                 config.getLoadBalanceRule());
         //rpc服务健康检查
-        Executors.newSingleThreadScheduledExecutor(RpcThreadFactory.getDefault())
+        Executors.newSingleThreadScheduledExecutor(SrpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);
     }
 
     private void assertNodesNotNull(HostAndPort... nodes) {
         if (nodes == null) {
             throw new IllegalArgumentException("nodes can not be null");
+        }
+    }
+
+    private List<HostAndPort> discoverRpcService(String serviceName) {
+        List<HostAndPort> nodes;
+        try {
+            ExtensionLoader<ServiceDiscovery> loader = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class);
+            //未扩展schema时使用默认注册中中心
+            String registrySchema = RegistryConfig.DEFAULT_REGISTRY_SCHEMA;
+            if (this.registryConfig.getRegistrySchema() != null) {
+                registrySchema = this.registryConfig.getRegistrySchema();
+            }
+            ServiceDiscovery discovery = loader.getExtension(registrySchema);
+            nodes = discovery.discoverRpcServiceAddress(registryConfig.getRegistryAddress(), serviceName);
+        } catch (Exception e) {
+            throw new RpcException("discover rpc service address failed", e);
+        }
+        return nodes;
+    }
+
+    private void registryConfigCheck() {
+        if (this.registryConfig == null || !this.registryConfig.isEnableRegistry() ||
+                CollectionUtils.isEmpty(this.registryConfig.getRegistryAddress())) {
+            throw new RpcException("Registry not configured");
         }
     }
 
