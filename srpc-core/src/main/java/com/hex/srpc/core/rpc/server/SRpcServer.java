@@ -1,6 +1,7 @@
 package com.hex.srpc.core.rpc.server;
 
 import com.google.common.base.Throwables;
+import com.hex.common.exception.RegistryException;
 import com.hex.srpc.core.config.RpcServerConfig;
 import com.hex.common.thread.SrpcThreadFactory;
 import com.hex.common.exception.RpcException;
@@ -35,6 +36,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -81,8 +83,11 @@ public class SRpcServer extends AbstractRpc implements Server {
     }
 
     @Override
-    public Server registryAddress(String schema, List<String> registryAddress) {
-        configRegistry(schema, registryAddress);
+    public Server registryAddress(String schema, List<String> registryAddress, String serviceName) {
+        if (StringUtils.isBlank(serviceName)) {
+            throw new RegistryException("serviceName can not be null");
+        }
+        configRegistry(schema, registryAddress, serviceName);
         return this;
     }
 

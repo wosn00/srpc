@@ -291,4 +291,13 @@ public class RpcClientProperties {
         this.registrySchema = registrySchema;
         return this;
     }
+
+    public List<String> getRegistryAddress() {
+        return registryAddress;
+    }
+
+    public RpcClientProperties setRegistryAddress(List<String> registryAddress) {
+        this.registryAddress = registryAddress;
+        return this;
+    }
 }

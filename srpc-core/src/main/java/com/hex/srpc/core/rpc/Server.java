@@ -18,9 +18,10 @@ public interface Server {
      *
      * @param schema          注册中心模式[默认zookeeper]
      * @param registryAddress 注册中心地址
+     * @param serviceName     需要发布到注册中心上的服务名称[服务提供端需要配置]
      * @return
      */
-    Server registryAddress(String schema, List<String> registryAddress);
+    Server registryAddress(String schema, List<String> registryAddress, String serviceName);
 
     /**
      * 启动服务端，使用配置里的端口

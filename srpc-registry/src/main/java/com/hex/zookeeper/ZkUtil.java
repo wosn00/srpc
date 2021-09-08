@@ -1,7 +1,10 @@
 package com.hex.zookeeper;
 
 import com.google.common.base.Throwables;
+import com.hex.common.exception.RegistryException;
 import com.hex.common.exception.RpcException;
+import com.hex.common.net.HostAndPort;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -19,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author: hs
@@ -30,7 +34,7 @@ public class ZkUtil {
     private static final int MAX_RETRIES = 3;
     public static final String SEPERATOR = "/";
     public static final String ZK_REGISTER_ROOT_PATH = "/srpc";
-    private static final Map<String, List<String>> SERVICE_ADDRESS_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, List<HostAndPort>> SERVICE_ADDRESS_MAP = new ConcurrentHashMap<>();
     private static final Set<String> REGISTERED_PATH_SET = ConcurrentHashMap.newKeySet();
     private static CuratorFramework zkClient;
     private static final Object lock = new Object();
@@ -58,25 +62,31 @@ public class ZkUtil {
     }
 
     /**
-     * 获取节点下的所有路径
+     * 获取节点下的所有路径, 带本地内存级别缓存
      *
      * @param rpcServiceName rpc service name
      * @return All child nodes under the specified node
      */
-    public static List<String> getChildrenNodes(CuratorFramework zkClient, String rpcServiceName) {
+    public static List<HostAndPort> getChildrenNodes(CuratorFramework zkClient, String rpcServiceName) {
         if (SERVICE_ADDRESS_MAP.containsKey(rpcServiceName)) {
             return SERVICE_ADDRESS_MAP.get(rpcServiceName);
         }
-        List<String> result = null;
+        List<HostAndPort> nodes;
         String servicePath = ZK_REGISTER_ROOT_PATH + SEPERATOR + rpcServiceName;
         try {
-            result = zkClient.getChildren().forPath(servicePath);
-            SERVICE_ADDRESS_MAP.put(rpcServiceName, result);
+            List<String> result = zkClient.getChildren().forPath(servicePath);
+            nodes = result.stream().map(HostAndPort::from).collect(Collectors.toList());
+            SERVICE_ADDRESS_MAP.put(rpcServiceName, nodes);
             registerWatcher(rpcServiceName, zkClient);
         } catch (Exception e) {
             log.error("get children nodes for path [{}] fail", servicePath);
+            throw new RegistryException();
         }
-        return result;
+        if (CollectionUtils.isEmpty(nodes)) {
+            log.error("Zookeeper not found the rpc service [{}] address", rpcServiceName);
+            throw new RegistryException();
+        }
+        return nodes;
     }
 
     /**
@@ -104,7 +114,7 @@ public class ZkUtil {
                     zkClient = CuratorFrameworkFactory.builder()
                             /*
                              * zookeeper服务端地址，多个server之间使用英文逗号分隔开
-                             * example: "hadoop1:2181,hadoop2:2181,hadoop3:2181"
+                             * example: "127.0.0.1:2181,127.0.0.1:2181,127.0.0.1:2181"
                              */
                             .connectString(zookeeperAddress)
                             .retryPolicy(retryPolicy)
@@ -135,7 +145,9 @@ public class ZkUtil {
         PathChildrenCache pathChildrenCache = new PathChildrenCache(zkClient, servicePath, true);
         PathChildrenCacheListener pathChildrenCacheListener = (curatorFramework, pathChildrenCacheEvent) -> {
             List<String> serviceAddresses = curatorFramework.getChildren().forPath(servicePath);
-            SERVICE_ADDRESS_MAP.put(rpcServiceName, serviceAddresses);
+            //新的节点
+            List<HostAndPort> nodes = serviceAddresses.stream().map(HostAndPort::from).collect(Collectors.toList());
+            SERVICE_ADDRESS_MAP.put(rpcServiceName, nodes);
         };
         pathChildrenCache.getListenable().addListener(pathChildrenCacheListener);
         pathChildrenCache.start();

@@ -14,9 +14,15 @@ public interface ServiceRegistry {
     /**
      * 注册服务到注册中心
      *
-     * @param registryAddresses 注册中心地址
-     * @param serviceName       服务名称
-     * @param address           地址
+     * @param serviceName 服务名称
+     * @param address     地址
      */
-    void registerRpcService(List<String> registryAddresses, String serviceName, HostAndPort address);
+    void registerRpcService(String serviceName, HostAndPort address);
+
+    /**
+     * 初始化注册中心
+     *
+     * @param registryAddresses 注册中心地址
+     */
+    void initRegistry(List<String> registryAddresses);
 }

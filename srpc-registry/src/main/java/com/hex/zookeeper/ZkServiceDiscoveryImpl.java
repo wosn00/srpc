@@ -17,12 +17,14 @@ import java.util.stream.Collectors;
 public class ZkServiceDiscoveryImpl implements ServiceDiscovery {
     private static final Logger logger = LoggerFactory.getLogger(ZkServiceDiscoveryImpl.class);
 
+    private String registryAddress = null;
+
+
     @Override
-    public List<HostAndPort> discoverRpcServiceAddress(List<String> registryAddresses, String serviceName) {
-        String clusterAddress = String.join(",", registryAddresses);
-        List<String> childrenNodes;
+    public List<HostAndPort> discoverRpcServiceAddress(String serviceName) {
+        List<HostAndPort> childrenNodes;
         try {
-            CuratorFramework zkClient = ZkUtil.getZkClient(clusterAddress);
+            CuratorFramework zkClient = ZkUtil.getZkClient(this.registryAddress);
             childrenNodes = ZkUtil.getChildrenNodes(zkClient, serviceName);
             if (CollectionUtils.isEmpty(childrenNodes)) {
                 logger.error("The address of the service [{}] could not be found from zookeeper", serviceName);
@@ -32,6 +34,18 @@ public class ZkServiceDiscoveryImpl implements ServiceDiscovery {
             logger.error("Zookeeper discover rpcService failed");
             throw new RegistryException(e);
         }
-        return childrenNodes.stream().map(HostAndPort::from).collect(Collectors.toList());
+        return childrenNodes;
+    }
+
+
+    @Override
+    public void initRegistry(List<String> registryAddresses) {
+        this.registryAddress = String.join(",", registryAddresses);
+        try {
+            ZkUtil.getZkClient(this.registryAddress);
+        } catch (RegistryException e) {
+            logger.error("Zookeeper init failed");
+            throw new RegistryException(e);
+        }
     }
 }

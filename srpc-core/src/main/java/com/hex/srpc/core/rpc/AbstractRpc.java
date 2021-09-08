@@ -36,7 +36,7 @@ public abstract class AbstractRpc {
     protected SslContext sslContext;
     protected RegistryConfig registryConfig;
 
-    protected void configRegistry(String schema, List<String> registryAddress) {
+    protected void configRegistry(String schema, List<String> registryAddress, String serviceName) {
         if (CollectionUtils.isEmpty(registryAddress) || StringUtils.isBlank(schema)) {
             throw new RegistryException("Invalid schema or registryAddress");
         }
@@ -44,6 +44,9 @@ public abstract class AbstractRpc {
                 .setEnableRegistry(true)
                 .setRegistrySchema(schema)
                 .setRegistryAddress(registryAddress);
+        if (StringUtils.isNotBlank(serviceName)) {
+            this.registryConfig.setServiceName(serviceName);
+        }
     }
 
     protected boolean useEpoll() {

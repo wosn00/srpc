@@ -8,9 +8,25 @@ import java.util.List;
 public class RegistryConfig {
     public static final String DEFAULT_REGISTRY_SCHEMA = "zookeeper";
 
+    /**
+     * 是否使用注册中心
+     */
     private boolean enableRegistry;
+
+    /**
+     * 注册中心模式，默认zookeeper，其他注册中心可基于spi机制自行扩展实现
+     */
     private String registrySchema;
+
+    /**
+     * 注册中心地址
+     */
     private List<String> registryAddress;
+
+    /**
+     * 需要发布到注册中心上的服务名称[服务提供端需要配置]
+     */
+    private String serviceName;
 
     public boolean isEnableRegistry() {
         return enableRegistry;
@@ -36,6 +52,15 @@ public class RegistryConfig {
 
     public RegistryConfig setRegistryAddress(List<String> registryAddress) {
         this.registryAddress = registryAddress;
+        return this;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public RegistryConfig setServiceName(String serviceName) {
+        this.serviceName = serviceName;
         return this;
     }
 }
