@@ -2,7 +2,7 @@ package com.hex.rpc.spring.starter.config;
 
 import com.hex.rpc.spring.starter.properties.RpcClientProperties;
 import com.hex.rpc.spring.starter.properties.RpcServerProperties;
-import com.hex.srpc.core.config.RpcClientConfig;
+import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.srpc.core.rpc.Server;
@@ -34,7 +34,7 @@ public class RpcAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(Client.class)
     public Client rpcClient(RpcClientProperties rpcClientProperties) {
-        RpcClientConfig config = new RpcClientConfig();
+        SRpcClientConfig config = new SRpcClientConfig();
         BeanUtils.copyProperties(rpcClientProperties, config);
         return SRpcClient.builder()
                 .config(config);

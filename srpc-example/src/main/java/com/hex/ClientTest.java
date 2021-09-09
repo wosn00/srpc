@@ -2,7 +2,7 @@ package com.hex;
 
 import com.hex.entity.TestRequest;
 import com.hex.entity.TestResponse;
-import com.hex.srpc.core.config.RpcClientConfig;
+import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.srpc.core.rpc.client.SRpcClient;
@@ -17,7 +17,7 @@ public class ClientTest {
 
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
         Client rpcClient = SRpcClient.builder()
-                .config(new RpcClientConfig())
+                .config(new SRpcClientConfig())
                 .contactNode(new HostAndPort("127.0.0.1", 8005))
                 .start();
 

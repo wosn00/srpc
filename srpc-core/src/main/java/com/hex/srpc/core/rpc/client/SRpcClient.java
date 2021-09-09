@@ -11,7 +11,7 @@ import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SrpcThreadFactory;
 import com.hex.common.utils.SerializerUtil;
 import com.hex.discovery.ServiceDiscovery;
-import com.hex.srpc.core.config.RpcClientConfig;
+import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.srpc.core.connection.Connection;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.handler.NettyClientConnManageHandler;
@@ -65,7 +65,7 @@ import static com.hex.srpc.core.connection.Connection.CONN;
 public class SRpcClient extends AbstractRpc implements Client {
 
     private final Bootstrap bootstrap = new Bootstrap();
-    private RpcClientConfig config;
+    private SRpcClientConfig config;
     private EventLoopGroup eventLoopGroupSelector;
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private INodeManager nodeManager;
@@ -75,7 +75,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private SRpcClient() {
     }
 
-    public Client config(RpcClientConfig config) {
+    public Client config(SRpcClientConfig config) {
         this.config = config;
         //初始化服务节点管理器
         initNodeManager();
