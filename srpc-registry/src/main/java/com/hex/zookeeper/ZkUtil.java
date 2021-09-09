@@ -33,7 +33,7 @@ public class ZkUtil {
     private static final int BASE_SLEEP_TIME = 1000;
     private static final int MAX_RETRIES = 3;
     public static final String SEPERATOR = "/";
-    public static final String ZK_REGISTER_ROOT_PATH = "/srpc";
+    public static final String ZK_REGISTER_ROOT_PATH = "/SRPC";
     private static final Map<String, List<HostAndPort>> SERVICE_ADDRESS_MAP = new ConcurrentHashMap<>();
     private static final Set<String> REGISTERED_PATH_SET = ConcurrentHashMap.newKeySet();
     private static CuratorFramework zkClient;
@@ -92,10 +92,10 @@ public class ZkUtil {
     /**
      * 删除该机器所有注册的节点
      */
-    public static void clearRegistry(CuratorFramework zkClient, InetSocketAddress inetSocketAddress) {
+    public static void clearRegistry(CuratorFramework zkClient, HostAndPort node) {
         REGISTERED_PATH_SET.stream().parallel().forEach(p -> {
             try {
-                if (p.endsWith(inetSocketAddress.toString())) {
+                if (p.endsWith(node.toString())) {
                     zkClient.delete().forPath(p);
                 }
             } catch (Exception e) {

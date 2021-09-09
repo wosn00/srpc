@@ -9,16 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author: hs
  */
-public class ZkServiceDiscoveryImpl implements ServiceDiscovery {
+public class ZkServiceDiscoveryImpl extends AbsZkService implements ServiceDiscovery {
     private static final Logger logger = LoggerFactory.getLogger(ZkServiceDiscoveryImpl.class);
-
-    private String registryAddress = null;
-
 
     @Override
     public List<HostAndPort> discoverRpcServiceAddress(String serviceName) {
@@ -35,17 +31,5 @@ public class ZkServiceDiscoveryImpl implements ServiceDiscovery {
             throw new RegistryException(e);
         }
         return childrenNodes;
-    }
-
-
-    @Override
-    public void initRegistry(List<String> registryAddresses) {
-        this.registryAddress = String.join(",", registryAddresses);
-        try {
-            ZkUtil.getZkClient(this.registryAddress);
-        } catch (RegistryException e) {
-            logger.error("Zookeeper init failed");
-            throw new RegistryException(e);
-        }
     }
 }

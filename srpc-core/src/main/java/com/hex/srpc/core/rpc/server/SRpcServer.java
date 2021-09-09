@@ -2,7 +2,11 @@ package com.hex.srpc.core.rpc.server;
 
 import com.google.common.base.Throwables;
 import com.hex.common.exception.RegistryException;
-import com.hex.srpc.core.config.RpcServerConfig;
+import com.hex.common.net.HostAndPort;
+import com.hex.common.spi.ExtensionLoader;
+import com.hex.common.utils.NetUtil;
+import com.hex.registry.ServiceRegistry;
+import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.common.thread.SrpcThreadFactory;
 import com.hex.common.exception.RpcException;
 import com.hex.srpc.core.handler.NettyProcessHandler;
@@ -38,6 +42,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.InetAddress;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -52,15 +57,16 @@ public class SRpcServer extends AbstractRpc implements Server {
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private Class<?> primarySource;
     private Set<String> scanPackages;
-    private RpcServerConfig config;
+    private SRpcServerConfig serverConfig;
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupSelector;
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
+    private ServiceRegistry serviceRegistry;
 
-    public SRpcServer config(RpcServerConfig config) {
-        this.config = config;
+    public SRpcServer config(SRpcServerConfig config) {
+        this.serverConfig = config;
         return this;
     }
 
@@ -95,9 +101,15 @@ public class SRpcServer extends AbstractRpc implements Server {
     public Server start() {
         if (isServerStart.compareAndSet(false, true)) {
             try {
+
                 scanRpcServer();
-                serverInit();
+
+                initServer();
+
+                registryInitAndPublish();
+
                 printConnectionNum();
+
                 registerShutdownHook(this::stop);
             } catch (Exception e) {
                 logger.error("RpcServer started failed");
@@ -111,7 +123,7 @@ public class SRpcServer extends AbstractRpc implements Server {
 
     @Override
     public Server startAtPort(int port) {
-        config.setPort(port);
+        serverConfig.setPort(port);
         start();
         return this;
     }
@@ -136,62 +148,64 @@ public class SRpcServer extends AbstractRpc implements Server {
             if (this.eventLoopGroupBoss != null) {
                 this.eventLoopGroupBoss.shutdownGracefully();
             }
+            //清除注册中心节点
+            clearRpcRegistryService();
+
         } catch (Exception e) {
             logger.error("RpcServer stop exception, {}", Throwables.getStackTraceAsString(e));
         }
         logger.info("RpcServer stop success");
     }
 
-    private void serverInit() {
+    private void initServer() {
         logger.info("RpcServer server init");
         if (useEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(1);
-            this.eventLoopGroupSelector = new EpollEventLoopGroup(config.getSelectorThreads());
+            this.eventLoopGroupSelector = new EpollEventLoopGroup(serverConfig.getSelectorThreads());
         } else {
             this.eventLoopGroupBoss = new NioEventLoopGroup(1);
-            this.eventLoopGroupSelector = new NioEventLoopGroup(config.getSelectorThreads());
+            this.eventLoopGroupSelector = new NioEventLoopGroup(serverConfig.getSelectorThreads());
         }
 
-        this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getWorkerThreads());
+        this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(serverConfig.getWorkerThreads());
         // 流控
         buildTrafficMonitor(defaultEventExecutorGroup,
-                config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
+                serverConfig.getTrafficMonitorEnable(), serverConfig.getMaxReadSpeed(), serverConfig.getMaxWriteSpeed());
 
         //tls加密
-        if (config.getUseTLS() != null && config.getUseTLS()) {
+        if (serverConfig.getUseTLS() != null && serverConfig.getUseTLS()) {
             try {
-                buildSSLContext(false, config);
+                buildSSLContext(false, serverConfig);
             } catch (Exception e) {
                 throw new RpcException("sRpcServer initialize SSLContext fail!", e);
             }
         }
 
-        boolean useEpolll = useEpoll();
         this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)
-                .channel(useEpolll ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
+                .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 2048)
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childOption(ChannelOption.SO_KEEPALIVE, false)
                 .childOption(ChannelOption.TCP_NODELAY, true)
-                .childOption(ChannelOption.SO_SNDBUF, config.getSendBuf())
-                .childOption(ChannelOption.SO_RCVBUF, config.getReceiveBuf())
+                .childOption(ChannelOption.SO_SNDBUF, serverConfig.getSendBuf())
+                .childOption(ChannelOption.SO_RCVBUF, serverConfig.getReceiveBuf())
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
-                        new WriteBufferWaterMark(config.getLowWaterLevel(), config.getHighWaterLevel()))
+                        new WriteBufferWaterMark(serverConfig.getLowWaterLevel(), serverConfig.getHighWaterLevel()))
                 .childHandler(new ServerChannel());
 
-        if (useEpolll) {
+        if (useEpoll()) {
             this.serverBootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
         }
 
         try {
-            this.serverBootstrap.bind(this.config.getPort()).sync();
+            this.serverBootstrap.bind(this.serverConfig.getPort()).sync();
         } catch (InterruptedException e) {
             throw new RpcException("RpcServer bind Interrupted!", e);
         }
 
-        logger.info("RpcServer started success!  Listening port:{}", config.getPort());
+        logger.info("RpcServer started success!  Listening port:{}", serverConfig.getPort());
     }
 
     private void scanRpcServer() {
@@ -202,9 +216,57 @@ public class SRpcServer extends AbstractRpc implements Server {
     }
 
     private void printConnectionNum() {
-        if (config.getPrintConnectionNumInterval() != null && config.getPrintConnectionNumInterval() > 0) {
+        if (serverConfig.getPrintConnectionNumInterval() != null && serverConfig.getPrintConnectionNumInterval() > 0) {
             Executors.newSingleThreadScheduledExecutor(SrpcThreadFactory.getDefault())
                     .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
+        }
+    }
+
+    private void registryInitAndPublish() {
+        if (!checkRegistryEnable()) {
+            return;
+        }
+        try {
+            ExtensionLoader<ServiceRegistry> loader = ExtensionLoader.getExtensionLoader(ServiceRegistry.class);
+
+            String registrySchema = this.registryConfig.getRegistrySchema();
+
+            logger.info("use the registry schema: [{}]", registrySchema);
+
+            this.serviceRegistry = loader.getExtension(registrySchema);
+
+            this.serviceRegistry.initRegistry(this.registryConfig.getRegistryAddress());
+
+        } catch (Exception e) {
+            throw new RegistryException("serviceRegistry init failed", e);
+        }
+
+        //注册服务
+        publishRpcService();
+    }
+
+    private void publishRpcService() {
+        String serviceName = null;
+        HostAndPort address = null;
+        try {
+            serviceName = this.registryConfig.getServiceName();
+            address = NetUtil.getLocalHostAndPort(this.serverConfig.getPort());
+            this.serviceRegistry.publishRpcService(serviceName, address);
+        } catch (Exception e) {
+            logger.error("publish rpc service failed, serviceName: [{}], address: [{}]", serviceName, address);
+        }
+    }
+
+    private void clearRpcRegistryService() {
+        if (this.registryConfig != null && this.registryConfig.isEnableRegistry()) {
+            HostAndPort address = null;
+            try {
+                address = NetUtil.getLocalHostAndPort(this.serverConfig.getPort());
+                this.serviceRegistry.clearRpcService(this.registryConfig.getServiceName(), address);
+            } catch (Exception e) {
+                logger.error("publish rpc service failed, serviceName: [{}], address: [{}]",
+                        this.registryConfig.getServiceName(), address);
+            }
         }
     }
 
@@ -225,7 +287,7 @@ public class SRpcServer extends AbstractRpc implements Server {
                 pipeline.addLast(defaultEventExecutorGroup, "sslHandler", sslContext.newHandler(ch.alloc()));
             }
             // 编解码
-            if (config.getCompressEnable() != null && config.getCompressEnable()) {
+            if (serverConfig.getCompressEnable() != null && serverConfig.getCompressEnable()) {
                 // 添加压缩编解码
                 pipeline.addLast(
                         defaultEventExecutorGroup,
@@ -233,7 +295,7 @@ public class SRpcServer extends AbstractRpc implements Server {
                         new JdkZlibExtendDecoder(),
                         new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
                         new ProtobufVarint32LengthFieldPrepender(),
-                        new JdkZlibExtendEncoder(config.getMinThreshold(), config.getMaxThreshold()),
+                        new JdkZlibExtendEncoder(serverConfig.getMinThreshold(), serverConfig.getMaxThreshold()),
                         new ProtobufEncoder());
             } else {
                 //正常pb编解码
@@ -247,9 +309,9 @@ public class SRpcServer extends AbstractRpc implements Server {
             pipeline.addLast(
                     defaultEventExecutorGroup,
                     // 3min没收到或没发送数据则认为空闲
-                    new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
-                    new NettyServerConnManagerHandler(nodeManager, config),
-                    new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable(), config.getPrintHearBeatPacketInfo()));
+                    new IdleStateHandler(serverConfig.getConnectionIdleTime(), serverConfig.getConnectionIdleTime(), 0),
+                    new NettyServerConnManagerHandler(nodeManager, serverConfig),
+                    new NettyProcessHandler(nodeManager, serverConfig.getPreventDuplicateEnable(), serverConfig.getPrintHearBeatPacketInfo()));
         }
     }
 

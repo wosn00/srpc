@@ -30,7 +30,6 @@ public abstract class AbstractRpc {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractRpc.class);
 
     private static final String CLASSPATH = "classpath:";
-
     protected GlobalTrafficShapingHandler trafficShapingHandler;
     protected Thread shutdownHook;
     protected SslContext sslContext;
@@ -39,6 +38,10 @@ public abstract class AbstractRpc {
     protected void configRegistry(String schema, List<String> registryAddress, String serviceName) {
         if (CollectionUtils.isEmpty(registryAddress) || StringUtils.isBlank(schema)) {
             throw new RegistryException("Invalid schema or registryAddress");
+        }
+        //设置默认注册中心
+        if (StringUtils.isBlank(schema)) {
+            schema = RegistryConfig.DEFAULT_REGISTRY_SCHEMA;
         }
         this.registryConfig = new RegistryConfig()
                 .setEnableRegistry(true)
@@ -53,7 +56,8 @@ public abstract class AbstractRpc {
         return SystemUtils.IS_OS_LINUX && Epoll.isAvailable();
     }
 
-    protected void buildTrafficMonitor(ScheduledExecutorService executor, Boolean trafficMonitorEnable, Long maxReadSpeed, Long maxWriteSpeed) {
+    protected void buildTrafficMonitor(ScheduledExecutorService executor, Boolean trafficMonitorEnable,
+                                       Long maxReadSpeed, Long maxWriteSpeed) {
         if (trafficMonitorEnable != null && trafficMonitorEnable) {
             if (maxReadSpeed == null) {
                 maxReadSpeed = 0L;
@@ -139,6 +143,17 @@ public abstract class AbstractRpc {
         } else {
             return SslProvider.JDK;
         }
+    }
+
+    protected boolean checkRegistryEnable() {
+        if (this.registryConfig == null || !this.registryConfig.isEnableRegistry()) {
+            return false;
+        }
+        if (CollectionUtils.isEmpty(this.registryConfig.getRegistryAddress())) {
+            logger.error("registry config invalid, not configured registry address");
+            return false;
+        }
+        return true;
     }
 
 

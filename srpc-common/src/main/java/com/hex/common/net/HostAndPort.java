@@ -2,6 +2,7 @@ package com.hex.common.net;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
@@ -29,6 +30,10 @@ public class HostAndPort {
             return new HostAndPort(split[0], Integer.valueOf(split[1]));
         }
         return null;
+    }
+
+    public static HostAndPort from(InetAddress address, int port) {
+        return new HostAndPort(address.getHostAddress(), port);
     }
 
     public String getHost() {

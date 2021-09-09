@@ -1,6 +1,6 @@
 package com.hex.srpc.core.handler;
 
-import com.hex.srpc.core.config.RpcServerConfig;
+import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.connection.Connection;
 import com.hex.srpc.core.connection.IConnectionPool;
 import com.hex.common.id.IdGenerator;
@@ -21,9 +21,9 @@ import static com.hex.srpc.core.connection.Connection.CONN;
 public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
     private static final Logger logger = LoggerFactory.getLogger(NettyServerConnManagerHandler.class);
 
-    private RpcServerConfig serverConfig;
+    private SRpcServerConfig serverConfig;
 
-    public NettyServerConnManagerHandler(INodeManager nodeManager, RpcServerConfig serverConfig) {
+    public NettyServerConnManagerHandler(INodeManager nodeManager, SRpcServerConfig serverConfig) {
         super.nodeManager = nodeManager;
         this.serverConfig = serverConfig;
     }

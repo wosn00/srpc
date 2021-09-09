@@ -6,9 +6,9 @@ import com.hex.common.constant.RpcConstant;
 /**
  * @author: hs
  */
-public class RpcServerConfig extends TLSConfig {
+public class SRpcServerConfig extends TLSConfig {
 
-    private Integer port = 8008; //绑定端口
+    private Integer port = 9987; //绑定端口
     private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
     private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
 
@@ -31,7 +31,7 @@ public class RpcServerConfig extends TLSConfig {
     private Long minThreshold = -1L; //开启压缩最低阈值(byte)
     private Long maxThreshold = -1L; //开启压缩最高阈值(byte)
 
-    public RpcServerConfig() {
+    public SRpcServerConfig() {
     }
 
     public Integer getSelectorThreads() {
@@ -98,7 +98,7 @@ public class RpcServerConfig extends TLSConfig {
         return compressEnable;
     }
 
-    public RpcServerConfig setCompressEnable(Boolean compressEnable) {
+    public SRpcServerConfig setCompressEnable(Boolean compressEnable) {
         this.compressEnable = compressEnable;
         return this;
     }
@@ -107,7 +107,7 @@ public class RpcServerConfig extends TLSConfig {
         return minThreshold;
     }
 
-    public RpcServerConfig setMinThreshold(Long minThreshold) {
+    public SRpcServerConfig setMinThreshold(Long minThreshold) {
         this.minThreshold = minThreshold;
         return this;
     }
@@ -116,7 +116,7 @@ public class RpcServerConfig extends TLSConfig {
         return maxThreshold;
     }
 
-    public RpcServerConfig setMaxThreshold(Long maxThreshold) {
+    public SRpcServerConfig setMaxThreshold(Long maxThreshold) {
         this.maxThreshold = maxThreshold;
         return this;
     }
@@ -125,7 +125,7 @@ public class RpcServerConfig extends TLSConfig {
         return trafficMonitorEnable;
     }
 
-    public RpcServerConfig setTrafficMonitorEnable(Boolean trafficMonitorEnable) {
+    public SRpcServerConfig setTrafficMonitorEnable(Boolean trafficMonitorEnable) {
         this.trafficMonitorEnable = trafficMonitorEnable;
         return this;
     }
@@ -134,7 +134,7 @@ public class RpcServerConfig extends TLSConfig {
         return maxReadSpeed;
     }
 
-    public RpcServerConfig setMaxReadSpeed(Long maxReadSpeed) {
+    public SRpcServerConfig setMaxReadSpeed(Long maxReadSpeed) {
         this.maxReadSpeed = maxReadSpeed;
         return this;
     }
@@ -143,7 +143,7 @@ public class RpcServerConfig extends TLSConfig {
         return maxWriteSpeed;
     }
 
-    public RpcServerConfig setMaxWriteSpeed(Long maxWriteSpeed) {
+    public SRpcServerConfig setMaxWriteSpeed(Long maxWriteSpeed) {
         this.maxWriteSpeed = maxWriteSpeed;
         return this;
     }
@@ -160,7 +160,7 @@ public class RpcServerConfig extends TLSConfig {
         return connectionIdleTime;
     }
 
-    public RpcServerConfig setConnectionIdleTime(Integer connectionIdleTime) {
+    public SRpcServerConfig setConnectionIdleTime(Integer connectionIdleTime) {
         this.connectionIdleTime = connectionIdleTime;
         return this;
     }
@@ -169,7 +169,7 @@ public class RpcServerConfig extends TLSConfig {
         return printConnectionNumInterval;
     }
 
-    public RpcServerConfig setPrintConnectionNumInterval(Integer printConnectionNumInterval) {
+    public SRpcServerConfig setPrintConnectionNumInterval(Integer printConnectionNumInterval) {
         this.printConnectionNumInterval = printConnectionNumInterval;
         return this;
     }
@@ -178,7 +178,7 @@ public class RpcServerConfig extends TLSConfig {
         return isPrintHearBeatPacketInfo;
     }
 
-    public RpcServerConfig setPrintHearBeatPacketInfo(Boolean printHearBeatPacketInfo) {
+    public SRpcServerConfig setPrintHearBeatPacketInfo(Boolean printHearBeatPacketInfo) {
         isPrintHearBeatPacketInfo = printHearBeatPacketInfo;
         return this;
     }

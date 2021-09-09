@@ -11,7 +11,6 @@ import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SrpcThreadFactory;
 import com.hex.common.utils.SerializerUtil;
 import com.hex.discovery.ServiceDiscovery;
-import com.hex.srpc.core.config.RegistryConfig;
 import com.hex.srpc.core.config.RpcClientConfig;
 import com.hex.srpc.core.connection.Connection;
 import com.hex.srpc.core.connection.IConnection;
@@ -51,7 +50,6 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -72,7 +70,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private INodeManager nodeManager;
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
-    private ServiceDiscovery discovery;
+    private ServiceDiscovery serviceDiscovery;
 
     private SRpcClient() {
     }
@@ -92,12 +90,13 @@ public class SRpcClient extends AbstractRpc implements Client {
     public Client start() {
         if (isClientStart.compareAndSet(false, true)) {
             try {
-                //启动客户端
-                clientInit();
+
+                initClient();
+
+                registryInit();
 
                 registerShutdownHook(this::stop);
-                //初始化注册中心
-                registryInit();
+
             } catch (Exception e) {
                 logger.error("RpcClient started failed");
                 throw e;
@@ -112,28 +111,22 @@ public class SRpcClient extends AbstractRpc implements Client {
      * 初始化注册中心
      */
     private void registryInit() {
-        if (this.registryConfig == null || !this.registryConfig.isEnableRegistry()) {
-            return;
-        }
-        if (CollectionUtils.isEmpty(this.registryConfig.getRegistryAddress())) {
-            logger.error("registry config invalid, not configured registry address");
+        if (!checkRegistryEnable()) {
             return;
         }
         try {
             ExtensionLoader<ServiceDiscovery> loader = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class);
-            //未扩展schema时使用默认注册中中心
-            String registrySchema = RegistryConfig.DEFAULT_REGISTRY_SCHEMA;
-            if (this.registryConfig.getRegistrySchema() != null) {
-                registrySchema = this.registryConfig.getRegistrySchema();
-            }
-            logger.info("use the registry schema: {}", registrySchema);
 
-            this.discovery = loader.getExtension(registrySchema);
+            String registrySchema = this.registryConfig.getRegistrySchema();
 
-            this.discovery.initRegistry(this.registryConfig.getRegistryAddress());
+            logger.info("use the registry schema: [{}]", registrySchema);
+
+            this.serviceDiscovery = loader.getExtension(registrySchema);
+
+            this.serviceDiscovery.initRegistry(this.registryConfig.getRegistryAddress());
 
         } catch (Exception e) {
-            throw new RegistryException("registry init failed", e);
+            throw new RegistryException("serviceDiscovery init failed", e);
         }
     }
 
@@ -204,7 +197,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         return conn;
     }
 
-    private void clientInit() {
+    private void initClient() {
         logger.info("RpcClient init ...");
 
         if (useEpoll()) {
@@ -225,9 +218,8 @@ public class SRpcClient extends AbstractRpc implements Client {
             }
         }
 
-        boolean useEpoll = useEpoll();
         this.bootstrap.group(this.eventLoopGroupSelector)
-                .channel(useEpoll ? EpollSocketChannel.class : NioSocketChannel.class)
+                .channel(useEpoll() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.SO_KEEPALIVE, false)
@@ -437,7 +429,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private List<HostAndPort> discoverRpcService(String serviceName) {
         List<HostAndPort> nodes;
         try {
-            nodes = discovery.discoverRpcServiceAddress(serviceName);
+            nodes = serviceDiscovery.discoverRpcServiceAddress(serviceName);
         } catch (Exception e) {
             throw new RpcException("discover rpc service address failed", e);
         }
