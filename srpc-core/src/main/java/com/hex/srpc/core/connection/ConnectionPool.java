@@ -1,5 +1,6 @@
 package com.hex.srpc.core.connection;
 
+import com.hex.common.exception.RpcException;
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.node.NodeManager;
 import com.hex.srpc.core.rpc.client.SRpcClient;
@@ -65,7 +66,7 @@ public class ConnectionPool implements IConnectionPool {
         } finally {
             readLock.unlock();
         }
-        return null;
+        throw new RpcException("no connection available, node: " + remoteAddress);
     }
 
     @Override

@@ -30,4 +30,8 @@ public class ResponseMapping {
         futureCache.invalidate(requestId);
         return responseFuture;
     }
+
+    public static void invalidate(Long requestId) {
+        futureCache.invalidate(requestId);
+    }
 }

@@ -19,7 +19,7 @@ public class ResponseFuture {
     private Long requestSeq;
     private Command<String> rpcResponse;
     private RpcCallback rpcCallback;
-    private CountDownLatch latch;
+    private CountDownLatch latch = new CountDownLatch(1);
     private int requestTimeout = 30;
     private HostAndPort remoteAddress;
 
@@ -40,7 +40,6 @@ public class ResponseFuture {
      * 等待服务端响应结果并返回
      */
     public Command<String> waitForResponse() {
-        latch = new CountDownLatch(1);
         boolean await;
         try {
             await = latch.await(requestTimeout, TimeUnit.SECONDS);
@@ -52,7 +51,7 @@ public class ResponseFuture {
             return rpcResponse;
         } else {
             // 响应超时
-            logger.error("Request timed out! seq:{}, max wait time:{}s", requestSeq, requestTimeout);
+            logger.error("Request timed out! seq: {}, max wait time: {}s", requestSeq, requestTimeout);
             // 记录错误次数
             NodeManager.serverError(remoteAddress);
             return RpcResponse.requestTimeout(requestSeq);
