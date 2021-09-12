@@ -1,11 +1,12 @@
 package com.hex.srpc.core.node;
 
+import com.google.common.collect.Sets;
+import com.hex.common.constant.LoadBalanceRule;
+import com.hex.common.exception.RpcException;
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.connection.ConnectionPool;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.connection.IConnectionPool;
-import com.hex.common.constant.LoadBalanceRule;
-import com.hex.common.exception.RpcException;
 import com.hex.srpc.core.loadbalance.LoadBalanceFactory;
 import com.hex.srpc.core.loadbalance.LoadBalancer;
 import com.hex.srpc.core.rpc.Client;
@@ -14,12 +15,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -32,7 +29,7 @@ public class NodeManager implements INodeManager {
     private static final Logger logger = LoggerFactory.getLogger(NodeManager.class);
 
     private boolean isClient;
-    private final List<HostAndPort> servers = new CopyOnWriteArrayList<>();
+    private final Set<HostAndPort> servers = Sets.newConcurrentHashSet();
     private final Map<HostAndPort, IConnectionPool> connectionPoolMap = new ConcurrentHashMap<>();
     private static final Map<HostAndPort, NodeStatus> nodeStatusMap = new ConcurrentHashMap<>();
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
@@ -135,7 +132,6 @@ public class NodeManager implements INodeManager {
         if (isClosed.get()) {
             logger.error("nodeManager closed, choose connection failed");
         }
-        addNodes(nodes);
         HostAndPort address = chooseHANode(nodes);
         return getConnectionFromPool(address);
     }
@@ -145,7 +141,6 @@ public class NodeManager implements INodeManager {
         if (isClosed.get()) {
             logger.error("nodeManager closed, choose connection failed");
         }
-        addNode(node);
         return getConnectionFromPool(node);
     }
 
@@ -163,7 +158,8 @@ public class NodeManager implements INodeManager {
     private IConnection getConnectionFromPool(HostAndPort address) {
         IConnectionPool connectionPool = connectionPoolMap.get(address);
         if (connectionPool == null) {
-            throw new RpcException("no connectionPool exist, try to add cluster or node first");
+            addNode(address);
+            connectionPool = connectionPoolMap.get(address);
         }
         return connectionPool.getConnection();
     }

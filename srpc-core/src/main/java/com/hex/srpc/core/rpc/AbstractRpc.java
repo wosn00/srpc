@@ -35,7 +35,7 @@ public abstract class AbstractRpc {
     protected SslContext sslContext;
     protected RegistryConfig registryConfig;
 
-    protected void configRegistry(String schema, List<String> registryAddress, String serviceName) {
+    protected void setConfigRegistry(String schema, List<String> registryAddress, String serviceName) {
         if (CollectionUtils.isEmpty(registryAddress) || StringUtils.isBlank(schema)) {
             throw new RegistryException("Invalid schema or registryAddress");
         }
@@ -107,7 +107,7 @@ public abstract class AbstractRpc {
 
     protected void registerShutdownHook(Runnable runnable) {
         if (this.shutdownHook == null) {
-            this.shutdownHook = new Thread("sRpcShutdownHook") {
+            this.shutdownHook = new Thread("SRpcShutdownHook") {
                 @Override
                 public void run() {
                     runnable.run();

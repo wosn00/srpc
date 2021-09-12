@@ -2,6 +2,7 @@ package com.hex.srpc.core.config;
 
 
 import com.hex.common.constant.RpcConstant;
+import com.hex.common.utils.NetUtil;
 
 /**
  * @author: hs
@@ -47,9 +48,7 @@ public class SRpcServerConfig extends TLSConfig {
     }
 
     public void setPort(Integer port) {
-        if (port <= 0 || port > 65535) {
-            throw new IllegalArgumentException("port should be lesser 65535 and greater 0");
-        }
+        NetUtil.checkPort(port);
         this.port = port;
     }
 

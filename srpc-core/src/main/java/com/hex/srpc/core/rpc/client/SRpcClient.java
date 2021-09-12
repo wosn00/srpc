@@ -10,7 +10,7 @@ import com.hex.common.net.HostAndPort;
 import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SrpcThreadFactory;
 import com.hex.common.utils.SerializerUtil;
-import com.hex.discovery.ServiceDiscovery;
+import com.hex.discovery.ServiceDiscover;
 import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.srpc.core.connection.Connection;
 import com.hex.srpc.core.connection.IConnection;
@@ -70,7 +70,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private INodeManager nodeManager;
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
-    private ServiceDiscovery serviceDiscovery;
+    private ServiceDiscover serviceDiscover;
 
     private SRpcClient() {
     }
@@ -115,15 +115,15 @@ public class SRpcClient extends AbstractRpc implements Client {
             return;
         }
         try {
-            ExtensionLoader<ServiceDiscovery> loader = ExtensionLoader.getExtensionLoader(ServiceDiscovery.class);
+            ExtensionLoader<ServiceDiscover> loader = ExtensionLoader.getExtensionLoader(ServiceDiscover.class);
 
             String registrySchema = this.registryConfig.getRegistrySchema();
 
             logger.info("use the registry schema: [{}]", registrySchema);
 
-            this.serviceDiscovery = loader.getExtension(registrySchema);
+            this.serviceDiscover = loader.getExtension(registrySchema);
 
-            this.serviceDiscovery.initRegistry(this.registryConfig.getRegistryAddress());
+            this.serviceDiscover.initRegistry(this.registryConfig.getRegistryAddress());
 
         } catch (Exception e) {
             throw new RegistryException("serviceDiscovery init failed", e);
@@ -168,8 +168,8 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public Client registryAddress(String schema, List<String> registryAddress) {
-        configRegistry(schema, registryAddress, null);
+    public Client configRegistry(String schema, List<String> registryAddress) {
+        setConfigRegistry(schema, registryAddress, null);
         return this;
     }
 
@@ -253,9 +253,9 @@ public class SRpcClient extends AbstractRpc implements Client {
             responseFuture = sendCommand(heartBeatPacket, connection, null, 5);
         } catch (Exception e) {
             logger.error("sync send heartBeat packet error", e);
+            ResponseMapping.invalidate(heartBeatPacket.getSeq());
             return false;
         }
-        ResponseMapping.putResponseFuture(heartBeatPacket.getSeq(), responseFuture);
         //等待并获取响应
         Command<String> command = responseFuture.waitForResponse();
         return RpcConstant.PONG.equals(command.getBody());
@@ -278,10 +278,9 @@ public class SRpcClient extends AbstractRpc implements Client {
         } catch (Exception e) {
             // 未发送成功
             logger.error("sync send request error", e);
+            ResponseMapping.invalidate(request.getSeq());
             return RpcResponse.clientError(request.getSeq());
         }
-        ResponseMapping.putResponseFuture(request.getSeq(), responseFuture);
-
         // 等待并获取响应
         return (RpcResponse) responseFuture.waitForResponse();
     }
@@ -325,15 +324,14 @@ public class SRpcClient extends AbstractRpc implements Client {
     public void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> nodes) {
         // 构造请求
         RpcRequest request = buildRequest(cmd, body);
-        ResponseFuture responseFuture = null;
         // 发送请求
         try {
-            responseFuture = sendCommand(request, nodes, callback, config.getRequestTimeout());
+            sendCommand(request, nodes, callback, config.getRequestTimeout());
         } catch (Exception e) {
             // 未发送成功
             logger.error("Async send request error, requestId:{}", request.getSeq(), e);
+            ResponseMapping.invalidate(request.getSeq());
         }
-        ResponseMapping.putResponseFuture(request.getSeq(), responseFuture);
     }
 
     @Override
@@ -385,8 +383,11 @@ public class SRpcClient extends AbstractRpc implements Client {
 
     private ResponseFuture sendCommand(Command<?> command, IConnection connection,
                                        RpcCallback callback, Integer requestTimeout) {
+        ResponseFuture responseFuture =
+                new ResponseFuture(command.getSeq(), requestTimeout, connection.getRemoteAddress(), callback);
+        ResponseMapping.putResponseFuture(command.getSeq(), responseFuture);
         connection.send(command);
-        return new ResponseFuture(command.getSeq(), requestTimeout, connection.getRemoteAddress(), callback);
+        return responseFuture;
     }
 
     private IConnection getConnection(List<HostAndPort> nodes) {
@@ -429,7 +430,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private List<HostAndPort> discoverRpcService(String serviceName) {
         List<HostAndPort> nodes;
         try {
-            nodes = serviceDiscovery.discoverRpcServiceAddress(serviceName);
+            nodes = serviceDiscover.discoverRpcServiceAddress(serviceName);
         } catch (Exception e) {
             throw new RpcException("discover rpc service address failed", e);
         }

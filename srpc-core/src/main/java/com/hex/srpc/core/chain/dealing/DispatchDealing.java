@@ -1,5 +1,6 @@
 package com.hex.srpc.core.chain.dealing;
 
+import com.hex.common.utils.SerializerUtil;
 import com.hex.srpc.core.chain.Dealing;
 import com.hex.srpc.core.chain.DealingContext;
 import com.hex.srpc.core.connection.IConnection;
@@ -71,8 +72,10 @@ public class DispatchDealing implements Dealing {
     private void responseProcess(Command rpcResponse) {
         ResponseFuture responseFuture = ResponseMapping.getResponseFuture(rpcResponse.getSeq());
         if (responseFuture == null) {
-            // 获取不到，可能是服务端处理超时（30s）
-            logger.warn("Response mismatch request, maybe request already timeout");
+            // 获取不到，可能是服务端处理超时
+            if (logger.isWarnEnabled()) {
+                logger.warn("Response mismatch request, response : {}", SerializerUtil.serializePretty(rpcResponse));
+            }
             return;
         }
         // 设置响应内容，用于客户端获取

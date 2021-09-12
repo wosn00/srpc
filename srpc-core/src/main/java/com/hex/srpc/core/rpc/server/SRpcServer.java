@@ -7,7 +7,7 @@ import com.hex.common.net.HostAndPort;
 import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SrpcThreadFactory;
 import com.hex.common.utils.NetUtil;
-import com.hex.registry.ServiceRegistry;
+import com.hex.publish.ServicePublisher;
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.handler.NettyProcessHandler;
 import com.hex.srpc.core.handler.NettyServerConnManagerHandler;
@@ -58,9 +58,10 @@ public class SRpcServer extends AbstractRpc implements Server {
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
-    private ServiceRegistry serviceRegistry;
+    private ServicePublisher servicePublisher;
+    private Integer port;
 
-    public SRpcServer config(SRpcServerConfig config) {
+    public Server serverConfig(SRpcServerConfig config) {
         this.serverConfig = config;
         return this;
     }
@@ -72,7 +73,7 @@ public class SRpcServer extends AbstractRpc implements Server {
         return new SRpcServer();
     }
 
-    public SRpcServer source(Class<?> source) {
+    public Server sourceClass(Class<?> source) {
         primarySource = source;
         return this;
     }
@@ -84,11 +85,11 @@ public class SRpcServer extends AbstractRpc implements Server {
     }
 
     @Override
-    public Server registryAddress(String schema, List<String> registryAddress, String serviceName) {
+    public Server configRegistry(String schema, List<String> registryAddress, String serviceName) {
         if (StringUtils.isBlank(serviceName)) {
             throw new RegistryException("serviceName can not be null");
         }
-        configRegistry(schema, registryAddress, serviceName);
+        setConfigRegistry(schema, registryAddress, serviceName);
         return this;
     }
 
@@ -117,9 +118,9 @@ public class SRpcServer extends AbstractRpc implements Server {
     }
 
     @Override
-    public Server startAtPort(int port) {
-        serverConfig.setPort(port);
-        start();
+    public Server port(int port) {
+        NetUtil.checkPort(port);
+        this.port = port;
         return this;
     }
 
@@ -195,7 +196,7 @@ public class SRpcServer extends AbstractRpc implements Server {
         }
 
         try {
-            this.serverBootstrap.bind(this.serverConfig.getPort()).sync();
+            this.serverBootstrap.bind(this.port == null ? this.serverConfig.getPort() : this.port).sync();
         } catch (InterruptedException e) {
             throw new RpcException("RpcServer bind Interrupted!", e);
         }
@@ -222,15 +223,15 @@ public class SRpcServer extends AbstractRpc implements Server {
             return;
         }
         try {
-            ExtensionLoader<ServiceRegistry> loader = ExtensionLoader.getExtensionLoader(ServiceRegistry.class);
+            ExtensionLoader<ServicePublisher> loader = ExtensionLoader.getExtensionLoader(ServicePublisher.class);
 
             String registrySchema = this.registryConfig.getRegistrySchema();
 
             logger.info("use the registry schema: [{}]", registrySchema);
 
-            this.serviceRegistry = loader.getExtension(registrySchema);
+            this.servicePublisher = loader.getExtension(registrySchema);
 
-            this.serviceRegistry.initRegistry(this.registryConfig.getRegistryAddress());
+            this.servicePublisher.initRegistry(this.registryConfig.getRegistryAddress());
 
         } catch (Exception e) {
             throw new RegistryException("serviceRegistry init failed", e);
@@ -246,7 +247,7 @@ public class SRpcServer extends AbstractRpc implements Server {
         try {
             serviceName = this.registryConfig.getServiceName();
             address = NetUtil.getLocalHostAndPort(this.serverConfig.getPort());
-            this.serviceRegistry.publishRpcService(serviceName, address);
+            this.servicePublisher.publishRpcService(serviceName, address);
         } catch (Exception e) {
             logger.error("publish rpc service failed, serviceName: [{}], address: [{}]", serviceName, address);
         }
@@ -257,7 +258,7 @@ public class SRpcServer extends AbstractRpc implements Server {
             HostAndPort address = null;
             try {
                 address = NetUtil.getLocalHostAndPort(this.serverConfig.getPort());
-                this.serviceRegistry.clearRpcService(this.registryConfig.getServiceName(), address);
+                this.servicePublisher.clearRpcService(this.registryConfig.getServiceName(), address);
             } catch (Exception e) {
                 logger.error("publish rpc service failed, serviceName: [{}], address: [{}]",
                         this.registryConfig.getServiceName(), address);

@@ -14,8 +14,9 @@ public class ClusterServerTest1 {
 
         // 启动服务端, 需填入rpc服务端配置, 可使用默认配置, source填写有@RouteScan注解的类
         SRpcServer.builder()
-                .config(new SRpcServerConfig())
-                .source(ClusterServerTest1.class)
-                .startAtPort(8005);
+                .serverConfig(new SRpcServerConfig())
+                .sourceClass(ClusterServerTest1.class)
+                .port(8005)
+                .start();
     }
 }

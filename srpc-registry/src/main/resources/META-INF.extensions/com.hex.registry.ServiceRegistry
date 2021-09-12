@@ -1,1 +1,1 @@
-zookeeper=com.hex.zookeeper.ZkServiceRegistryImpl
+zookeeper=com.hex.zookeeper.ZkServicePublisherImpl

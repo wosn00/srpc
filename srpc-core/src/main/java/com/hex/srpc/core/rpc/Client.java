@@ -40,7 +40,7 @@ public interface Client {
      * @param registryAddress 注册中心地址
      * @return
      */
-    Client registryAddress(String schema, List<String> registryAddress);
+    Client configRegistry(String schema, List<String> registryAddress);
 
     /**
      * 根据节点发送心跳，探测节点是否能访问

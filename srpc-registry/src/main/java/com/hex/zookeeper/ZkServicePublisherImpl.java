@@ -2,7 +2,7 @@ package com.hex.zookeeper;
 
 import com.hex.common.exception.RegistryException;
 import com.hex.common.net.HostAndPort;
-import com.hex.registry.ServiceRegistry;
+import com.hex.publish.ServicePublisher;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @author: hs
  */
-public class ZkServiceRegistryImpl extends AbsZkService implements ServiceRegistry {
-    private static final Logger logger = LoggerFactory.getLogger(ZkServiceRegistryImpl.class);
+public class ZkServicePublisherImpl extends AbsZkService implements ServicePublisher {
+    private static final Logger logger = LoggerFactory.getLogger(ZkServicePublisherImpl.class);
 
     @Override
     public void publishRpcService(String serviceName, HostAndPort address) {

@@ -9,6 +9,14 @@ import java.util.Set;
 public interface Server {
 
     /**
+     * 包含@RouteScan注解的类
+     *
+     * @param clazz
+     * @return
+     */
+    Server sourceClass(Class<?> clazz);
+
+    /**
      * 手动添加扫描包路径[可选]
      */
     Server configScanPackages(Set<String> packages);
@@ -21,17 +29,20 @@ public interface Server {
      * @param serviceName     需要发布到注册中心上的服务名称[服务提供端需要配置]
      * @return
      */
-    Server registryAddress(String schema, List<String> registryAddress, String serviceName);
+    Server configRegistry(String schema, List<String> registryAddress, String serviceName);
 
     /**
-     * 启动服务端，使用配置里的端口
+     * 指定端口,未指定的话则使用ServerConfig配置里的端口
+     *
+     * @param port 端口
+     * @return
+     */
+    Server port(int port);
+
+    /**
+     * 启动服务端
      */
     Server start();
-
-    /**
-     * 启动服务端，使用指定端口
-     */
-    Server startAtPort(int port);
 
     /**
      * 停止服务端

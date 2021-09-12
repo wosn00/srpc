@@ -9,7 +9,7 @@ import java.util.List;
  * @author: hs
  */
 @SPI
-public interface ServiceDiscovery {
+public interface ServiceDiscover {
 
     /**
      * 初始化注册中心

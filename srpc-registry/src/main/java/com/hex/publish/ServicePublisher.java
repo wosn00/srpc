@@ -1,4 +1,4 @@
-package com.hex.registry;
+package com.hex.publish;
 
 import com.hex.common.annotation.SPI;
 import com.hex.common.net.HostAndPort;
@@ -9,7 +9,7 @@ import java.util.List;
  * @author: hs
  */
 @SPI
-public interface ServiceRegistry {
+public interface ServicePublisher {
 
     /**
      * 初始化注册中心

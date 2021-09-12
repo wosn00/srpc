@@ -2,7 +2,7 @@ package com.hex.zookeeper;
 
 import com.hex.common.exception.RegistryException;
 import com.hex.common.net.HostAndPort;
-import com.hex.discovery.ServiceDiscovery;
+import com.hex.discovery.ServiceDiscover;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
@@ -13,8 +13,8 @@ import java.util.List;
 /**
  * @author: hs
  */
-public class ZkServiceDiscoveryImpl extends AbsZkService implements ServiceDiscovery {
-    private static final Logger logger = LoggerFactory.getLogger(ZkServiceDiscoveryImpl.class);
+public class ZkServiceDiscoverImpl extends AbsZkService implements ServiceDiscover {
+    private static final Logger logger = LoggerFactory.getLogger(ZkServiceDiscoverImpl.class);
 
     @Override
     public List<HostAndPort> discoverRpcServiceAddress(String serviceName) {
