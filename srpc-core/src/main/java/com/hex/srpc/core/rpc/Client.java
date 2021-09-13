@@ -24,16 +24,6 @@ public interface Client {
     void stop();
 
     /**
-     * 连接多服务节点（支持高可用，负载均衡）
-     */
-    Client contactNodes(List<HostAndPort> nodes);
-
-    /**
-     * 连接单服务节点
-     */
-    Client contactNode(HostAndPort node);
-
-    /**
      * 设置注册中心地址
      *
      * @param schema          注册中心协议[默认zookeeper]

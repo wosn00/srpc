@@ -195,13 +195,17 @@ public class SRpcServer extends AbstractRpc implements Server {
             this.serverBootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
         }
 
+        Integer bindPort = this.port == null ? this.serverConfig.getPort() : this.port;
+
         try {
-            this.serverBootstrap.bind(this.port == null ? this.serverConfig.getPort() : this.port).sync();
+            this.serverBootstrap.bind(bindPort).sync();
         } catch (InterruptedException e) {
             throw new RpcException("RpcServer bind Interrupted!", e);
         }
 
-        logger.info("RpcServer started success!  Listening port:{}", serverConfig.getPort());
+        if (logger.isInfoEnabled()) {
+            logger.info("RpcServer started success!  Listening port:{}", bindPort);
+        }
     }
 
     private void scanRpcServer() {

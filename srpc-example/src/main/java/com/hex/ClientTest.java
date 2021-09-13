@@ -18,7 +18,6 @@ public class ClientTest {
         // 初始化客户端，需填入rpc客户端配置，可使用默认配置
         Client rpcClient = SRpcClient.builder()
                 .config(new SRpcClientConfig())
-                .contactNode(new HostAndPort("127.0.0.1", 8005))
                 .start();
 
         System.out.println("---------------------同步调用测试请求----------------------");
@@ -26,7 +25,7 @@ public class ClientTest {
         TestRequest request = new TestRequest().setName("hs").setBody("测试请求");
 
         HostAndPort node = HostAndPort.from("127.0.0.1:8005");
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             // 同步发送请求，获取响应
             TestResponse response = rpcClient.invoke("test2", request, TestResponse.class, node);
             System.out.println("这是第" + i + "个响应内容:" + response);

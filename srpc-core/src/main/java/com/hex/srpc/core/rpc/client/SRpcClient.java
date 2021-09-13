@@ -153,21 +153,6 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public Client contactNodes(List<HostAndPort> nodes) {
-        try {
-            nodeManager.addNodes(nodes);
-        } catch (Exception e) {
-            logger.error("add server cluster failed", e);
-        }
-        return this;
-    }
-
-    @Override
-    public Client contactNode(HostAndPort node) {
-        return contactNodes(Lists.newArrayList(node));
-    }
-
-    @Override
     public Client configRegistry(String schema, List<String> registryAddress) {
         setConfigRegistry(schema, registryAddress, null);
         return this;
