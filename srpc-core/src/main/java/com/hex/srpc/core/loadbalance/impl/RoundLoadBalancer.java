@@ -1,6 +1,8 @@
-package com.hex.srpc.core.loadbalance;
+package com.hex.srpc.core.loadbalance.impl;
 
 import com.hex.common.net.HostAndPort;
+import com.hex.srpc.core.loadbalance.AbstractLoadBalancer;
+import com.hex.srpc.core.protocol.Command;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Comparator;
@@ -15,13 +17,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * 轮询策略
  */
-public class RoundLoadBalancer implements LoadBalancer {
+public class RoundLoadBalancer extends AbstractLoadBalancer {
 
     private final Map<String, AtomicInteger> counterMap = new ConcurrentHashMap<>();
 
     @Override
-
-    public HostAndPort choose(List<HostAndPort> nodes) {
+    protected HostAndPort doSelect(List<HostAndPort> nodes, Command<?> command) {
         nodes.sort(Comparator.comparing(HostAndPort::toString));
         String serverJoin = StringUtils.join(nodes.toArray(), ";");
         AtomicInteger counter = counterMap.get(serverJoin);

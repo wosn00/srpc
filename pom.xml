@@ -9,13 +9,13 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
+        <module>srpc-common</module>
         <module>srpc-core</module>
         <module>srpc-spring-support</module>
         <module>srpc-spring-boot-starter</module>
         <module>srpc-registry</module>
-        <module>srpc-spring-example</module>
         <module>srpc-example</module>
-        <module>srpc-common</module>
+        <module>srpc-spring-example</module>
     </modules>
 
     <properties>

@@ -1,6 +1,7 @@
 package com.hex.srpc.core.loadbalance;
 
 import com.hex.common.net.HostAndPort;
+import com.hex.srpc.core.protocol.Command;
 
 import java.util.List;
 
@@ -10,6 +11,6 @@ import java.util.List;
  */
 public interface LoadBalancer {
 
-    HostAndPort choose(List<HostAndPort> nodes);
+    HostAndPort selectNode(List<HostAndPort> nodes, Command<?> command);
 
 }

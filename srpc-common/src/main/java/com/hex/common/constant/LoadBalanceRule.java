@@ -14,5 +14,10 @@ public enum LoadBalanceRule {
     /**
      * 轮询
      */
-    ROUND;
+    ROUND,
+
+    /**
+     * 一致性hash
+     */
+    CONSISTENT_HASH;
 }

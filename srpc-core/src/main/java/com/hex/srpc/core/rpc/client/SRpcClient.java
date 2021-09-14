@@ -19,6 +19,8 @@ import com.hex.srpc.core.handler.NettyProcessHandler;
 import com.hex.srpc.core.invoke.ResponseFuture;
 import com.hex.srpc.core.invoke.ResponseMapping;
 import com.hex.srpc.core.invoke.RpcCallback;
+import com.hex.srpc.core.loadbalance.LoadBalancer;
+import com.hex.srpc.core.loadbalance.LoadBalancerFactory;
 import com.hex.srpc.core.node.INodeManager;
 import com.hex.srpc.core.node.NodeManager;
 import com.hex.srpc.core.protocol.Command;
@@ -70,6 +72,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private INodeManager nodeManager;
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
+    private LoadBalancer loadBalancer;
     private ServiceDiscover serviceDiscover;
 
     private SRpcClient() {
@@ -224,7 +227,7 @@ public class SRpcClient extends AbstractRpc implements Client {
 
     @Override
     public boolean sendHeartBeat(HostAndPort node) {
-        IConnection connection = getConnection(Lists.newArrayList(node));
+        IConnection connection = getConnection(Lists.newArrayList(node), null);
         return sendHeartBeat(connection);
     }
 
@@ -361,7 +364,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private ResponseFuture sendCommand(Command<?> command, List<HostAndPort> nodes,
                                        RpcCallback callback, Integer requestTimeout) {
         // 获取连接
-        IConnection connection = getConnection(nodes);
+        IConnection connection = getConnection(nodes, command);
         // 发送请求
         return sendCommand(command, connection, callback, requestTimeout);
     }
@@ -375,15 +378,10 @@ public class SRpcClient extends AbstractRpc implements Client {
         return responseFuture;
     }
 
-    private IConnection getConnection(List<HostAndPort> nodes) {
-        IConnection connection;
-        if (nodes.size() == 1) {
-            // 不支持高可用
-            connection = nodeManager.chooseConnection(nodes.get(0));
-        } else {
-            // 支持高可用
-            connection = nodeManager.chooseHAConnection(nodes);
-        }
+    private IConnection getConnection(List<HostAndPort> nodes, Command<?> command) {
+        List<HostAndPort> availableNodes = nodeManager.chooseHANode(nodes);
+        HostAndPort node = loadBalancer.selectNode(availableNodes, command);
+        IConnection connection = nodeManager.getConnectionFromPool(node);
         if (connection == null) {
             throw new RpcException("No connection available, please try to add server node first!");
         }
@@ -399,8 +397,8 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     private void initNodeManager() {
-        nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode(),
-                config.getLoadBalanceRule());
+        nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode());
+        loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
         //rpc服务健康检查
         Executors.newSingleThreadScheduledExecutor(SrpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);

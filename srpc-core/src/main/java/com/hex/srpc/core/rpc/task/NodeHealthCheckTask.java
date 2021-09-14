@@ -25,8 +25,8 @@ public class NodeHealthCheckTask implements Runnable {
         for (NodeStatus nodeStatus : serverStatusMap.values()) {
             if (!nodeStatus.isAvailable()) {
                 //发送心跳包探测
-                boolean avaiable = nodeManager.getClient().sendHeartBeat(nodeStatus.getNode());
-                if (Boolean.TRUE.equals(avaiable)) {
+                boolean available = nodeManager.getClient().sendHeartBeat(nodeStatus.getNode());
+                if (Boolean.TRUE.equals(available)) {
                     //心跳成功则置0
                     serverStatusMap.remove(nodeStatus.getNode());
                 }

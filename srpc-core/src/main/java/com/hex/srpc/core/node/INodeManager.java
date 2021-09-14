@@ -35,18 +35,15 @@ public interface INodeManager {
 
     /**
      * 根据集群节点选择高可用服务，负载均衡
+     * ps:单节点的不支持高可用
      */
-    HostAndPort chooseHANode(List<HostAndPort> nodes);
+    List<HostAndPort> chooseHANode(List<HostAndPort> nodes);
 
     /**
-     * 根据集群节点选择出高可用连接，支持节点负载均衡，高可用性
+     * 根据节点获取连接
      */
-    IConnection chooseHAConnection(List<HostAndPort> nodes);
+    IConnection getConnectionFromPool(HostAndPort address);
 
-    /**
-     * 指定节点选择连接，不支持高可用
-     */
-    IConnection chooseConnection(HostAndPort node);
 
     void closeManager();
 
