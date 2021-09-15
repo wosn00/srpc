@@ -67,7 +67,7 @@ public class Connection implements IConnection {
     @Override
     public void send(Command command) {
         if (this.channel.isWritable() && isAvailable()) {
-            this.channel.writeAndFlush(PbProtocolAdapter.getAdapter().encode(command));
+            this.channel.writeAndFlush(PbProtocolAdapter.getAdapter().convert(command));
             this.lastSendTime = System.currentTimeMillis();
         } else {
             logger.warn("connection is unWritable now ,id={}, command={}", id, command);

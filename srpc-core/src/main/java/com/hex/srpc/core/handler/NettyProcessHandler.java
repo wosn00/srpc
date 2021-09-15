@@ -46,7 +46,7 @@ public class NettyProcessHandler extends SimpleChannelInboundHandler<Rpc.Packet>
         chain.addDealing(new DispatchDealing());
         // 上下文，携带消息内容
         DealingContext context = new DealingContext();
-        context.setCommand(PbProtocolAdapter.getAdapter().decode(msg));
+        context.setCommand(PbProtocolAdapter.getAdapter().reverse(msg));
         context.setDealingChain(chain);
         context.setNodeManager(nodeManager);
         context.setConnection(ctx.channel().attr(CONN).get());

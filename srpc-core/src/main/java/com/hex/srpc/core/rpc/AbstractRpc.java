@@ -105,6 +105,11 @@ public abstract class AbstractRpc {
         }
     }
 
+    /**
+     * 注册shutdown hook
+     *
+     * @param runnable
+     */
     protected void registerShutdownHook(Runnable runnable) {
         if (this.shutdownHook == null) {
             this.shutdownHook = new Thread("SRpcShutdownHook") {

@@ -22,8 +22,8 @@ public class SRpcClientConfig extends TLSConfig {
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
     private Integer receiveBuf = 65535; //tcp接收缓冲区
-    private Integer lowWaterLevel = 1024 * 1024; //低水位
-    private Integer highWaterLevel = 10 * 1024 * 1024; //高水位
+    private Integer lowWaterLevel = 1024 * 1024; //netty低水位
+    private Integer highWaterLevel = 10 * 1024 * 1024; //netty高水位
 
     private Boolean preventDuplicateEnable = true; //是否开启去重处理
 

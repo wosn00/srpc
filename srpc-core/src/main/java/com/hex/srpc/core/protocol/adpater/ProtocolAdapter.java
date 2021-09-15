@@ -7,8 +7,8 @@ package com.hex.srpc.core.protocol.adpater;
  */
 public interface ProtocolAdapter<T, R> {
 
-    R encode(T command);
+    R convert(T command);
 
-    T decode(R packet);
+    T reverse(R packet);
 
 }

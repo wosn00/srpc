@@ -1,10 +1,10 @@
 package com.hex.srpc.core.invoke;
 
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.hex.common.cache.IExpireCache;
+import com.hex.common.cache.ScheduleEvictExpireCache;
 
-import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: hs
@@ -13,25 +13,23 @@ public class ResponseMapping {
     /**
      * 响应最长等待时间30s
      */
-    private static Cache<Long, ResponseFuture> futureCache = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.ofSeconds(30))
-            .build();
+    private IExpireCache<Long, ResponseFuture> expireCache;
 
-    private ResponseMapping() {
-
+    public ResponseMapping(int expiredTime) {
+        expireCache = new ScheduleEvictExpireCache<>(expiredTime, TimeUnit.SECONDS);
     }
 
-    public static void putResponseFuture(Long requestSeq, ResponseFuture responseFuture) {
-        futureCache.put(requestSeq, responseFuture);
+    public void putResponseFuture(Long requestSeq, ResponseFuture responseFuture) {
+        expireCache.put(requestSeq, responseFuture);
     }
 
-    public static ResponseFuture getResponseFuture(Long requestId) {
-        ResponseFuture responseFuture = futureCache.getIfPresent(requestId);
-        futureCache.invalidate(requestId);
+    public ResponseFuture getResponseFuture(Long requestId) {
+        ResponseFuture responseFuture = expireCache.get(requestId);
+        expireCache.invalidate(requestId);
         return responseFuture;
     }
 
-    public static void invalidate(Long requestId) {
-        futureCache.invalidate(requestId);
+    public void invalidate(Long requestId) {
+        expireCache.invalidate(requestId);
     }
 }

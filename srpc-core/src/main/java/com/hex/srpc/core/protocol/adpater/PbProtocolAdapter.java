@@ -30,7 +30,7 @@ public class PbProtocolAdapter implements ProtocolAdapter<Command<String>, Rpc.P
     }
 
     @Override
-    public Rpc.Packet encode(Command command) {
+    public Rpc.Packet convert(Command command) {
         Rpc.Packet.Builder builder = Rpc.Packet.newBuilder();
         if (command.getSeq() == null || command.getSeq() == 0L) {
             throw new RpcException("seq can not be null!");
@@ -56,7 +56,7 @@ public class PbProtocolAdapter implements ProtocolAdapter<Command<String>, Rpc.P
     }
 
     @Override
-    public Command<String> decode(Rpc.Packet packet) {
+    public Command<String> reverse(Rpc.Packet packet) {
         Command<String> command;
         if (CommandType.REQUEST_COMMAND.getValue().equals(packet.getCommandType())) {
             command = new RpcRequest();

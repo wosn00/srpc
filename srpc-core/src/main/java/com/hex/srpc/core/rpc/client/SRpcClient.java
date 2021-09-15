@@ -74,14 +74,13 @@ public class SRpcClient extends AbstractRpc implements Client {
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
     private LoadBalancer loadBalancer;
     private ServiceDiscover serviceDiscover;
+    private ResponseMapping responseMapping;
 
     private SRpcClient() {
     }
 
     public Client config(SRpcClientConfig config) {
         this.config = config;
-        //初始化服务节点管理器
-        initNodeManager();
         return this;
     }
 
@@ -93,6 +92,8 @@ public class SRpcClient extends AbstractRpc implements Client {
     public Client start() {
         if (isClientStart.compareAndSet(false, true)) {
             try {
+                //初始化服务节点管理器
+                initConfig();
 
                 initClient();
 
@@ -241,7 +242,7 @@ public class SRpcClient extends AbstractRpc implements Client {
             responseFuture = sendCommand(heartBeatPacket, connection, null, 5);
         } catch (Exception e) {
             logger.error("sync send heartBeat packet error", e);
-            ResponseMapping.invalidate(heartBeatPacket.getSeq());
+            responseMapping.invalidate(heartBeatPacket.getSeq());
             return false;
         }
         //等待并获取响应
@@ -266,7 +267,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         } catch (Exception e) {
             // 未发送成功
             logger.error("sync send request error", e);
-            ResponseMapping.invalidate(request.getSeq());
+            responseMapping.invalidate(request.getSeq());
             return RpcResponse.clientError(request.getSeq());
         }
         // 等待并获取响应
@@ -318,7 +319,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         } catch (Exception e) {
             // 未发送成功
             logger.error("Async send request error, requestId:{}", request.getSeq(), e);
-            ResponseMapping.invalidate(request.getSeq());
+            responseMapping.invalidate(request.getSeq());
         }
     }
 
@@ -373,7 +374,7 @@ public class SRpcClient extends AbstractRpc implements Client {
                                        RpcCallback callback, Integer requestTimeout) {
         ResponseFuture responseFuture =
                 new ResponseFuture(command.getSeq(), requestTimeout, connection.getRemoteAddress(), callback);
-        ResponseMapping.putResponseFuture(command.getSeq(), responseFuture);
+        responseMapping.putResponseFuture(command.getSeq(), responseFuture);
         connection.send(command);
         return responseFuture;
     }
@@ -396,9 +397,10 @@ public class SRpcClient extends AbstractRpc implements Client {
         return ping;
     }
 
-    private void initNodeManager() {
+    private void initConfig() {
         nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode());
         loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
+        responseMapping = new ResponseMapping(config.getRequestTimeout());
         //rpc服务健康检查
         Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);
