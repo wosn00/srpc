@@ -6,12 +6,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author: hs
  */
-public class SrpcThreadFactory implements ThreadFactory {
+public class SRpcThreadFactory implements ThreadFactory {
     private AtomicInteger threadNumber = new AtomicInteger(1);
     private String prefix;
-    private static volatile SrpcThreadFactory defaultFactory;
+    private static volatile SRpcThreadFactory defaultFactory;
 
-    public SrpcThreadFactory(String prefix) {
+    public SRpcThreadFactory(String prefix) {
         this.prefix = prefix + "-" + "-thread-";
     }
 
@@ -22,11 +22,11 @@ public class SrpcThreadFactory implements ThreadFactory {
         return thread;
     }
 
-    public static SrpcThreadFactory getDefault() {
+    public static SRpcThreadFactory getDefault() {
         if (defaultFactory == null) {
-            synchronized (SrpcThreadFactory.class) {
+            synchronized (SRpcThreadFactory.class) {
                 if (defaultFactory == null) {
-                    defaultFactory = new SrpcThreadFactory("rpc");
+                    defaultFactory = new SRpcThreadFactory("rpc");
                 }
             }
         }

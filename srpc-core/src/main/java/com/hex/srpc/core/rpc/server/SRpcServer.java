@@ -5,7 +5,7 @@ import com.hex.common.exception.RegistryException;
 import com.hex.common.exception.RpcException;
 import com.hex.common.net.HostAndPort;
 import com.hex.common.spi.ExtensionLoader;
-import com.hex.common.thread.SrpcThreadFactory;
+import com.hex.common.thread.SRpcThreadFactory;
 import com.hex.common.utils.NetUtil;
 import com.hex.publish.ServicePublisher;
 import com.hex.srpc.core.config.SRpcServerConfig;
@@ -217,7 +217,7 @@ public class SRpcServer extends AbstractRpc implements Server {
 
     private void printConnectionNum() {
         if (serverConfig.getPrintConnectionNumInterval() != null && serverConfig.getPrintConnectionNumInterval() > 0) {
-            Executors.newSingleThreadScheduledExecutor(SrpcThreadFactory.getDefault())
+            Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
                     .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
         }
     }
@@ -286,28 +286,16 @@ public class SRpcServer extends AbstractRpc implements Server {
             if (null != sslContext) {
                 pipeline.addLast(defaultEventExecutorGroup, "sslHandler", sslContext.newHandler(ch.alloc()));
             }
-            // 编解码
-            if (serverConfig.getCompressEnable() != null && serverConfig.getCompressEnable()) {
-                // 添加压缩编解码
-                pipeline.addLast(
-                        defaultEventExecutorGroup,
-                        new ProtobufVarint32FrameDecoder(),
-                        new JdkZlibExtendDecoder(),
-                        new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                        new ProtobufVarint32LengthFieldPrepender(),
-                        new JdkZlibExtendEncoder(serverConfig.getMinThreshold(), serverConfig.getMaxThreshold()),
-                        new ProtobufEncoder());
-            } else {
-                //正常pb编解码
-                pipeline.addLast(
-                        defaultEventExecutorGroup,
-                        new ProtobufVarint32FrameDecoder(),
-                        new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                        new ProtobufVarint32LengthFieldPrepender(),
-                        new ProtobufEncoder());
-            }
+            // 添加压缩编解码
             pipeline.addLast(
                     defaultEventExecutorGroup,
+                    new ProtobufVarint32FrameDecoder(),
+                    new JdkZlibExtendDecoder(),
+                    new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
+                    new ProtobufVarint32LengthFieldPrepender(),
+                    new JdkZlibExtendEncoder(serverConfig.getCompressEnable(), serverConfig.getMinThreshold(), serverConfig.getMaxThreshold()),
+                    new ProtobufEncoder(),
+
                     // 3min没收到或没发送数据则认为空闲
                     new IdleStateHandler(serverConfig.getConnectionIdleTime(), serverConfig.getConnectionIdleTime(), 0),
                     new NettyServerConnManagerHandler(nodeManager, serverConfig),

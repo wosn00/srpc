@@ -8,7 +8,7 @@ import com.hex.common.exception.RpcException;
 import com.hex.common.id.IdGenerator;
 import com.hex.common.net.HostAndPort;
 import com.hex.common.spi.ExtensionLoader;
-import com.hex.common.thread.SrpcThreadFactory;
+import com.hex.common.thread.SRpcThreadFactory;
 import com.hex.common.utils.SerializerUtil;
 import com.hex.discovery.ServiceDiscover;
 import com.hex.srpc.core.config.SRpcClientConfig;
@@ -219,7 +219,7 @@ public class SRpcClient extends AbstractRpc implements Client {
                 .handler(new ClientChannel());
 
         // 心跳保活
-        Executors.newSingleThreadScheduledExecutor(SrpcThreadFactory.getDefault())
+        Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new HeartBeatTask(this.nodeManager, this), 3, config.getHeartBeatTimeInterval(),
                         TimeUnit.SECONDS);
         logger.info("RpcClient init success!");
@@ -400,7 +400,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode());
         loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
         //rpc服务健康检查
-        Executors.newSingleThreadScheduledExecutor(SrpcThreadFactory.getDefault())
+        Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);
     }
 
@@ -442,27 +442,16 @@ public class SRpcClient extends AbstractRpc implements Client {
             if (null != sslContext) {
                 pipeline.addLast(defaultEventExecutorGroup, "sslHandler", sslContext.newHandler(ch.alloc()));
             }
-            if (config.getCompressEnable() != null && config.getCompressEnable()) {
-                // 添加压缩编解码
-                pipeline.addLast(
-                        defaultEventExecutorGroup,
-                        new ProtobufVarint32FrameDecoder(),
-                        new JdkZlibExtendDecoder(),
-                        new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                        new ProtobufVarint32LengthFieldPrepender(),
-                        new JdkZlibExtendEncoder(config.getMinThreshold(), config.getMaxThreshold()),
-                        new ProtobufEncoder());
-            } else {
-                //正常pb编解码
-                pipeline.addLast(
-                        defaultEventExecutorGroup,
-                        new ProtobufVarint32FrameDecoder(),
-                        new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                        new ProtobufVarint32LengthFieldPrepender(),
-                        new ProtobufEncoder());
-            }
+            // 添加压缩编解码
             pipeline.addLast(
                     defaultEventExecutorGroup,
+                    new ProtobufVarint32FrameDecoder(),
+                    new JdkZlibExtendDecoder(),
+                    new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
+                    new ProtobufVarint32LengthFieldPrepender(),
+                    new JdkZlibExtendEncoder(config.getCompressEnable(), config.getMinThreshold(), config.getMaxThreshold()),
+                    new ProtobufEncoder(),
+
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyClientConnManageHandler(nodeManager),
                     new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable()));

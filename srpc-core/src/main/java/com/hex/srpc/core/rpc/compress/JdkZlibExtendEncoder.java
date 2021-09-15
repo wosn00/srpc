@@ -6,36 +6,51 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * @author hs
  * <p>
+ * 扩展JdkZlibEncoder，实现可自定义大小范围内进行包压缩
+ * <p>
  * rawData  ———>  isCompressed(1 byte) + compressData
  */
 public class JdkZlibExtendEncoder extends JdkZlibEncoder {
     private static final long NOT_LIMIT = -1L;
 
+    /**
+     * 是否开启压缩
+     */
+    private boolean enableCompress;
+
+    /**
+     * 压缩最小阈值,包大于最小阈值则进行压缩
+     */
     private long minThreshold;
 
+    /**
+     * 压缩最大阈值,包小于最大阈值则进行压缩
+     */
     private long maxThreshold;
 
-    public JdkZlibExtendEncoder() {
-        this(6, NOT_LIMIT, NOT_LIMIT);
+    public JdkZlibExtendEncoder(boolean enableCompress) {
+        this(enableCompress, 6, NOT_LIMIT, NOT_LIMIT);
     }
 
-    public JdkZlibExtendEncoder(long minThreshold, long maxThreshold) {
-        this(6, minThreshold, maxThreshold);
+    public JdkZlibExtendEncoder(boolean enableCompress, long minThreshold, long maxThreshold) {
+        this(enableCompress, 6, minThreshold, maxThreshold);
     }
 
-    public JdkZlibExtendEncoder(int compressionLevel, long minThreshold, long maxThreshold) {
+    public JdkZlibExtendEncoder(boolean enableCompress, int compressionLevel, long minThreshold, long maxThreshold) {
         super(compressionLevel);
+        this.enableCompress = enableCompress;
         thresholdCheck(minThreshold, maxThreshold);
     }
 
-    public JdkZlibExtendEncoder(int compressionLevel, byte[] dictionary, long minThreshold, long maxThreshold) {
+    public JdkZlibExtendEncoder(boolean enableCompress, int compressionLevel, byte[] dictionary, long minThreshold, long maxThreshold) {
         super(compressionLevel, dictionary);
+        this.enableCompress = enableCompress;
         thresholdCheck(minThreshold, maxThreshold);
     }
 
     private void thresholdCheck(long minThreshold, long maxThreshold) {
-        if (minThreshold < NOT_LIMIT || maxThreshold < NOT_LIMIT) {
-            throw new IllegalArgumentException("minThreshold or maxThreshold is illegal, minThreshold:" +
+        if (enableCompress && (minThreshold < NOT_LIMIT || maxThreshold < NOT_LIMIT)) {
+            throw new IllegalArgumentException("compress minThreshold or maxThreshold is illegal, minThreshold:" +
                     minThreshold + ", maxThreshold:" + maxThreshold);
         }
         this.minThreshold = minThreshold;
@@ -45,6 +60,10 @@ public class JdkZlibExtendEncoder extends JdkZlibEncoder {
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf uncompressed, ByteBuf out) throws Exception {
 
+        if (!enableCompress) {
+            noCompress(uncompressed, out);
+            return;
+        }
         if (this.minThreshold == NOT_LIMIT && this.maxThreshold == NOT_LIMIT) {
             compress(ctx, uncompressed, out);
             return;

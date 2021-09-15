@@ -25,7 +25,7 @@ public class ClientTest {
         TestRequest request = new TestRequest().setName("hs").setBody("测试请求");
 
         HostAndPort node = HostAndPort.from("127.0.0.1:8005");
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 30; i++) {
             // 同步发送请求，获取响应
             TestResponse response = rpcClient.invoke("test2", request, TestResponse.class, node);
             System.out.println("这是第" + i + "个响应内容:" + response);

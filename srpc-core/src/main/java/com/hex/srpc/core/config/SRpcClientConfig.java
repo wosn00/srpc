@@ -32,8 +32,8 @@ public class SRpcClientConfig extends TLSConfig {
     private Long maxWriteSpeed = 10 * 1000 * 1000L; //带宽限制，最大写出速度
 
     private Boolean compressEnable = true; //是否开启数据压缩（平均压缩率在60%以上，可节省大部分流量，性能损耗低）
-    private Long minThreshold = -1L; //开启压缩最低阈值(byte)
-    private Long maxThreshold = -1L; //开启压缩最高阈值(byte)
+    private Long minThreshold = -1L; //开启压缩包大小最低阈值(byte),超过则压缩,-1代表不限制
+    private Long maxThreshold = -1L; //开启压缩包大小最高阈值(byte),低于则压缩,-1代表不限制
 
     public Integer getSelectorThreads() {
         return selectorThreads;
