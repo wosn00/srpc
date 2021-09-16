@@ -13,4 +13,6 @@ public interface RpcConstant {
     String PING = "ping";
 
     String PONG = "pong";
+
+    String CUSTOM_DUPLICATE_MARKER = "customDuplicatedMarker";
 }

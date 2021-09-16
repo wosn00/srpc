@@ -9,8 +9,8 @@ import com.hex.common.thread.SRpcThreadFactory;
 import com.hex.common.utils.NetUtil;
 import com.hex.publish.ServicePublisher;
 import com.hex.srpc.core.config.SRpcServerConfig;
-import com.hex.srpc.core.handler.NettyProcessHandler;
-import com.hex.srpc.core.handler.NettyServerConnManagerHandler;
+import com.hex.srpc.core.handler.connection.NettyServerConnManagerHandler;
+import com.hex.srpc.core.handler.process.ServerProcessHandler;
 import com.hex.srpc.core.node.INodeManager;
 import com.hex.srpc.core.node.NodeManager;
 import com.hex.srpc.core.protocol.pb.proto.Rpc;
@@ -22,7 +22,11 @@ import com.hex.srpc.core.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.srpc.core.rpc.task.ConnectionNumCountTask;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollMode;
@@ -97,14 +101,13 @@ public class SRpcServer extends AbstractRpc implements Server {
     public Server start() {
         if (isServerStart.compareAndSet(false, true)) {
             try {
+                initConfig();
 
                 scanRpcServer();
 
                 initServer();
 
                 registryInitAndPublish();
-
-                printConnectionNum();
 
                 registerShutdownHook(this::stop);
             } catch (Exception e) {
@@ -115,6 +118,16 @@ public class SRpcServer extends AbstractRpc implements Server {
             logger.warn("RpcServer has started!");
         }
         return this;
+    }
+
+    private void initConfig() {
+        if (serverConfig.getPrintConnectionNumInterval() != null && serverConfig.getPrintConnectionNumInterval() > 0) {
+            Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
+                    .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
+        }
+        if (serverConfig.getDeDuplicateEnable()) {
+            buildDuplicatedMarker(serverConfig.getDuplicateCheckTime(), serverConfig.getDuplicateMaxSize());
+        }
     }
 
     @Override
@@ -215,13 +228,6 @@ public class SRpcServer extends AbstractRpc implements Server {
                 .san();
     }
 
-    private void printConnectionNum() {
-        if (serverConfig.getPrintConnectionNumInterval() != null && serverConfig.getPrintConnectionNumInterval() > 0) {
-            Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
-                    .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
-        }
-    }
-
     private void registryInitAndPublish() {
         if (!checkRegistryEnable()) {
             return;
@@ -299,7 +305,7 @@ public class SRpcServer extends AbstractRpc implements Server {
                     // 3min没收到或没发送数据则认为空闲
                     new IdleStateHandler(serverConfig.getConnectionIdleTime(), serverConfig.getConnectionIdleTime(), 0),
                     new NettyServerConnManagerHandler(nodeManager, serverConfig),
-                    new NettyProcessHandler(nodeManager, serverConfig.getPreventDuplicateEnable(), serverConfig.getPrintHearBeatPacketInfo()));
+                    new ServerProcessHandler(nodeManager, duplicatedMarker, serverConfig));
         }
     }
 

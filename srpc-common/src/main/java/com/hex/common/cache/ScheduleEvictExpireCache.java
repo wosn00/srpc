@@ -98,7 +98,7 @@ public class ScheduleEvictExpireCache<K, V> implements IExpireCache<K, V> {
 
     @Override
     public V put(K key, V value) {
-        /**
+        /*
          * 此部分无需加锁.
          */
         V result = resultMap.put(key, value);
@@ -107,7 +107,7 @@ public class ScheduleEvictExpireCache<K, V> implements IExpireCache<K, V> {
             return result;
         }
 
-        /**
+        /*
          * 变更node则才需要加锁.
          */
         try {

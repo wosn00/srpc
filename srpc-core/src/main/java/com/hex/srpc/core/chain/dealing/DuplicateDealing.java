@@ -1,16 +1,13 @@
 package com.hex.srpc.core.chain.dealing;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.hex.common.constant.CommandType;
 import com.hex.srpc.core.chain.Dealing;
 import com.hex.srpc.core.chain.DealingContext;
-import com.hex.common.constant.CommandType;
+import com.hex.srpc.core.extension.DuplicatedMarker;
 import com.hex.srpc.core.protocol.Command;
 import com.hex.srpc.core.protocol.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
 
 /**
  * @author: hs
@@ -20,31 +17,20 @@ import java.time.Duration;
 public class DuplicateDealing implements Dealing {
     private static final Logger logger = LoggerFactory.getLogger(DuplicateDealing.class);
 
-    private static final Cache<Long, Boolean> DUPLICATE_CACHE = Caffeine.newBuilder()
-            .expireAfterAccess(Duration.ofSeconds(30))
-            .build();
+    private DuplicatedMarker duplicatedMarker;
+
+    public DuplicateDealing(DuplicatedMarker duplicatedMarker) {
+        this.duplicatedMarker = duplicatedMarker;
+    }
 
     @Override
     public void deal(DealingContext context) {
         Command<String> command = context.getCommand();
-        // 只有是请求才需要去重
+        // 只有收到请求才需要去重
         if (CommandType.REQUEST_COMMAND.getValue().equals(command.getCommandType())) {
             Long seq = command.getSeq();
-            Boolean seqPresent = DUPLICATE_CACHE.getIfPresent(seq);
-            boolean isDuplicated = false;
-            if (seqPresent == null) {
-                synchronized (DUPLICATE_CACHE) {
-                    if (DUPLICATE_CACHE.getIfPresent(seq) == null) {
-                        DUPLICATE_CACHE.put(seq, Boolean.TRUE);
-                    } else {
-                        isDuplicated = true;
-                    }
-                }
-            } else {
-                isDuplicated = true;
-            }
-            if (isDuplicated) {
-                logger.warn("Received duplicate request seq={}, ignore it", seq);
+            if (duplicatedMarker.mark(seq)) {
+                logger.warn("Received duplicate request seq：[{}], ignore it", seq);
                 RpcResponse response = RpcResponse.duplicateRequest(seq);
                 context.getConnection().send(response);
             } else {

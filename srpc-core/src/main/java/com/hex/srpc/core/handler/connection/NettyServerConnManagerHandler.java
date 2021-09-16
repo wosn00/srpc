@@ -1,4 +1,4 @@
-package com.hex.srpc.core.handler;
+package com.hex.srpc.core.handler.connection;
 
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.connection.Connection;

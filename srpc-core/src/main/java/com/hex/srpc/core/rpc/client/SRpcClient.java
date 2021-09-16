@@ -14,8 +14,8 @@ import com.hex.discovery.ServiceDiscover;
 import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.srpc.core.connection.Connection;
 import com.hex.srpc.core.connection.IConnection;
-import com.hex.srpc.core.handler.NettyClientConnManageHandler;
-import com.hex.srpc.core.handler.NettyProcessHandler;
+import com.hex.srpc.core.handler.process.ClientProcessHandler;
+import com.hex.srpc.core.handler.connection.NettyClientConnManageHandler;
 import com.hex.srpc.core.invoke.ResponseFuture;
 import com.hex.srpc.core.invoke.ResponseMapping;
 import com.hex.srpc.core.invoke.RpcCallback;
@@ -401,6 +401,9 @@ public class SRpcClient extends AbstractRpc implements Client {
         nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode());
         loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
         responseMapping = new ResponseMapping(config.getRequestTimeout());
+        if (config.getDeDuplicateEnable()) {
+            buildDuplicatedMarker(config.getDuplicateCheckTime(), config.getDuplicateMaxSize());
+        }
         //rpc服务健康检查
         Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);
@@ -456,7 +459,7 @@ public class SRpcClient extends AbstractRpc implements Client {
 
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyClientConnManageHandler(nodeManager),
-                    new NettyProcessHandler(nodeManager, config.getPreventDuplicateEnable()));
+                    new ClientProcessHandler(nodeManager, duplicatedMarker, responseMapping, config));
         }
     }
 }

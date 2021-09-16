@@ -22,7 +22,9 @@ public class SRpcServerConfig extends TLSConfig {
     private Integer lowWaterLevel = 1024 * 1024; //netty低水位
     private Integer highWaterLevel = 10 * 1024 * 1024; //netty高水位
 
-    private Boolean preventDuplicateEnable = true; //是否开启去重处理
+    private Boolean deDuplicateEnable = true; //是否开启请求去重处理
+    private Integer duplicateCheckTime = 10; //请求去重缓存时长(秒)
+    private Long duplicateMaxSize = 1024 * 64L; //最大缓存请求个数
 
     private Boolean trafficMonitorEnable = true; //是否开启流控
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度
@@ -147,12 +149,30 @@ public class SRpcServerConfig extends TLSConfig {
         return this;
     }
 
-    public Boolean getPreventDuplicateEnable() {
-        return preventDuplicateEnable;
+    public Boolean getDeDuplicateEnable() {
+        return deDuplicateEnable;
     }
 
-    public void setPreventDuplicateEnable(Boolean preventDuplicateEnable) {
-        this.preventDuplicateEnable = preventDuplicateEnable;
+    public void setDeDuplicateEnable(Boolean deDuplicateEnable) {
+        this.deDuplicateEnable = deDuplicateEnable;
+    }
+
+    public Integer getDuplicateCheckTime() {
+        return duplicateCheckTime;
+    }
+
+    public SRpcServerConfig setDuplicateCheckTime(Integer duplicateCheckTime) {
+        this.duplicateCheckTime = duplicateCheckTime;
+        return this;
+    }
+
+    public Long getDuplicateMaxSize() {
+        return duplicateMaxSize;
+    }
+
+    public SRpcServerConfig setDuplicateMaxSize(Long duplicateMaxSize) {
+        this.duplicateMaxSize = duplicateMaxSize;
+        return this;
     }
 
     public Integer getConnectionIdleTime() {

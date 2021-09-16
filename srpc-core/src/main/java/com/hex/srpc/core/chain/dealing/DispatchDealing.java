@@ -24,6 +24,15 @@ import org.slf4j.LoggerFactory;
 public class DispatchDealing implements Dealing {
     private static final Logger logger = LoggerFactory.getLogger(DispatchDealing.class);
 
+    private ResponseMapping responseMapping;
+
+    public DispatchDealing() {
+    }
+
+    public DispatchDealing(ResponseMapping responseMapping) {
+        this.responseMapping = responseMapping;
+    }
+
     @Override
     public void deal(DealingContext context) {
         Command<String> command = context.getCommand();
@@ -71,7 +80,7 @@ public class DispatchDealing implements Dealing {
     }
 
     private void responseProcess(Command rpcResponse) {
-        ResponseFuture responseFuture = ResponseMapping.getResponseFuture(rpcResponse.getSeq());
+        ResponseFuture responseFuture = responseMapping.getResponseFuture(rpcResponse.getSeq());
         if (responseFuture == null) {
             // 获取不到，可能是服务端处理超时
             if (logger.isWarnEnabled()) {

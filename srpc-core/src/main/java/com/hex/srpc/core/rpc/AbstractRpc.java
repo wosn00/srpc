@@ -1,8 +1,12 @@
 package com.hex.srpc.core.rpc;
 
+import com.hex.common.constant.RpcConstant;
 import com.hex.common.exception.RegistryException;
+import com.hex.common.spi.ExtensionLoader;
 import com.hex.srpc.core.config.RegistryConfig;
 import com.hex.srpc.core.config.TLSConfig;
+import com.hex.srpc.core.extension.DefaultDuplicateMarker;
+import com.hex.srpc.core.extension.DuplicatedMarker;
 import io.netty.channel.epoll.Epoll;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
@@ -34,6 +38,7 @@ public abstract class AbstractRpc {
     protected Thread shutdownHook;
     protected SslContext sslContext;
     protected RegistryConfig registryConfig;
+    protected DuplicatedMarker duplicatedMarker;
 
     protected void setConfigRegistry(String schema, List<String> registryAddress, String serviceName) {
         if (CollectionUtils.isEmpty(registryAddress) || StringUtils.isBlank(schema)) {
@@ -161,5 +166,12 @@ public abstract class AbstractRpc {
         return true;
     }
 
-
+    protected void buildDuplicatedMarker(int checkTime, long maxSize) {
+        ExtensionLoader<DuplicatedMarker> loader = ExtensionLoader.getExtensionLoader(DuplicatedMarker.class);
+        DuplicatedMarker customDuplicatedMarker = loader.getExtension(RpcConstant.CUSTOM_DUPLICATE_MARKER);
+        if (customDuplicatedMarker == null) {
+            this.duplicatedMarker = new DefaultDuplicateMarker();
+        }
+        this.duplicatedMarker.initMarkerConfig(checkTime, maxSize);
+    }
 }

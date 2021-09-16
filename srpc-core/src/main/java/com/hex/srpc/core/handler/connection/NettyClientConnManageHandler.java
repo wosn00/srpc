@@ -1,4 +1,4 @@
-package com.hex.srpc.core.handler;
+package com.hex.srpc.core.handler.connection;
 
 import com.hex.srpc.core.node.INodeManager;
 import io.netty.channel.ChannelHandlerContext;

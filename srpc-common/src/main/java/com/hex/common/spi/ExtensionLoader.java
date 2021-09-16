@@ -87,12 +87,13 @@ public final class ExtensionLoader<T> {
     private T createExtension(String name) {
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
-            throw new RuntimeException("No such extension of name " + name);
+            log.warn("No such extension of name :{}", name);
+            return null;
         }
         T instance = (T) EXTENSION_INSTANCES.get(clazz);
         if (instance == null) {
             try {
-                EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
+                EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.getConstructor().newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             } catch (Exception e) {
                 log.error(e.getMessage());
