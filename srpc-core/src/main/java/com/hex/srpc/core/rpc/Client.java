@@ -1,5 +1,6 @@
 package com.hex.srpc.core.rpc;
 
+import com.hex.common.annotation.Nullable;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.invoke.RpcCallback;
@@ -43,19 +44,24 @@ public interface Client {
     boolean sendHeartBeat(IConnection connection);
 
     /**
-     * 同步调用，返回整个响应内容，使用默认集群
+     * 同步调用，返回整个响应内容，指定rpc服务端节点
      */
-    RpcResponse invoke(String cmd, Object body, HostAndPort... nodes);
+    RpcResponse invoke(String cmd, Object body, HostAndPort node);
 
     /**
-     * 同步调用，返回整个响应内容，指定rpc服务节点
+     * 同步调用，返回整个响应内容，指定rpc服务端节点
      */
     RpcResponse invoke(String cmd, Object body, List<HostAndPort> nodes);
 
     /**
+     * 同步调用，返回整个响应内容，指定rpc服务节点，带超时重试机制
+     */
+    RpcResponse invoke(String cmd, Object body, List<HostAndPort> nodes, int retryTimes);
+
+    /**
      * 同步调用, 并将成功响应的body自动转换为T类型
      */
-    <T> T invoke(String cmd, Object body, Class<T> resultType, HostAndPort... nodes);
+    <T> T invoke(String cmd, Object body, Class<T> resultType, HostAndPort node);
 
     /**
      * 同步调用, 并将成功响应的body自动转换为T类型，指定节点
@@ -63,24 +69,14 @@ public interface Client {
     <T> T invoke(String cmd, Object body, Class<T> resultType, List<HostAndPort> nodes);
 
     /**
-     * 异步调用
-     */
-    void invokeAsync(String cmd, Object body, HostAndPort... nodes);
-
-    /**
-     * 异步调用，指定rpc服务节点
-     */
-    void invokeAsync(String cmd, Object body, List<HostAndPort> nodes);
-
-    /**
      * 异步调用，带响应回调方法
      */
-    void invokeAsync(String cmd, Object body, RpcCallback callback, HostAndPort... nodes);
+    void invokeAsync(String cmd, Object body, @Nullable RpcCallback callback, HostAndPort node);
 
     /**
-     * 异步调用，带响应回调方法，指定rpc服务节点
+     * 异步调用，带响应回调方法，指定rpc服务端节点
      */
-    void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> nodes);
+    void invokeAsync(String cmd, Object body, @Nullable RpcCallback callback, List<HostAndPort> nodes);
 
     /**
      * 同步调用, 使用注册中心获取服务地址[需配置注册中心地址]
@@ -95,11 +91,6 @@ public interface Client {
     /**
      * 异步调用, 使用注册中心获取服务地址[需配置注册中心地址]
      */
-    void invokeAsyncWithRegistry(String cmd, Object body, String serviceName);
-
-    /**
-     * 异步调用, 使用注册中心获取服务地址[需配置注册中心地址]
-     */
-    void invokeAsyncWithRegistry(String cmd, Object body, RpcCallback callback, String serviceName);
+    void invokeAsyncWithRegistry(String cmd, Object body, @Nullable RpcCallback callback, String serviceName);
 
 }

@@ -52,6 +52,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -251,13 +252,19 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public RpcResponse invoke(String cmd, Object body, HostAndPort... nodes) {
-        assertNodesNotNull(nodes);
-        return invoke(cmd, body, Lists.newArrayList(nodes));
+    public RpcResponse invoke(String cmd, Object body, HostAndPort node) {
+        assertNodesNotNull(node);
+        return invoke(cmd, body, Lists.newArrayList(node));
     }
 
     @Override
-    public RpcResponse invoke(String cmd, Object body, List<HostAndPort> cluster) {
+    public RpcResponse invoke(String cmd, Object body, List<HostAndPort> nodes) {
+        assertNodesNotNull(nodes);
+        return invoke(cmd, body, Lists.newArrayList(nodes), 0);
+    }
+
+    @Override
+    public RpcResponse invoke(String cmd, Object body, List<HostAndPort> nodes, int retryTimes) {
         // 构造请求
         RpcRequest<?> request = buildRequest(cmd, body);
         ResponseFuture responseFuture;
@@ -272,12 +279,13 @@ public class SRpcClient extends AbstractRpc implements Client {
         }
         // 等待并获取响应
         return (RpcResponse) responseFuture.waitForResponse();
+        return null;
     }
 
     @Override
-    public <T> T invoke(String cmd, Object body, Class<T> resultType, HostAndPort... nodes) {
-        assertNodesNotNull(nodes);
-        return invoke(cmd, body, resultType, Lists.newArrayList(nodes));
+    public <T> T invoke(String cmd, Object body, Class<T> resultType, HostAndPort node) {
+        assertNodesNotNull(node);
+        return invoke(cmd, body, resultType, Lists.newArrayList(node));
     }
 
     @Override
@@ -293,20 +301,20 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     @Override
-    public void invokeAsync(String cmd, Object body, HostAndPort... nodes) {
-        assertNodesNotNull(nodes);
-        invokeAsync(cmd, body, Lists.newArrayList(nodes));
+    public void invokeAsync(String cmd, Object body, HostAndPort node) {
+        assertNodesNotNull(node);
+        invokeAsync(cmd, body, Lists.newArrayList(node));
     }
 
     @Override
-    public void invokeAsync(String cmd, Object body, List<HostAndPort> cluster) {
-        invokeAsync(cmd, body, null, cluster);
+    public void invokeAsync(String cmd, Object body, List<HostAndPort> nodes) {
+        invokeAsync(cmd, body, null, nodes);
     }
 
     @Override
-    public void invokeAsync(String cmd, Object body, RpcCallback callback, HostAndPort... nodes) {
-        assertNodesNotNull(nodes);
-        invokeAsync(cmd, body, callback, Lists.newArrayList(nodes));
+    public void invokeAsync(String cmd, Object body, RpcCallback callback, HostAndPort node) {
+        assertNodesNotNull(node);
+        invokeAsync(cmd, body, callback, Lists.newArrayList(node));
     }
 
     @Override
@@ -408,8 +416,14 @@ public class SRpcClient extends AbstractRpc implements Client {
                 .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);
     }
 
-    private void assertNodesNotNull(HostAndPort... nodes) {
-        if (nodes == null) {
+    private void assertNodesNotNull(List<HostAndPort> nodes) {
+        if (CollectionUtils.isEmpty(nodes)) {
+            throw new IllegalArgumentException("nodes can not be null");
+        }
+    }
+
+    private void assertNodesNotNull(HostAndPort node) {
+        if (node == null) {
             throw new IllegalArgumentException("nodes can not be null");
         }
     }

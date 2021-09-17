@@ -51,6 +51,7 @@ public class RpcAutoConfiguration {
         RegistryConfig registryConfig = new RegistryConfig();
         BeanUtils.copyProperties(rpcClientProperties, config);
         BeanUtils.copyProperties(rpcClientProperties, registryConfig);
+
         Client client = SRpcClient.builder().config(config);
         if (registryConfig.isEnableRegistry()) {
             client.configRegistry(registryConfig.getRegistrySchema(), registryConfig.getRegistryAddress());
