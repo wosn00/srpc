@@ -65,7 +65,7 @@ public class Connection implements IConnection {
     }
 
     @Override
-    public void send(Command command) {
+    public void send(Command<?> command) {
         if (this.channel.isWritable() && isAvailable()) {
             this.channel.writeAndFlush(PbProtocolAdapter.getAdapter().convert(command));
             this.lastSendTime = System.currentTimeMillis();

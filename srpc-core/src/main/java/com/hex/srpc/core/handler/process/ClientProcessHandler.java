@@ -33,7 +33,7 @@ public class ClientProcessHandler extends AbstractProcessHandler {
     protected void channelRead0(ChannelHandlerContext ctx, Rpc.Packet msg) throws Exception {
         // 生成处理责任链
         DealingChain chain = new DealingChain();
-        if (config.getDeDuplicateEnable()) {
+        if (config.isDeDuplicateEnable()) {
             chain.addDealing(new DuplicateDealing(duplicatedMarker));
         }
         chain.addDealing(new DispatchDealing(responseMapping));

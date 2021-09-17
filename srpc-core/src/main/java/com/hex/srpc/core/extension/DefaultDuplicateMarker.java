@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author: hs
- * 内存级别去重处理，集群模式下需使用SPI自定义redis实现
+ * 内存级别去重处理
  */
 public class DefaultDuplicateMarker implements DuplicatedMarker {
 

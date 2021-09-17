@@ -4,6 +4,8 @@ import com.hex.common.annotation.SPI;
 
 /**
  * @author: hs
+ *
+ * 去重处理器,集群模式下需利用SPI实现DuplicatedMarker使用redis实现
  */
 @SPI
 public interface DuplicatedMarker {

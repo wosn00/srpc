@@ -75,7 +75,7 @@ public class ResponseFuture {
         }
     }
 
-    public void setRpcResponse(Command rpcResponse) {
+    public void setRpcResponse(Command<String> rpcResponse) {
         this.rpcResponse = rpcResponse;
     }
 

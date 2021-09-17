@@ -1,9 +1,9 @@
 package com.hex;
 
+import com.hex.common.net.HostAndPort;
 import com.hex.entity.TestRequest;
 import com.hex.entity.TestResponse;
 import com.hex.srpc.core.config.SRpcClientConfig;
-import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.srpc.core.rpc.client.SRpcClient;
 

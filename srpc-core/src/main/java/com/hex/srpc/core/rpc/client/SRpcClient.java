@@ -197,7 +197,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getWorkerThreads());
         // 流控
         buildTrafficMonitor(defaultEventExecutorGroup,
-                config.getTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
+                config.isTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
 
         if (config.getUseTLS() != null && config.getUseTLS()) {
             try {
@@ -259,7 +259,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     @Override
     public RpcResponse invoke(String cmd, Object body, List<HostAndPort> cluster) {
         // 构造请求
-        RpcRequest request = buildRequest(cmd, body);
+        RpcRequest<?> request = buildRequest(cmd, body);
         ResponseFuture responseFuture;
         // 发送请求
         try {
@@ -312,7 +312,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     @Override
     public void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> nodes) {
         // 构造请求
-        RpcRequest request = buildRequest(cmd, body);
+        RpcRequest<?> request = buildRequest(cmd, body);
         // 发送请求
         try {
             sendCommand(request, nodes, callback, config.getRequestTimeout());
@@ -347,9 +347,8 @@ public class SRpcClient extends AbstractRpc implements Client {
         invokeAsync(cmd, body, callback, discoverRpcService(serviceName));
     }
 
-    private RpcRequest buildRequest(String cmd, Object body) {
-        String requestBody = SerializerUtil.serialize(body);
-        RpcRequest request = new RpcRequest();
+    private <T> RpcRequest<T> buildRequest(String cmd, T body) {
+        RpcRequest<T> request = new RpcRequest<>();
         if (request.getSeq() == null || request.getSeq() == 0L) {
             request.setSeq(IdGenerator.getId());
         }
@@ -358,7 +357,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         }
         request.setCmd(cmd);
         request.setTs(System.currentTimeMillis());
-        request.setBody(requestBody);
+        request.setBody(body);
         return request;
     }
 
@@ -401,7 +400,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode());
         loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
         responseMapping = new ResponseMapping(config.getRequestTimeout());
-        if (config.getDeDuplicateEnable()) {
+        if (config.isDeDuplicateEnable()) {
             buildDuplicatedMarker(config.getDuplicateCheckTime(), config.getDuplicateMaxSize());
         }
         //rpc服务健康检查
@@ -454,7 +453,7 @@ public class SRpcClient extends AbstractRpc implements Client {
                     new JdkZlibExtendDecoder(),
                     new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
                     new ProtobufVarint32LengthFieldPrepender(),
-                    new JdkZlibExtendEncoder(config.getCompressEnable(), config.getMinThreshold(), config.getMaxThreshold()),
+                    new JdkZlibExtendEncoder(config.isCompressEnable(), config.getMinThreshold(), config.getMaxThreshold()),
                     new ProtobufEncoder(),
 
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),

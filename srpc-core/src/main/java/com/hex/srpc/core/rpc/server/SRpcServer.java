@@ -125,7 +125,7 @@ public class SRpcServer extends AbstractRpc implements Server {
             Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
                     .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
         }
-        if (serverConfig.getDeDuplicateEnable()) {
+        if (serverConfig.isDeDuplicateEnable()) {
             buildDuplicatedMarker(serverConfig.getDuplicateCheckTime(), serverConfig.getDuplicateMaxSize());
         }
     }
@@ -179,7 +179,7 @@ public class SRpcServer extends AbstractRpc implements Server {
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(serverConfig.getWorkerThreads());
         // 流控
         buildTrafficMonitor(defaultEventExecutorGroup,
-                serverConfig.getTrafficMonitorEnable(), serverConfig.getMaxReadSpeed(), serverConfig.getMaxWriteSpeed());
+                serverConfig.isTrafficMonitorEnable(), serverConfig.getMaxReadSpeed(), serverConfig.getMaxWriteSpeed());
 
         //tls加密
         if (serverConfig.getUseTLS() != null && serverConfig.getUseTLS()) {
@@ -299,7 +299,7 @@ public class SRpcServer extends AbstractRpc implements Server {
                     new JdkZlibExtendDecoder(),
                     new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
                     new ProtobufVarint32LengthFieldPrepender(),
-                    new JdkZlibExtendEncoder(serverConfig.getCompressEnable(), serverConfig.getMinThreshold(), serverConfig.getMaxThreshold()),
+                    new JdkZlibExtendEncoder(serverConfig.isCompressEnable(), serverConfig.getMinThreshold(), serverConfig.getMaxThreshold()),
                     new ProtobufEncoder(),
 
                     // 3min没收到或没发送数据则认为空闲

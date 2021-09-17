@@ -22,15 +22,15 @@ public class SRpcServerConfig extends TLSConfig {
     private Integer lowWaterLevel = 1024 * 1024; //netty低水位
     private Integer highWaterLevel = 10 * 1024 * 1024; //netty高水位
 
-    private Boolean deDuplicateEnable = true; //是否开启请求去重处理
+    private boolean deDuplicateEnable = true; //是否开启请求去重处理
     private Integer duplicateCheckTime = 10; //请求去重缓存时长(秒)
     private Long duplicateMaxSize = 1024 * 64L; //最大缓存请求个数
 
-    private Boolean trafficMonitorEnable = true; //是否开启流控
+    private boolean trafficMonitorEnable = true; //是否开启流控
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度
     private Long maxWriteSpeed = 10 * 1000 * 1000L; //带宽限制，最大写出速度
 
-    private Boolean compressEnable = true; //是否开启数据压缩(平均压缩率在60%以上，可节省大部分流量，性能损耗低)
+    private boolean compressEnable = true; //是否开启数据压缩(平均压缩率在60%以上，可节省大部分流量，性能损耗低)
     private Long minThreshold = -1L; //开启压缩包大小最低阈值(byte),超过则压缩,-1代表不限制
     private Long maxThreshold = -1L; //开启压缩包大小最高阈值(byte),低于则压缩,-1代表不限制
 
@@ -94,12 +94,7 @@ public class SRpcServerConfig extends TLSConfig {
         this.highWaterLevel = highWaterLevel;
     }
 
-
-    public Boolean getCompressEnable() {
-        return compressEnable;
-    }
-
-    public SRpcServerConfig setCompressEnable(Boolean compressEnable) {
+    public SRpcServerConfig setCompressEnable(boolean compressEnable) {
         this.compressEnable = compressEnable;
         return this;
     }
@@ -122,11 +117,8 @@ public class SRpcServerConfig extends TLSConfig {
         return this;
     }
 
-    public Boolean getTrafficMonitorEnable() {
-        return trafficMonitorEnable;
-    }
 
-    public SRpcServerConfig setTrafficMonitorEnable(Boolean trafficMonitorEnable) {
+    public SRpcServerConfig setTrafficMonitorEnable(boolean trafficMonitorEnable) {
         this.trafficMonitorEnable = trafficMonitorEnable;
         return this;
     }
@@ -149,11 +141,19 @@ public class SRpcServerConfig extends TLSConfig {
         return this;
     }
 
-    public Boolean getDeDuplicateEnable() {
+    public boolean isDeDuplicateEnable() {
         return deDuplicateEnable;
     }
 
-    public void setDeDuplicateEnable(Boolean deDuplicateEnable) {
+    public boolean isTrafficMonitorEnable() {
+        return trafficMonitorEnable;
+    }
+
+    public boolean isCompressEnable() {
+        return compressEnable;
+    }
+
+    public void setDeDuplicateEnable(boolean deDuplicateEnable) {
         this.deDuplicateEnable = deDuplicateEnable;
     }
 

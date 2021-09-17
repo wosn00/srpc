@@ -48,7 +48,7 @@ public class DispatchDealing implements Dealing {
                 break;
             case REQUEST_COMMAND:
                 // 请求分发处理
-                requestDispatch((RpcRequest) command, command.getCmd(), context.getConnection());
+                requestDispatch((RpcRequest<String>) command, command.getCmd(), context.getConnection());
                 break;
             case RESPONSE_COMMAND:
                 // 响应处理
@@ -60,14 +60,14 @@ public class DispatchDealing implements Dealing {
         }
     }
 
-    private void requestDispatch(RpcRequest rpcRequest, String cmd, IConnection connection) {
+    private void requestDispatch(RpcRequest<String> rpcRequest, String cmd, IConnection connection) {
         // 获取对应router
         RouterTarget target = RouterFactory.getRouter(cmd);
         if (target == null) {
             RpcResponse.serverError(rpcRequest.getSeq());
             return;
         }
-        String result;
+        Object result;
         try {
             result = target.invoke(rpcRequest);
         } catch (Exception e) {
@@ -76,10 +76,10 @@ public class DispatchDealing implements Dealing {
             return;
         }
         // 响应
-        connection.send(RpcResponse.success(rpcRequest.getSeq(), result));
+        connection.send(RpcResponse.success(rpcRequest.getSeq(), rpcRequest.getCmd(), result));
     }
 
-    private void responseProcess(Command rpcResponse) {
+    private void responseProcess(Command<String> rpcResponse) {
         ResponseFuture responseFuture = responseMapping.getResponseFuture(rpcResponse.getSeq());
         if (responseFuture == null) {
             // 获取不到，可能是服务端处理超时

@@ -87,7 +87,6 @@ public final class ExtensionLoader<T> {
     private T createExtension(String name) {
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
-            log.warn("No such extension of name :{}", name);
             return null;
         }
         T instance = (T) EXTENSION_INSTANCES.get(clazz);
@@ -150,6 +149,7 @@ public final class ExtensionLoader<T> {
                         String clazzName = line.substring(ei + 1).trim();
                         if (name.length() > 0 && clazzName.length() > 0) {
                             Class<?> clazz = classLoader.loadClass(clazzName);
+                            log.info("SPI load Class [{}]", clazz.getCanonicalName());
                             extensionClasses.put(name, clazz);
                         }
                     } catch (ClassNotFoundException e) {

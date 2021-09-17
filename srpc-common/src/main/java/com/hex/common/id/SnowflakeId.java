@@ -1,10 +1,15 @@
 package com.hex.common.id;
 
 
+import com.hex.common.exception.SeqGeneratorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author: hs
  */
 public class SnowflakeId implements ISnowFlakeId {
+    private static final Logger logger = LoggerFactory.getLogger(SnowflakeId.class);
     /**
      * 开始时间截（2021-01-01 00:00:00）
      */
@@ -113,7 +118,8 @@ public class SnowflakeId implements ISnowFlakeId {
         //如果当前时间小于上一次ID生成的时间戳，说明系统时钟回退过这个时候应当抛出异常
         if (timestamp < lastTimestamp) {
             workerId = (workerId + maxWorkerId + 1) & realMaxWorkerId;
-            System.out.println("Clock moved backwards. current workerId is " + workerId);
+            logger.error("Clock moved backwards. current workerId is {}", workerId);
+            throw new SeqGeneratorException();
         }
 
         //如果是同一时间生成的，则进行毫秒内序列

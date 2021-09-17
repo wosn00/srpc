@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author guohs
  * @date 2021/9/14
  * <p>
- * 一致性hash策略，根据cmd和参数进行hash选取
+ * 一致性hash策略，根据cmd和参数计算hash选取
  */
 public class ConsistentHashLoadBalancer extends AbstractLoadBalancer {
     private final ConcurrentHashMap<String, ConsistentHashSelector> selectors = new ConcurrentHashMap<>();

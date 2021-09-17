@@ -5,7 +5,7 @@ import com.hex.common.constant.CommandType;
 /**
  * @author: hs
  */
-public class RpcRequest extends Command<String> {
+public class RpcRequest<T> extends Command<T> {
 
     public RpcRequest() {
         super();

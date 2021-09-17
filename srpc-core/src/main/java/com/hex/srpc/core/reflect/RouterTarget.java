@@ -39,7 +39,7 @@ public class RouterTarget {
         }
     }
 
-    public String invoke(Command<String> command) {
+    public Object invoke(Command<String> command) {
         if (paramAnnotationPos == null) {
             logger.error("method {} not found annotation @RouteBody", method.getName());
             throw new RpcException();
@@ -53,6 +53,6 @@ public class RouterTarget {
         } catch (IllegalAccessException | InvocationTargetException e) {
             logger.error(Throwables.getStackTraceAsString(e));
         }
-        return SerializerUtil.serialize(result);
+        return result;
     }
 }

@@ -17,12 +17,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RandomLoadBalancer extends AbstractLoadBalancer {
 
     @Override
-    public HostAndPort selectNode(List<HostAndPort> servers, Command<?> command) {
-        int randomCur = ThreadLocalRandom.current().nextInt(servers.size());
-        return servers.get(randomCur);
-    }
-
-    @Override
     protected HostAndPort doSelect(List<HostAndPort> nodes, Command<?> command) {
         int randomCur = ThreadLocalRandom.current().nextInt(nodes.size());
         return nodes.get(randomCur);

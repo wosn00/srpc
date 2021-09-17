@@ -168,9 +168,11 @@ public abstract class AbstractRpc {
 
     protected void buildDuplicatedMarker(int checkTime, long maxSize) {
         ExtensionLoader<DuplicatedMarker> loader = ExtensionLoader.getExtensionLoader(DuplicatedMarker.class);
-        DuplicatedMarker customDuplicatedMarker = loader.getExtension(RpcConstant.CUSTOM_DUPLICATE_MARKER);
-        if (customDuplicatedMarker == null) {
+        DuplicatedMarker customDuplicatedMarker = loader.getExtension(RpcConstant.SPI_CUSTOM_IMPL);
+        if ((this.duplicatedMarker = customDuplicatedMarker) == null) {
             this.duplicatedMarker = new DefaultDuplicateMarker();
+        } else {
+            logger.info("Use the custom DuplicateMarker [{}]", duplicatedMarker.getClass().getCanonicalName());
         }
         this.duplicatedMarker.initMarkerConfig(checkTime, maxSize);
     }

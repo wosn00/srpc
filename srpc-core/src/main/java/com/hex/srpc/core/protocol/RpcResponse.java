@@ -10,14 +10,29 @@ import com.hex.common.constant.CommandType;
  */
 public class RpcResponse extends Command<String> {
 
+    /**
+     * 响应成功
+     */
     public static final Integer SUCCESS_CODE = 200;
 
+    /**
+     * 服务端内部错误
+     */
     public static final Integer SERVER_ERROR_CODE = 500;
 
+    /**
+     * 客户端出错
+     */
     public static final Integer CLIENT_ERROR_CODE = 400;
 
+    /**
+     * 请求超时
+     */
     public static final Integer REQUEST_TIMEOUT = 408;
 
+    /**
+     * 重复请求
+     */
     public static final Integer REQUEST_DUPLICATE = 201;
 
     public RpcResponse() {
@@ -69,8 +84,8 @@ public class RpcResponse extends Command<String> {
      * @param responseBody 响应内容
      * @return RpcResponse
      */
-    public static RpcResponse success(Long requestSeq, String responseBody) {
-        return new RpcResponse(requestSeq, null, SUCCESS_CODE, responseBody);
+    public static Command<Object> success(Long requestSeq, String cmd, Object responseBody) {
+        return new Command<>(requestSeq, cmd, CommandType.RESPONSE_COMMAND.getValue(), SUCCESS_CODE, System.currentTimeMillis(), responseBody);
     }
 
 

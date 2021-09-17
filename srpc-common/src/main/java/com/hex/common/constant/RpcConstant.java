@@ -14,5 +14,5 @@ public interface RpcConstant {
 
     String PONG = "pong";
 
-    String CUSTOM_DUPLICATE_MARKER = "customDuplicatedMarker";
+    String SPI_CUSTOM_IMPL = "custom";
 }
