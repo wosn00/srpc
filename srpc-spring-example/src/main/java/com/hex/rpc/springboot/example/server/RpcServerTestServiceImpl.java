@@ -2,14 +2,14 @@ package com.hex.rpc.springboot.example.server;
 
 import com.hex.common.annotation.RouteBody;
 import com.hex.common.annotation.RouteMapping;
-import com.hex.common.annotation.RpcRoute;
+import com.hex.common.annotation.SRpcRoute;
 import com.hex.rpc.springboot.example.entity.TestRequest;
 import com.hex.rpc.springboot.example.entity.TestResponse;
 
 /**
  * @author: hs
  */
-@RpcRoute
+@SRpcRoute
 public class RpcServerTestServiceImpl {
 
     @RouteMapping("test1")

@@ -1,11 +1,11 @@
 package com.hex.rpc.springboot.example;
 
-import com.hex.rpc.sping.annotation.EnableRpc;
+import com.hex.rpc.sping.annotation.EnableSRpc;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@EnableRpc
+@EnableSRpc
 public class RpcSpringBootExampleApplication {
 
     public static void main(String[] args) {

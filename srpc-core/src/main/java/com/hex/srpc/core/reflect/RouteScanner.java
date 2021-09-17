@@ -1,8 +1,8 @@
 package com.hex.srpc.core.reflect;
 
 import com.hex.common.annotation.RouteMapping;
-import com.hex.common.annotation.RouteScan;
-import com.hex.common.annotation.RpcRoute;
+import com.hex.common.annotation.SRpcScan;
+import com.hex.common.annotation.SRpcRoute;
 import com.hex.common.exception.RpcException;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -47,12 +47,12 @@ public class RouteScanner {
             if (primarySources == null) {
                 throw new RpcException("please add an Class with annotation @RouteScan");
             }
-            if (primarySources.isAnnotationPresent(RouteScan.class)) {
-                RouteScan routeScan = primarySources.getDeclaredAnnotation(RouteScan.class);
-                if (routeScan.value().length == 0) {
+            if (primarySources.isAnnotationPresent(SRpcScan.class)) {
+                SRpcScan rpcScan = primarySources.getDeclaredAnnotation(SRpcScan.class);
+                if (rpcScan.value().length == 0) {
                     basePackages.add(primarySources.getPackage().getName());
                 } else {
-                    basePackages.addAll(Arrays.asList(routeScan.value()));
+                    basePackages.addAll(Arrays.asList(rpcScan.value()));
                 }
             } else {
                 logger.error("Class [{}] doesn't have @RouteScan annotation", primarySources.getSimpleName());
@@ -103,7 +103,7 @@ public class RouteScanner {
     }
 
     private void registerRouter(Class<?> clazz) {
-        if (clazz.isAnnotationPresent(RpcRoute.class)) {
+        if (clazz.isAnnotationPresent(SRpcRoute.class)) {
             Method[] methods = clazz.getDeclaredMethods();
             for (Method method : methods) {
                 if (method.isAnnotationPresent(RouteMapping.class)) {

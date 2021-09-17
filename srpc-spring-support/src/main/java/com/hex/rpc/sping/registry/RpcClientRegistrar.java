@@ -1,6 +1,6 @@
 package com.hex.rpc.sping.registry;
 
-import com.hex.rpc.sping.annotation.EnableRpc;
+import com.hex.rpc.sping.annotation.EnableSRpc;
 import com.hex.rpc.sping.annotation.SRpcClient;
 import com.hex.rpc.sping.factory.RpcClientFactoryBean;
 import com.hex.rpc.sping.processor.RpcPostProcessor;
@@ -56,7 +56,7 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
         //获取需要扫描的包路径
         Set<String> basePackages = new HashSet<>();
         Map<String, Object> attributes = metadata
-                .getAnnotationAttributes(EnableRpc.class.getName());
+                .getAnnotationAttributes(EnableSRpc.class.getName());
         if (attributes != null && attributes.get(BASE_PACKAGES) != null) {
             String[] packages = (String[]) attributes.get(BASE_PACKAGES);
             if (packages != null && packages.length > 0) {

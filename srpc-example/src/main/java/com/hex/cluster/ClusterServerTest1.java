@@ -1,6 +1,6 @@
 package com.hex.cluster;
 
-import com.hex.common.annotation.RouteScan;
+import com.hex.common.annotation.SRpcScan;
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.rpc.server.SRpcServer;
 
@@ -8,7 +8,7 @@ import com.hex.srpc.core.rpc.server.SRpcServer;
 /**
  * @author: hs
  */
-@RouteScan("com.hex.handler")
+@SRpcScan("com.hex.handler")
 public class ClusterServerTest1 {
     public static void main(String[] args) {
 

@@ -4,12 +4,12 @@ import com.hex.entity.TestRequest;
 import com.hex.entity.TestResponse;
 import com.hex.common.annotation.RouteBody;
 import com.hex.common.annotation.RouteMapping;
-import com.hex.common.annotation.RpcRoute;
+import com.hex.common.annotation.SRpcRoute;
 
 /**
  * @author: hs
  */
-@RpcRoute
+@SRpcRoute
 public class TestRouter {
 
     @RouteMapping("test1")

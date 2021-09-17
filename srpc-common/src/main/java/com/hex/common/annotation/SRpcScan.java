@@ -1,7 +1,4 @@
-package com.hex.rpc.sping.annotation;
-
-import com.hex.rpc.sping.registry.RpcClientRegistrar;
-import org.springframework.context.annotation.Import;
+package com.hex.common.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -11,15 +8,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author: hs
+ * 路由扫描，如果不填包名的话默认为当前类所在的包名
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import(RpcClientRegistrar.class)
-@Documented
-public @interface EnableRpc {
-
+public @interface SRpcScan {
     /**
-     * 需扫描包路径
+     * 自定义需要扫描的包
      */
-    String[] basePackages() default {};
+    String[] value() default {};
 }

@@ -1,6 +1,6 @@
 package com.hex;
 
-import com.hex.common.annotation.RouteScan;
+import com.hex.common.annotation.SRpcScan;
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.rpc.server.SRpcServer;
 
@@ -8,7 +8,7 @@ import com.hex.srpc.core.rpc.server.SRpcServer;
 /**
  * @author: hs
  */
-@RouteScan
+@SRpcScan
 public class ServerTest {
     public static void main(String[] args) {
 
