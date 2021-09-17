@@ -69,6 +69,11 @@ public interface Client {
     <T> T invoke(String cmd, Object body, Class<T> resultType, List<HostAndPort> nodes);
 
     /**
+     * 同步调用, 并将成功响应的body自动转换为T类型，指定节点
+     */
+    <T> T invoke(String cmd, Object body, Class<T> resultType, List<HostAndPort> nodes, int retryTimes);
+
+    /**
      * 异步调用，带响应回调方法
      */
     void invokeAsync(String cmd, Object body, @Nullable RpcCallback callback, HostAndPort node);
@@ -86,7 +91,17 @@ public interface Client {
     /**
      * 同步调用, 使用注册中心获取服务地址[需配置注册中心地址]
      */
+    RpcResponse invokeWithRegistry(String cmd, Object body, String serviceName, int retryTimes);
+
+    /**
+     * 同步调用, 使用注册中心获取服务地址[需配置注册中心地址]
+     */
     <T> T invokeWithRegistry(String cmd, Object body, Class<T> resultType, String serviceName);
+
+    /**
+     * 同步调用, 使用注册中心获取服务地址[需配置注册中心地址]
+     */
+    <T> T invokeWithRegistry(String cmd, Object body, Class<T> resultType, String serviceName, int retryTimes);
 
     /**
      * 异步调用, 使用注册中心获取服务地址[需配置注册中心地址]

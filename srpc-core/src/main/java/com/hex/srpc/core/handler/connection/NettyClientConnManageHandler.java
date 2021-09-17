@@ -22,13 +22,17 @@ public class NettyClientConnManageHandler extends AbstractConnManagerHandler {
 
     @Override
     public void connect(ChannelHandlerContext ctx, SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) throws Exception {
-        logger.info("rpc client connect to remote:{}", remoteAddress);
+        if (logger.isDebugEnabled()) {
+            logger.debug("rpc client connect to remote:{}", remoteAddress);
+        }
         super.connect(ctx, remoteAddress, localAddress, promise);
     }
 
     @Override
     public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-        logger.info("rpc client disconnect!");
+        if (logger.isDebugEnabled()) {
+            logger.debug("rpc client disconnect!");
+        }
         ctx.channel().close();
         super.disconnect(ctx, promise);
     }

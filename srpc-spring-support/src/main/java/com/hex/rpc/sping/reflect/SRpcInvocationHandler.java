@@ -18,8 +18,8 @@ import java.util.List;
 /**
  * @author: hs
  */
-public class RpcInvocationHandler implements InvocationHandler {
-    private static final Logger logger = LoggerFactory.getLogger(RpcInvocationHandler.class);
+public class SRpcInvocationHandler implements InvocationHandler {
+    private static final Logger logger = LoggerFactory.getLogger(SRpcInvocationHandler.class);
 
     private ApplicationContext applicationContext;
 
@@ -27,7 +27,7 @@ public class RpcInvocationHandler implements InvocationHandler {
 
     private Class<?> type;
 
-    public RpcInvocationHandler(ApplicationContext applicationContext, Class<?> type) {
+    public SRpcInvocationHandler(ApplicationContext applicationContext, Class<?> type) {
         this.applicationContext = applicationContext;
         this.type = type;
     }
@@ -35,7 +35,7 @@ public class RpcInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
         if (method.isAnnotationPresent(RouteMapping.class)) {
-            getClientBean();
+            getSRpcClientBean();
             RouteMapping routeMapping = method.getDeclaredAnnotation(RouteMapping.class);
             String route = routeMapping.value();
             if (route.length() == 0) {
@@ -54,7 +54,7 @@ public class RpcInvocationHandler implements InvocationHandler {
         return null;
     }
 
-    private void getClientBean() {
+    private void getSRpcClientBean() {
         if (client == null) {
             synchronized (this) {
                 if (client == null) {

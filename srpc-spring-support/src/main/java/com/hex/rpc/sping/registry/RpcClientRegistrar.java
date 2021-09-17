@@ -2,7 +2,7 @@ package com.hex.rpc.sping.registry;
 
 import com.hex.rpc.sping.annotation.EnableSRpc;
 import com.hex.rpc.sping.annotation.SRpcClient;
-import com.hex.rpc.sping.factory.RpcClientFactoryBean;
+import com.hex.rpc.sping.factory.SRpcClientFactoryBean;
 import com.hex.rpc.sping.processor.RpcPostProcessor;
 import com.hex.rpc.sping.scanner.RpcClientScanner;
 import org.apache.commons.lang3.StringUtils;
@@ -107,7 +107,7 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
 
     private void registerClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
         String className = annotationMetadata.getClassName();
-        BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(RpcClientFactoryBean.class);
+        BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(SRpcClientFactoryBean.class);
         definition.addPropertyValue("type", className);
         definition.setRole(RootBeanDefinition.ROLE_INFRASTRUCTURE);
         BeanDefinitionHolder holder = new BeanDefinitionHolder(definition.getBeanDefinition(), className);

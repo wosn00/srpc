@@ -88,5 +88,7 @@ public class RpcResponse extends Command<String> {
         return new Command<>(requestSeq, cmd, CommandType.RESPONSE_COMMAND.getValue(), SUCCESS_CODE, System.currentTimeMillis(), responseBody);
     }
 
-
+    public boolean isTimeout() {
+        return REQUEST_TIMEOUT.equals(this.getCode());
+    }
 }

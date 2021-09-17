@@ -1,10 +1,10 @@
 package com.hex.handler;
 
-import com.hex.entity.TestRequest;
-import com.hex.entity.TestResponse;
 import com.hex.common.annotation.RouteBody;
 import com.hex.common.annotation.RouteMapping;
 import com.hex.common.annotation.SRpcRoute;
+import com.hex.entity.TestRequest;
+import com.hex.entity.TestResponse;
 
 /**
  * @author: hs

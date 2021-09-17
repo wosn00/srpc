@@ -1,6 +1,6 @@
 package com.hex.rpc.sping.factory;
 
-import com.hex.rpc.sping.reflect.RpcInvocationHandler;
+import com.hex.rpc.sping.reflect.SRpcInvocationHandler;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
@@ -11,20 +11,20 @@ import java.lang.reflect.Proxy;
 /**
  * @author: hs
  */
-public class RpcClientFactoryBean implements FactoryBean, ApplicationContextAware {
+public class SRpcClientFactoryBean implements FactoryBean, ApplicationContextAware {
 
     private Class<?> type;
 
     private ApplicationContext applicationContext;
 
-    public RpcClientFactoryBean setType(Class<?> type) {
+    public SRpcClientFactoryBean setType(Class<?> type) {
         this.type = type;
         return this;
     }
 
     @Override
     public Object getObject() throws Exception {
-        RpcInvocationHandler invocationHandler = new RpcInvocationHandler(applicationContext, type);
+        SRpcInvocationHandler invocationHandler = new SRpcInvocationHandler(applicationContext, type);
         return Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{type}, invocationHandler);
     }
 

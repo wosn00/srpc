@@ -95,7 +95,7 @@ public class DispatchDealing implements Dealing {
     }
 
     private void heartBeatProcess(Command<String> command, DealingContext context) {
-        String body = command.getBody();
+        String body = SerializerUtil.deserialize(command.getBody(), String.class);
         if (RpcConstant.PING.equals(body)) {
             //服务端收到ping处理
             if (context.isPrintHeartbeatInfo()) {

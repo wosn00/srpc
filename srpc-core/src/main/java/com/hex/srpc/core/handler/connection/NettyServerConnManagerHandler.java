@@ -30,13 +30,17 @@ public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channel register");
+        if (logger.isDebugEnabled()) {
+            logger.debug("channel register");
+        }
         super.channelRegistered(ctx);
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channel unregister");
+        if (logger.isDebugEnabled()) {
+            logger.debug("channel unregister");
+        }
         super.channelUnregistered(ctx);
     }
 
@@ -63,7 +67,9 @@ public class NettyServerConnManagerHandler extends AbstractConnManagerHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.warn("channel inactive");
+        if (logger.isDebugEnabled()) {
+            logger.debug("channel inactive");
+        }
         ctx.channel().close();
         super.channelInactive(ctx);
     }
