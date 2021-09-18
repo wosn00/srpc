@@ -84,7 +84,7 @@ public class DispatchDealing implements Dealing {
         if (responseFuture == null) {
             // 获取不到，可能是服务端处理超时
             if (logger.isWarnEnabled()) {
-                logger.warn("Response mismatch request, response : {}", SerializerUtil.serializePretty(rpcResponse));
+                logger.warn("Response mismatch request, seq: {}, cmd: {}", rpcResponse.getSeq(), rpcResponse.getCmd());
             }
             return;
         }

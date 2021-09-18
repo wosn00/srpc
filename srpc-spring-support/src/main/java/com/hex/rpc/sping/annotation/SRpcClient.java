@@ -26,4 +26,9 @@ public @interface SRpcClient {
      * rpc注册中心服务名称
      */
     String serviceName() default "";
+
+    /**
+     * 请求超时重试次数
+     */
+    int retryTimes() default 0;
 }

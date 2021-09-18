@@ -1,19 +1,21 @@
 package com.hex.rpc.sping.reflect;
 
 import com.hex.common.annotation.RouteMapping;
-import com.hex.common.exception.RpcException;
 import com.hex.common.net.HostAndPort;
-import com.hex.srpc.core.rpc.Client;
+import com.hex.rpc.sping.annotation.SRpcClient;
 import com.hex.rpc.sping.registry.RpcServerAddressRegistry;
+import com.hex.srpc.core.rpc.Client;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author: hs
@@ -21,51 +23,65 @@ import java.util.List;
 public class SRpcInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(SRpcInvocationHandler.class);
 
-    private ApplicationContext applicationContext;
-
-    private volatile Client client;
-
+    private Client client;
     private Class<?> type;
+    private String typeName;
+    private int timeoutRetryTimes;
+    private Map<Method, RouterWrapper> methodCache = new ConcurrentHashMap<>(4);
 
     public SRpcInvocationHandler(ApplicationContext applicationContext, Class<?> type) {
-        this.applicationContext = applicationContext;
         this.type = type;
+        this.client = applicationContext.getBean(Client.class);
+        resolveType();
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
-        if (method.isAnnotationPresent(RouteMapping.class)) {
-            getSRpcClientBean();
-            RouteMapping routeMapping = method.getDeclaredAnnotation(RouteMapping.class);
-            String route = routeMapping.value();
-            if (route.length() == 0) {
-                logger.error("Class {} Method {} does not have clearly routeMapping", proxy.getClass(), method);
-                return null;
-            }
-            Class<?> returnType = method.getReturnType();
-            String canonicalName = type.getCanonicalName();
-            String serviceName = RpcServerAddressRegistry.getServiceName(canonicalName);
+        RouterWrapper routerWrapper = methodCache.get(method);
+        if (routerWrapper != null) {
+            String routerMapping = routerWrapper.getRouterMapping();
+            Class<?> returnType = routerWrapper.getReturnType();
+            String serviceName = RpcServerAddressRegistry.getServiceName(typeName);
             if (StringUtils.isNotBlank(serviceName)) {
-                return client.invokeWithRegistry(route, args[0], returnType, serviceName);
+                return client.invokeWithRegistry(routerMapping, args[0], returnType, serviceName, timeoutRetryTimes);
             }
-            List<HostAndPort> hostAndPorts = RpcServerAddressRegistry.getHostAndPorts(canonicalName);
-            return client.invoke(route, args[0], returnType, hostAndPorts);
+            List<HostAndPort> hostAndPorts = RpcServerAddressRegistry.getHostAndPorts(typeName);
+            return client.invoke(routerMapping, args[0], returnType, hostAndPorts, timeoutRetryTimes);
         }
         return null;
     }
 
-    private void getSRpcClientBean() {
-        if (client == null) {
-            synchronized (this) {
-                if (client == null) {
-                    try {
-                        client = applicationContext.getBean(Client.class);
-                    } catch (NoSuchBeanDefinitionException e) {
-                        throw new RpcException("no bean of RpcClient be found");
-                    }
+
+    private void resolveType() {
+        this.typeName = type.getCanonicalName();
+        SRpcClient annotation = type.getAnnotation(SRpcClient.class);
+        int retryTimes = annotation.retryTimes();
+        if (retryTimes < 0 && logger.isWarnEnabled()) {
+            logger.warn("Class {} annotation @SRpcClient with illegal retryTimes :{}, reset to 0",
+                    typeName, retryTimes);
+            retryTimes = 0;
+        }
+        timeoutRetryTimes = retryTimes;
+        Method[] declaredMethods = type.getDeclaredMethods();
+        for (Method method : declaredMethods) {
+            if (method.isAnnotationPresent(RouteMapping.class)) {
+                RouteMapping routeMapping = method.getAnnotation(RouteMapping.class);
+                RouterWrapper wrapper = new RouterWrapper();
+                String mapping = routeMapping.value();
+                if (mapping.length() == 0) {
+                    logger.error("Class {} Method {} does not have clearly routeMapping", typeName, method);
+                    continue;
                 }
+                wrapper.setRouterMapping(mapping);
+                wrapper.setReturnType(method.getReturnType());
+                methodCache.put(method, wrapper);
             }
         }
+        if (MapUtils.isEmpty(methodCache) && logger.isWarnEnabled()) {
+            logger.warn("The method of the Class {} did not find any @RouteMapping annotation", typeName);
+        }
+
     }
+
 
 }

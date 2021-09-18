@@ -9,7 +9,7 @@ import com.hex.rpc.springboot.example.entity.TestResponse;
 /**
  * @author: hs
  */
-@SRpcClient(nodes = {"127.0.0.1:8008"})
+@SRpcClient(nodes = {"127.0.0.1:8008"}, retryTimes = 2)
 public interface RpcServerTestService {
 
     @RouteMapping("test1")
