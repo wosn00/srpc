@@ -13,6 +13,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +28,7 @@ public class SRpcInvocationHandler implements InvocationHandler {
     private Class<?> type;
     private String typeName;
     private int timeoutRetryTimes;
-    private Map<Method, RouterWrapper> methodCache = new ConcurrentHashMap<>(4);
+    private Map<Method, RouterWrapper> methodCache = new HashMap<>(4);
 
     public SRpcInvocationHandler(ApplicationContext applicationContext, Class<?> type) {
         this.type = type;
@@ -81,6 +82,35 @@ public class SRpcInvocationHandler implements InvocationHandler {
             logger.warn("The method of the Class {} did not find any @RouteMapping annotation", typeName);
         }
 
+    }
+
+    static class RouterWrapper {
+        /**
+         * 映射路径
+         */
+        private String routerMapping;
+        /**
+         * 返回类型
+         */
+        private Class<?> returnType;
+
+        String getRouterMapping() {
+            return routerMapping;
+        }
+
+        RouterWrapper setRouterMapping(String routerMapping) {
+            this.routerMapping = routerMapping;
+            return this;
+        }
+
+        Class<?> getReturnType() {
+            return returnType;
+        }
+
+        RouterWrapper setReturnType(Class<?> returnType) {
+            this.returnType = returnType;
+            return this;
+        }
     }
 
 

@@ -13,7 +13,7 @@ public class SRpcClientConfig extends TLSConfig {
     private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
 
     private Integer connectionTimeout = 5; //连接超时时间(秒)
-    private Integer requestTimeout = 2; //请求超时时间(秒)
+    private Integer requestTimeout = 10; //请求超时时间(秒)
     private Integer connectionSizePerNode = 5; //每个节点连接数
     private LoadBalanceRule loadBalanceRule = LoadBalanceRule.CONSISTENT_HASH; //多节点负载均衡策略
     private Integer connectionIdleTime = 180; //超过连接空闲时间(秒)未收发数据则关闭连接
