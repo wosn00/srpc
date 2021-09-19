@@ -14,7 +14,7 @@ public class SRpcServerConfig extends TLSConfig {
     private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
 
     private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
-    private Integer printConnectionNumInterval = 30; //打印服务端当前连接数时间间隔(秒), 0为不打印
+    private Integer printConnectionNumInterval = 30; //打印服务端当前连接数信息，时间间隔(秒), 0为不打印
     private Boolean isPrintHearBeatPacketInfo = false; //是否打印心跳包信息
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
