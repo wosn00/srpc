@@ -14,7 +14,7 @@ public class RegistryConfig {
     private boolean enableRegistry;
 
     /**
-     * 注册中心模式，默认zookeeper，其他注册中心可基于spi机制自行扩展实现
+     * 注册中心模式，缺省为zookeeper，其他注册中心可基于spi机制自行扩展实现
      */
     private String registrySchema;
 

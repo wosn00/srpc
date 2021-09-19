@@ -1,0 +1,3 @@
+RANDOM=com.hex.srpc.core.loadbalance.impl.RandomLoadBalancer#
+ROUND=com.hex.srpc.core.loadbalance.impl.RoundLoadBalancer#
+CONSISTENT_HASH=com.hex.srpc.core.loadbalance.impl.ConsistentHashLoadBalancer

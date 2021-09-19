@@ -27,7 +27,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public final class ExtensionLoader<T> {
     private static final Logger log = LoggerFactory.getLogger(ExtensionLoader.class);
 
-    private static final String SERVICE_DIRECTORY = "META-INF/extensions/";
+    private static final String SERVICE_DIRECTORY = "META-INF/srpc/";
     private static final Map<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
     private static final Map<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
 
@@ -149,8 +149,10 @@ public final class ExtensionLoader<T> {
                         String clazzName = line.substring(ei + 1).trim();
                         if (name.length() > 0 && clazzName.length() > 0) {
                             Class<?> clazz = classLoader.loadClass(clazzName);
-                            log.info("SPI load Class [{}]", clazz.getCanonicalName());
+                            log.debug("SPI load Class [{}]", clazz.getCanonicalName());
                             extensionClasses.put(name, clazz);
+                        } else {
+                            log.error("SPI load Class failed, name {}", name);
                         }
                     } catch (ClassNotFoundException e) {
                         log.error(e.getMessage());

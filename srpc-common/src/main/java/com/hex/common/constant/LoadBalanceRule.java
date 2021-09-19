@@ -19,5 +19,10 @@ public enum LoadBalanceRule {
     /**
      * 一致性hash
      */
-    CONSISTENT_HASH;
+    CONSISTENT_HASH,
+
+    /**
+     * 自定义负载均衡，需利用SPI机制
+     */
+    CUSTOM;
 }

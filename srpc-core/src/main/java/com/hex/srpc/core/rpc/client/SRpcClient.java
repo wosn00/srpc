@@ -226,7 +226,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
                 .scheduleAtFixedRate(new HeartBeatTask(this.nodeManager, this), 3, config.getHeartBeatTimeInterval(),
                         TimeUnit.SECONDS);
-        logger.info("RpcClient init success!");
+        logger.info("RpcClient init success");
     }
 
     @Override
