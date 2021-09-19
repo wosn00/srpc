@@ -1,14 +1,11 @@
 package com.hex.srpc.core.node;
 
 import com.google.common.collect.Sets;
-import com.hex.common.constant.LoadBalanceRule;
 import com.hex.common.exception.RpcException;
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.connection.ConnectionPool;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.connection.IConnectionPool;
-import com.hex.srpc.core.loadbalance.LoadBalancerFactory;
-import com.hex.srpc.core.loadbalance.LoadBalancer;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.srpc.core.rpc.client.SRpcClient;
 import org.apache.commons.collections.CollectionUtils;
@@ -106,7 +103,7 @@ public class NodeManager implements INodeManager {
         for (HostAndPort server : servers) {
             AtomicInteger counter = connectionSizeMap.computeIfAbsent(server.getHost(),
                     k -> new AtomicInteger(0));
-            counter.addAndGet(connectionPoolMap.get(server).size());
+            counter.addAndGet(connectionPoolMap.get(server).currentSize());
         }
         return connectionSizeMap;
     }

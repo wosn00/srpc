@@ -18,7 +18,7 @@ public interface IConnectionPool {
 
     void releaseConnection(Long id);
 
-    int size();
+    int currentSize();
 
     void close();
 

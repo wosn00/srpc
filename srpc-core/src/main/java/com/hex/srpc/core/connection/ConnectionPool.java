@@ -35,7 +35,6 @@ public class ConnectionPool implements IConnectionPool {
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
-
     public ConnectionPool(int maxSize, HostAndPort remoteAddress, SRpcClient client) {
         this.maxSize = maxSize;
         this.remoteAddress = remoteAddress;
@@ -50,28 +49,29 @@ public class ConnectionPool implements IConnectionPool {
     @Override
     public IConnection getConnection() {
         if (isClosed.get()) {
-            return null;
+            logger.error("connectionPool already closed, remoteAddress: {}", remoteAddress);
+            throw new RpcException();
         }
         connectionInit();
-        readLock.lock();
-        try {
-            if (!connections.isEmpty()) {
-                IConnection connection = connections.get(incrementAndGetModulo(size()));
-                if (!connection.isAvailable()) {
-                    releaseConnection(connection.getId());
-                    connection = getConnection();
-                }
-                return connection;
+        if (!connections.isEmpty()) {
+            IConnection connection = connections.get(incrementAndGetModulo(currentSize()));
+            if (!connection.isAvailable()) {
+                releaseConnection(connection.getId());
+                connection = getConnection();
             }
-        } finally {
-            readLock.unlock();
+            return connection;
         }
         throw new RpcException("no connection available, node: " + remoteAddress);
     }
 
     @Override
     public void addConnection(IConnection connection) {
-        connections.add(connection);
+        writeLock.lock();
+        try {
+            connections.add(connection);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     @Override
@@ -94,8 +94,13 @@ public class ConnectionPool implements IConnectionPool {
     }
 
     @Override
-    public int size() {
-        return connections.size();
+    public int currentSize() {
+        readLock.lock();
+        try {
+            return connections.size();
+        } finally {
+            readLock.unlock();
+        }
     }
 
 
@@ -124,13 +129,19 @@ public class ConnectionPool implements IConnectionPool {
     }
 
     private void connectionInit() {
-        int retryTimes = 0;
+        if (currentSize() >= maxSize) {
+            return;
+        }
         writeLock.lock();
         try {
-            while (size() < maxSize && retryTimes < 3) {
+            if (currentSize() >= maxSize) {
+                return;
+            }
+            int retryTimes = 0;
+            do {
                 try {
                     IConnection connection = this.client.connect(remoteAddress.getHost(), remoteAddress.getPort());
-                    if (connection.isAvailable()) {
+                    if (connection != null && connection.isAvailable()) {
                         addConnection(connection);
                     } else {
                         retryTimes++;
@@ -140,7 +151,7 @@ public class ConnectionPool implements IConnectionPool {
                     NodeManager.serverError(new HostAndPort(remoteAddress.getHost(), remoteAddress.getPort()));
                     logger.error("server {} connectionPool init failed", remoteAddress, e);
                 }
-            }
+            } while (retryTimes > 0 && retryTimes < 3);
         } finally {
             writeLock.unlock();
         }
