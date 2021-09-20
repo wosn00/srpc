@@ -57,7 +57,7 @@ public class ScheduleEvictExpireCache<K, V> implements IExpireCache<K, V> {
         if (threadFactory == null) {
             synchronized (ScheduleEvictExpireCache.class) {
                 if (threadFactory == null) {
-                    threadFactory = new SRpcThreadFactory("rpc-cache-expire");
+                    threadFactory = new SRpcThreadFactory("srpc-cache-expire");
                 }
             }
         }

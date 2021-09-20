@@ -1,6 +1,6 @@
 package com.hex.srpc.core.connection;
 
-import com.hex.common.exception.RpcException;
+import com.hex.common.exception.ConnectionException;
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.node.NodeManager;
 import com.hex.srpc.core.rpc.client.SRpcClient;
@@ -50,7 +50,7 @@ public class ConnectionPool implements IConnectionPool {
     public IConnection getConnection() {
         if (isClosed.get()) {
             logger.error("connectionPool already closed, remoteAddress: {}", remoteAddress);
-            throw new RpcException();
+            throw new ConnectionException();
         }
         connectionInit();
         if (!connections.isEmpty()) {
@@ -61,7 +61,7 @@ public class ConnectionPool implements IConnectionPool {
             }
             return connection;
         }
-        throw new RpcException("no connection available, node: " + remoteAddress);
+        throw new ConnectionException("no connection available, node: " + remoteAddress);
     }
 
     @Override

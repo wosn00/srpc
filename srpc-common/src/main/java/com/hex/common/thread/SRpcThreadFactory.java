@@ -12,7 +12,7 @@ public class SRpcThreadFactory implements ThreadFactory {
     private static volatile SRpcThreadFactory defaultFactory;
 
     public SRpcThreadFactory(String prefix) {
-        this.prefix = prefix + "-" + "-thread-";
+        this.prefix = prefix + "-" + "thread-";
     }
 
     @Override
@@ -26,7 +26,7 @@ public class SRpcThreadFactory implements ThreadFactory {
         if (defaultFactory == null) {
             synchronized (SRpcThreadFactory.class) {
                 if (defaultFactory == null) {
-                    defaultFactory = new SRpcThreadFactory("rpc");
+                    defaultFactory = new SRpcThreadFactory("srpc");
                 }
             }
         }

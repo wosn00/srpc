@@ -16,6 +16,11 @@ public class RpcResponse extends Command<String> {
     public static final Integer SUCCESS_CODE = 200;
 
     /**
+     * 重复请求
+     */
+    public static final Integer REQUEST_DUPLICATE = 201;
+
+    /**
      * 服务端内部错误
      */
     public static final Integer SERVER_ERROR_CODE = 500;
@@ -26,14 +31,14 @@ public class RpcResponse extends Command<String> {
     public static final Integer CLIENT_ERROR_CODE = 400;
 
     /**
-     * 请求超时
+     * 响应超时
      */
-    public static final Integer REQUEST_TIMEOUT = 408;
+    public static final Integer RESPONSE_TIMEOUT = 502;
 
     /**
-     * 重复请求
+     * 节点暂时不可用
      */
-    public static final Integer REQUEST_DUPLICATE = 201;
+    public static final Integer SERVICE_UNAVAILABLE = 503;
 
     public RpcResponse() {
     }
@@ -59,8 +64,8 @@ public class RpcResponse extends Command<String> {
     /**
      * 请求超时响应
      */
-    public static RpcResponse requestTimeout(Long requestSeq) {
-        return new RpcResponse(requestSeq, null, REQUEST_TIMEOUT, null);
+    public static RpcResponse responseTimeout(Long requestSeq) {
+        return new RpcResponse(requestSeq, null, RESPONSE_TIMEOUT, null);
     }
 
     /**
@@ -78,6 +83,13 @@ public class RpcResponse extends Command<String> {
     }
 
     /**
+     * 失败响应
+     */
+    public static RpcResponse serviceUnAvailable(Long requestSeq) {
+        return new RpcResponse(requestSeq, null, SERVICE_UNAVAILABLE, null);
+    }
+
+    /**
      * 成功响应
      *
      * @param requestSeq   请求的seq
@@ -88,7 +100,13 @@ public class RpcResponse extends Command<String> {
         return new Command<>(requestSeq, cmd, CommandType.RESPONSE_COMMAND.getValue(), SUCCESS_CODE, System.currentTimeMillis(), responseBody);
     }
 
-    public boolean isTimeout() {
-        return REQUEST_TIMEOUT.equals(this.getCode());
+    /**
+     * 是否需要进行重试
+     * 响应超时或服务节点暂时不可用才需要重试
+     *
+     * @return 是否要重试
+     */
+    public boolean isRetried() {
+        return RESPONSE_TIMEOUT.equals(this.getCode()) || SERVICE_UNAVAILABLE.equals(this.getCode());
     }
 }

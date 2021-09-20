@@ -56,7 +56,7 @@ public class DispatchDealing implements Dealing {
                 break;
             default:
                 logger.error("commandType:{} not support", type.getValue());
-                throw new RpcException();
+                throw new UnsupportedOperationException();
         }
     }
 

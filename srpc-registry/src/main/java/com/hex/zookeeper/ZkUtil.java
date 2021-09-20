@@ -123,11 +123,11 @@ public class ZkUtil {
                     try {
                         // 等待10秒
                         if (!zkClient.blockUntilConnected(10, TimeUnit.SECONDS)) {
-                            throw new RpcException("Time out waiting to connect to ZK!");
+                            throw new RegistryException("Time out waiting to connect to ZK!");
                         }
                     } catch (InterruptedException e) {
                         log.error("{}", Throwables.getStackTraceAsString(e));
-                        throw new RpcException();
+                        throw new RegistryException();
                     }
                 }
             }

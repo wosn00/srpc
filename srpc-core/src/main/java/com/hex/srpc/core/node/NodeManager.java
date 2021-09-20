@@ -1,7 +1,7 @@
 package com.hex.srpc.core.node;
 
 import com.google.common.collect.Sets;
-import com.hex.common.exception.RpcException;
+import com.hex.common.exception.NodeException;
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.connection.ConnectionPool;
 import com.hex.srpc.core.connection.IConnection;
@@ -14,7 +14,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,7 +26,8 @@ import java.util.stream.Collectors;
 
 /**
  * @author: hs
- * 维护各个server连接
+ * <p>
+ * 维护各个node连接
  */
 public class NodeManager implements INodeManager {
     private static final Logger logger = LoggerFactory.getLogger(NodeManager.class);
@@ -132,7 +137,7 @@ public class NodeManager implements INodeManager {
                 .filter(server -> nodeStatusMap.get(server) == null || nodeStatusMap.get(server).isAvailable())
                 .collect(Collectors.toList());
         if (availableServers.isEmpty()) {
-            throw new RpcException("no available server");
+            throw new NodeException("no available server");
         }
         return availableServers;
     }

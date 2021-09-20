@@ -3,6 +3,8 @@ package com.hex.srpc.core.rpc.client;
 import com.google.common.collect.Lists;
 import com.hex.common.constant.CommandType;
 import com.hex.common.constant.RpcConstant;
+import com.hex.common.exception.ConnectionException;
+import com.hex.common.exception.NodeException;
 import com.hex.common.exception.RegistryException;
 import com.hex.common.exception.RpcException;
 import com.hex.common.id.IdGenerator;
@@ -267,20 +269,8 @@ public class SRpcClient extends AbstractRpc implements Client {
         assertNodesNotNull(nodes);
         RpcResponse response;
         do {
-            ResponseFuture responseFuture;
-            // 构造请求
-            RpcRequest<?> request = buildRequest(cmd, body);
-            try {
-                // 发送请求
-                responseFuture = sendCommand(request, nodes, null, config.getRequestTimeout());
-            } catch (Exception e) {
-                logger.error("sync send request error", e);
-                responseMapping.invalidate(request.getSeq());
-                return RpcResponse.clientError(request.getSeq());
-            }
-            // 等待并获取响应
-            response = (RpcResponse) responseFuture.waitForResponse();
-        } while (retryTimes-- > 0 && response.isTimeout());
+            response = send(cmd, body, nodes, null, false);
+        } while (retryTimes-- > 0 && response.isRetried());
         return response;
     }
 
@@ -314,16 +304,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     @Override
     public void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> nodes) {
         assertNodesNotNull(nodes);
-        // 构造请求
-        RpcRequest<?> request = buildRequest(cmd, body);
-        // 发送请求
-        try {
-            sendCommand(request, nodes, callback, config.getRequestTimeout());
-        } catch (Exception e) {
-            // 未发送成功
-            logger.error("Async send request error, requestId:{}", request.getSeq(), e);
-            responseMapping.invalidate(request.getSeq());
-        }
+        send(cmd, body, nodes, callback, true);
     }
 
     @Override
@@ -366,6 +347,29 @@ public class SRpcClient extends AbstractRpc implements Client {
         return request;
     }
 
+    private RpcResponse send(String cmd, Object body, List<HostAndPort> nodes, RpcCallback callback, boolean sendAsync) {
+        // 构造请求
+        RpcRequest<?> request = buildRequest(cmd, body);
+        RpcResponse response = null;
+        ResponseFuture responseFuture;
+        try {
+            responseFuture = sendCommand(request, nodes, callback, config.getRequestTimeout());
+
+        } catch (ConnectionException | NodeException e) {
+            failed(request, e);
+            return RpcResponse.serviceUnAvailable(request.getSeq());
+
+        } catch (Exception e) {
+            failed(request, e);
+            return RpcResponse.clientError(request.getSeq());
+        }
+        if (!sendAsync) {
+            // 等待并获取响应
+            response = (RpcResponse) responseFuture.waitForResponse();
+        }
+        return response;
+    }
+
     private ResponseFuture sendCommand(Command<?> command, List<HostAndPort> nodes,
                                        RpcCallback callback, Integer requestTimeout) {
         // 获取连接
@@ -386,7 +390,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private IConnection getConnection(List<HostAndPort> nodes, Command<?> command) {
         IConnection connection = nodeManager.chooseConnection(nodes, command);
         if (connection == null) {
-            throw new RpcException("No connection available, please try to add server node first!");
+            throw new ConnectionException("No connection available");
         }
         return connection;
     }
@@ -426,7 +430,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         try {
             nodes = serviceDiscover.discoverRpcServiceAddress(serviceName);
         } catch (Exception e) {
-            throw new RpcException("discover rpc service address failed", e);
+            throw new RegistryException("discover rpc service address failed", e);
         }
         return nodes;
     }
@@ -435,6 +439,11 @@ public class SRpcClient extends AbstractRpc implements Client {
         if (this.registryConfig == null || !this.registryConfig.isEnableRegistry()) {
             throw new RpcException("Registry not configured");
         }
+    }
+
+    private void failed(Command<?> command, Exception e) {
+        logger.error("command send error", e);
+        responseMapping.invalidate(command.getSeq());
     }
 
     /**

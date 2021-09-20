@@ -54,7 +54,7 @@ public class ResponseFuture {
             logger.error("Request timed out! seq: {}, max wait time: {}s", requestSeq, requestTimeout);
             // 记录错误次数
             NodeManager.serverError(remoteAddress);
-            return RpcResponse.requestTimeout(requestSeq);
+            return RpcResponse.responseTimeout(requestSeq);
         }
     }
 
