@@ -11,10 +11,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NodeStatus {
 
     private HostAndPort node;
+    private Integer nodeErrorTimes;
     private AtomicInteger errorTimes = new AtomicInteger(0);
 
-    public NodeStatus(HostAndPort node) {
+    public NodeStatus(HostAndPort node, Integer nodeErrorTimes) {
         this.node = node;
+        this.nodeErrorTimes = nodeErrorTimes;
     }
 
     public HostAndPort getNode() {
@@ -29,11 +31,31 @@ public class NodeStatus {
         return errorTimes.get();
     }
 
+    /**
+     * 错误次数+1
+     */
     public int errorTimesInc() {
         return errorTimes.incrementAndGet();
     }
 
+    /**
+     * 节点是否可用
+     */
     public boolean isAvailable() {
-        return errorTimes.get() <= 3;
+        return errorTimes.get() <= nodeErrorTimes;
+    }
+
+    /**
+     * 是否发生过错误
+     */
+    public boolean isErrorOccurred() {
+        return errorTimes.get() > 0;
+    }
+
+    /**
+     * 重置错误次数
+     */
+    public void resetErrorTimes() {
+        errorTimes.set(0);
     }
 }

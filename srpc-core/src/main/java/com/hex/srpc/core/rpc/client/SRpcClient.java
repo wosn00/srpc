@@ -73,7 +73,6 @@ public class SRpcClient extends AbstractRpc implements Client {
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
     private INodeManager nodeManager;
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
-    private LoadBalancer loadBalancer;
     private ServiceDiscover serviceDiscover;
     private ResponseMapping responseMapping;
 
@@ -385,9 +384,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     private IConnection getConnection(List<HostAndPort> nodes, Command<?> command) {
-        List<HostAndPort> availableNodes = nodeManager.chooseHANode(nodes);
-        HostAndPort node = loadBalancer.selectNode(availableNodes, command);
-        IConnection connection = nodeManager.getConnectionFromPool(node);
+        IConnection connection = nodeManager.chooseConnection(nodes, command);
         if (connection == null) {
             throw new RpcException("No connection available, please try to add server node first!");
         }
@@ -403,15 +400,19 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     private void initConfig() {
-        nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode());
-        loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
+        LoadBalancer loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
+        nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode(), loadBalancer);
+        if (config.isExcludeUnAvailableNodesEnable()) {
+            nodeManager.setExcludeUnAvailableNodesEnable(true);
+            NodeManager.setNodeErrorTimes(config.getNodeErrorTimes());
+            //节点健康检查
+            Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
+                    .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getNodeHealthCheckTimeInterval(), TimeUnit.SECONDS);
+        }
         responseMapping = new ResponseMapping(config.getRequestTimeout());
         if (config.isDeDuplicateEnable()) {
             buildDuplicatedMarker(config.getDuplicateCheckTime(), config.getDuplicateMaxSize());
         }
-        //rpc服务健康检查
-        Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
-                .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getServerHealthCheckTimeInterval(), TimeUnit.SECONDS);
     }
 
     private void assertNodesNotNull(List<HostAndPort> nodes) {

@@ -23,16 +23,14 @@ public class NodeHealthCheckTask implements Runnable {
     public void run() {
         Map<HostAndPort, NodeStatus> serverStatusMap = nodeManager.getNodeStatusMap();
         for (NodeStatus nodeStatus : serverStatusMap.values()) {
-            if (!nodeStatus.isAvailable()) {
+            if (!nodeStatus.isErrorOccurred()) {
                 //发送心跳包探测
                 boolean available = nodeManager.getClient().sendHeartBeat(nodeStatus.getNode());
                 if (Boolean.TRUE.equals(available)) {
-                    //心跳成功则置0
-                    serverStatusMap.remove(nodeStatus.getNode());
+                    //心跳成功则重置错误次数
+                    nodeStatus.resetErrorTimes();
                 }
             }
         }
-
-
     }
 }

@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author: hs
  */
-@ConfigurationProperties(prefix = "com.hex.rpc.client")
+@ConfigurationProperties(prefix = "com.hex.srpc.server")
 public class RpcServerProperties {
     private Integer port = 8008; //绑定端口
     private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
@@ -28,9 +28,9 @@ public class RpcServerProperties {
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度
     private Long maxWriteSpeed = 10 * 1000 * 1000L; //带宽限制，最大写出速度
 
-    private Boolean compressEnable = true; //是否开启数据压缩(平均压缩率在60%以上，可节省大部分流量，性能损耗低)
-    private Long minThreshold = -1L; //开启压缩最低阈值(byte)
-    private Long maxThreshold = -1L; //开启压缩最高阈值(byte)
+    private boolean compressEnable = true; //是否开启数据压缩（平均压缩率在60%以上，可节省大部分流量，性能损耗低）
+    private Long minThreshold = -1L; //开启压缩包大小最低阈值(byte),超过则压缩,-1代表不限制
+    private Long maxThreshold = -1L; //开启压缩包大小最高阈值(byte),低于则压缩,-1代表不限制
 
     // tls加密部分配置
     private Boolean useTLS = false; //是否开启tls加密

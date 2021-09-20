@@ -6,6 +6,8 @@ import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.connection.ConnectionPool;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.connection.IConnectionPool;
+import com.hex.srpc.core.loadbalance.LoadBalancer;
+import com.hex.srpc.core.protocol.Command;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.srpc.core.rpc.client.SRpcClient;
 import org.apache.commons.collections.CollectionUtils;
@@ -25,22 +27,31 @@ import java.util.stream.Collectors;
 public class NodeManager implements INodeManager {
     private static final Logger logger = LoggerFactory.getLogger(NodeManager.class);
 
+    private static Integer NODE_ERROR_TIMES;
     private boolean isClient;
+    private boolean excludeUnAvailableNodesEnable;
     private final Set<HostAndPort> servers = Sets.newConcurrentHashSet();
     private final Map<HostAndPort, IConnectionPool> connectionPoolMap = new ConcurrentHashMap<>();
     private static final Map<HostAndPort, NodeStatus> nodeStatusMap = new ConcurrentHashMap<>();
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private SRpcClient client;
+    private LoadBalancer loadBalancer;
     private int poolSizePerServer;
 
     public NodeManager(boolean isClient) {
         this.isClient = isClient;
     }
 
-    public NodeManager(boolean isClient, SRpcClient client, int poolSizePerServer) {
+    public NodeManager(boolean isClient, SRpcClient client, int poolSizePerServer, LoadBalancer loadBalancer) {
         this.isClient = isClient;
         this.client = client;
         this.poolSizePerServer = poolSizePerServer;
+        this.loadBalancer = loadBalancer;
+    }
+
+    @Override
+    public void setExcludeUnAvailableNodesEnable(boolean excludeUnAvailableNodesEnable) {
+        this.excludeUnAvailableNodesEnable = excludeUnAvailableNodesEnable;
     }
 
     @Override
@@ -113,6 +124,9 @@ public class NodeManager implements INodeManager {
         if (nodes.size() == 1) {
             return nodes;
         }
+        if (!excludeUnAvailableNodesEnable) {
+            return nodes;
+        }
         // 过滤出可用的server
         List<HostAndPort> availableServers = nodes.stream()
                 .filter(server -> nodeStatusMap.get(server) == null || nodeStatusMap.get(server).isAvailable())
@@ -134,6 +148,7 @@ public class NodeManager implements INodeManager {
         }
     }
 
+    @Override
     public IConnection getConnectionFromPool(HostAndPort address) {
         IConnectionPool connectionPool = connectionPoolMap.get(address);
         if (connectionPool == null) {
@@ -141,6 +156,13 @@ public class NodeManager implements INodeManager {
             connectionPool = connectionPoolMap.get(address);
         }
         return connectionPool.getConnection();
+    }
+
+    @Override
+    public IConnection chooseConnection(List<HostAndPort> nodes, Command<?> command) {
+        List<HostAndPort> availableNodes = chooseHANode(nodes);
+        HostAndPort node = loadBalancer.selectNode(availableNodes, command);
+        return getConnectionFromPool(node);
     }
 
     @Override
@@ -153,12 +175,16 @@ public class NodeManager implements INodeManager {
         return client;
     }
 
+    public static void setNodeErrorTimes(Integer nodeErrorTimes) {
+        NODE_ERROR_TIMES = nodeErrorTimes;
+    }
+
     public static void serverError(HostAndPort server) {
         NodeStatus nodeStatus = nodeStatusMap.get(server);
         if (nodeStatus == null) {
             synchronized (nodeStatusMap) {
                 if ((nodeStatus = nodeStatusMap.get(server)) == null) {
-                    nodeStatus = new NodeStatus(server);
+                    nodeStatus = new NodeStatus(server, NODE_ERROR_TIMES);
                     nodeStatusMap.put(server, nodeStatus);
                 }
             }

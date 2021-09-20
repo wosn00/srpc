@@ -26,7 +26,7 @@ public class SRpcServerConfig extends TLSConfig {
     private Integer duplicateCheckTime = 10; //请求去重缓存时长(秒)
     private Long duplicateMaxSize = 1024 * 64L; //最大缓存请求个数
 
-    private boolean trafficMonitorEnable = true; //是否开启流控
+    private boolean trafficMonitorEnable = true; //是否开启流量控制
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度
     private Long maxWriteSpeed = 10 * 1000 * 1000L; //带宽限制，最大写出速度
 
