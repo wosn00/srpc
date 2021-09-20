@@ -12,7 +12,7 @@ import java.util.List;
 
 
 /**
- * 集群连接模式 [多个服务端节点]
+ * 集群连接模式 [手动指定多个服务端节点]
  */
 public class ClusterClientTest {
     public static void main(String[] args) throws InterruptedException {

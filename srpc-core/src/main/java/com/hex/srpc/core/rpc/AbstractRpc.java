@@ -41,7 +41,7 @@ public abstract class AbstractRpc {
     protected DuplicatedMarker duplicatedMarker;
 
     protected void setConfigRegistry(String schema, List<String> registryAddress, String serviceName) {
-        if (CollectionUtils.isEmpty(registryAddress) || StringUtils.isBlank(schema)) {
+        if (CollectionUtils.isEmpty(registryAddress)) {
             throw new RegistryException("Invalid schema or registryAddress");
         }
         //设置默认注册中心

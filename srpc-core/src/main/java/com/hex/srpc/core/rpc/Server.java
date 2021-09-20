@@ -1,5 +1,8 @@
 package com.hex.srpc.core.rpc;
 
+import com.hex.common.annotation.Nullable;
+import com.hex.srpc.core.config.SRpcServerConfig;
+
 import java.util.List;
 import java.util.Set;
 
@@ -7,6 +10,14 @@ import java.util.Set;
  * @author hs
  */
 public interface Server {
+
+    /**
+     * 设置rpc服务端配置
+     *
+     * @param config 配置
+     * @return
+     */
+    Server serverConfig(SRpcServerConfig config);
 
     /**
      * 包含@RouteScan注解的类
@@ -24,12 +35,12 @@ public interface Server {
     /**
      * 设置注册中心地址
      *
-     * @param schema          注册中心模式[默认zookeeper]
+     * @param schema          注册中心模式[缺省zookeeper]
      * @param registryAddress 注册中心地址
      * @param serviceName     需要发布到注册中心上的服务名称[服务提供端需要配置]
      * @return
      */
-    Server configRegistry(String schema, List<String> registryAddress, String serviceName);
+    Server configRegistry(@Nullable String schema, List<String> registryAddress, String serviceName);
 
     /**
      * 指定端口,未指定的话则使用ServerConfig配置里的端口

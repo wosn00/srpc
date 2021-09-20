@@ -138,24 +138,25 @@ public class SRpcClient extends AbstractRpc implements Client {
 
     @Override
     public void stop() {
-        if (!isClientStart.get()) {
-            logger.warn("RpcClient does not start");
-            return;
-        }
-        logger.info("RpcClient stop ...");
-        try {
-            if (eventLoopGroupSelector != null) {
-                eventLoopGroupSelector.shutdownGracefully();
+        if (isClientStart.compareAndSet(true, false)) {
+            logger.info("RpcClient stop ...");
+            try {
+                if (eventLoopGroupSelector != null) {
+                    eventLoopGroupSelector.shutdownGracefully();
+                }
+                if (defaultEventExecutorGroup != null) {
+                    defaultEventExecutorGroup.shutdownGracefully();
+                }
+                //关闭所有服务的连接
+                nodeManager.closeManager();
+            } catch (Exception e) {
+                logger.error("Failed to stop RpcClient!", e);
             }
-            if (defaultEventExecutorGroup != null) {
-                defaultEventExecutorGroup.shutdownGracefully();
-            }
-            //关闭所有服务的连接
-            nodeManager.closeManager();
-        } catch (Exception e) {
-            logger.error("Failed to stop RpcClient!", e);
+            logger.info("RpcClient stop success");
+        } else {
+            logger.info("RpcClient already closed");
         }
-        logger.info("RpcClient stop success");
+
     }
 
     @Override

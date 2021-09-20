@@ -65,11 +65,6 @@ public class SRpcServer extends AbstractRpc implements Server {
     private ServicePublisher servicePublisher;
     private Integer port;
 
-    public Server serverConfig(SRpcServerConfig config) {
-        this.serverConfig = config;
-        return this;
-    }
-
     private SRpcServer() {
     }
 
@@ -77,6 +72,13 @@ public class SRpcServer extends AbstractRpc implements Server {
         return new SRpcServer();
     }
 
+    @Override
+    public Server serverConfig(SRpcServerConfig config) {
+        this.serverConfig = config;
+        return this;
+    }
+
+    @Override
     public Server sourceClass(Class<?> source) {
         primarySource = source;
         return this;
@@ -121,6 +123,9 @@ public class SRpcServer extends AbstractRpc implements Server {
     }
 
     private void initConfig() {
+        if (port != null) {
+            serverConfig.setPort(port);
+        }
         if (serverConfig.getPrintConnectionNumInterval() != null && serverConfig.getPrintConnectionNumInterval() > 0) {
             Executors.newSingleThreadScheduledExecutor(SRpcThreadFactory.getDefault())
                     .scheduleAtFixedRate(new ConnectionNumCountTask(nodeManager), 5, 60, TimeUnit.SECONDS);
@@ -139,31 +144,32 @@ public class SRpcServer extends AbstractRpc implements Server {
 
     @Override
     public void stop() {
-        if (!isServerStart.get()) {
-            logger.warn("RpcServer does not start");
-            return;
-        }
-        logger.info("RpcServer stopping...");
-        try {
-            // 关闭连接管理器
-            nodeManager.closeManager();
+        if (isServerStart.compareAndSet(true, false)) {
+            logger.info("RpcServer stopping...");
+            try {
+                // 关闭连接管理器
+                nodeManager.closeManager();
 
-            if (this.defaultEventExecutorGroup != null) {
-                this.defaultEventExecutorGroup.shutdownGracefully();
-            }
-            if (this.eventLoopGroupSelector != null) {
-                this.eventLoopGroupSelector.shutdownGracefully();
-            }
-            if (this.eventLoopGroupBoss != null) {
-                this.eventLoopGroupBoss.shutdownGracefully();
-            }
-            //清除注册中心节点
-            clearRpcRegistryService();
+                if (this.defaultEventExecutorGroup != null) {
+                    this.defaultEventExecutorGroup.shutdownGracefully();
+                }
+                if (this.eventLoopGroupSelector != null) {
+                    this.eventLoopGroupSelector.shutdownGracefully();
+                }
+                if (this.eventLoopGroupBoss != null) {
+                    this.eventLoopGroupBoss.shutdownGracefully();
+                }
+                //清除注册中心节点
+                clearRpcRegistryService();
 
-        } catch (Exception e) {
-            logger.error("RpcServer stop exception, {}", Throwables.getStackTraceAsString(e));
+            } catch (Exception e) {
+                logger.error("RpcServer stop exception, {}", Throwables.getStackTraceAsString(e));
+            }
+            logger.info("RpcServer stop success");
+        } else {
+            logger.info("RpcServer already closed");
         }
-        logger.info("RpcServer stop success");
+
     }
 
     private void initServer() {
@@ -208,7 +214,7 @@ public class SRpcServer extends AbstractRpc implements Server {
             this.serverBootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
         }
 
-        Integer bindPort = this.port == null ? this.serverConfig.getPort() : this.port;
+        Integer bindPort = this.serverConfig.getPort();
 
         try {
             this.serverBootstrap.bind(bindPort).sync();
@@ -244,7 +250,8 @@ public class SRpcServer extends AbstractRpc implements Server {
             this.servicePublisher.initRegistry(this.registryConfig.getRegistryAddress());
 
         } catch (Exception e) {
-            throw new RegistryException("serviceRegistry init failed", e);
+            logger.error("registry init failed");
+            throw e;
         }
 
         //注册服务
