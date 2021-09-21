@@ -176,4 +176,10 @@ public abstract class AbstractRpc {
         }
         this.duplicatedMarker.initMarkerConfig(checkTime, maxSize);
     }
+
+    protected void assertNotNull(Object object, String message) {
+        if (object == null) {
+            throw new IllegalArgumentException(message);
+        }
+    }
 }

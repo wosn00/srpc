@@ -34,7 +34,9 @@ public class RpcAutoConfiguration {
         BeanUtils.copyProperties(rpcServerProperties, config);
         BeanUtils.copyProperties(rpcServerProperties, registryConfig);
 
-        Server server = SRpcServer.builder().serverConfig(config);
+        Server server = SRpcServer.builder()
+                .serverConfig(config)
+                .sourceClass(Void.class);
         if (registryConfig.isEnableRegistry()) {
             server.configRegistry(registryConfig.getRegistrySchema(), registryConfig.getRegistryAddress(), serviceName);
         }
@@ -50,7 +52,8 @@ public class RpcAutoConfiguration {
         BeanUtils.copyProperties(rpcClientProperties, config);
         BeanUtils.copyProperties(rpcClientProperties, registryConfig);
 
-        Client client = SRpcClient.builder().config(config);
+        Client client = SRpcClient.builder()
+                .config(config);
         if (registryConfig.isEnableRegistry()) {
             client.configRegistry(registryConfig.getRegistrySchema(), registryConfig.getRegistryAddress());
         }

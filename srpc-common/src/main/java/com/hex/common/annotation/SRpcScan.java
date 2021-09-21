@@ -8,14 +8,14 @@ import java.lang.annotation.Target;
 
 /**
  * @author: hs
- * 路由扫描，如果不填包名的话默认为当前类所在的包名
+ * 路由扫描
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface SRpcScan {
     /**
-     * 自定义需要扫描的包
+     * 自定义需要扫描的包, 默认为当前类所在的包名
      */
     String[] value() default {};
 }

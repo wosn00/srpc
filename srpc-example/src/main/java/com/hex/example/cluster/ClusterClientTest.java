@@ -1,4 +1,4 @@
-package com.hex.cluster;
+package com.hex.example.cluster;
 
 import com.hex.entity.TestRequest;
 import com.hex.entity.TestResponse;
@@ -12,7 +12,7 @@ import java.util.List;
 
 
 /**
- * 集群连接模式 [手动指定多个服务端节点]
+ * 集群连接模式 [手动指定多个服务端节点地址]
  */
 public class ClusterClientTest {
     public static void main(String[] args) throws InterruptedException {

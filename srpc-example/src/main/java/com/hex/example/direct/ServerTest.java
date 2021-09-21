@@ -1,4 +1,4 @@
-package com.hex;
+package com.hex.example.direct;
 
 import com.hex.common.annotation.SRpcScan;
 import com.hex.srpc.core.config.SRpcServerConfig;
@@ -7,8 +7,10 @@ import com.hex.srpc.core.rpc.server.SRpcServer;
 
 /**
  * @author: hs
+ * <p>
+ * 单机连接模式 [单个服务端节点]
  */
-@SRpcScan
+@SRpcScan("com.hex")
 public class ServerTest {
     public static void main(String[] args) {
 

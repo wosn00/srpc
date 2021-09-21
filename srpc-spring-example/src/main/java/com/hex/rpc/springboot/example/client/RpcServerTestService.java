@@ -1,4 +1,4 @@
-package com.hex.rpc.springboot.example.server;
+package com.hex.rpc.springboot.example.client;
 
 import com.hex.common.annotation.RouteBody;
 import com.hex.common.annotation.RouteMapping;
@@ -8,6 +8,8 @@ import com.hex.rpc.springboot.example.entity.TestResponse;
 
 /**
  * @author: hs
+ * <p>
+ * 指定节点列表
  */
 @SRpcClient(nodes = {"127.0.0.1:8008"}, retryTimes = 2)
 public interface RpcServerTestService {

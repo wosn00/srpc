@@ -405,6 +405,8 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     private void initConfig() {
+        assertNotNull(config, "clientConfig can't be null, Please confirm that you have configured");
+
         LoadBalancer loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
         nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode(), loadBalancer);
         if (config.isExcludeUnAvailableNodesEnable()) {

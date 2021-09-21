@@ -1,10 +1,13 @@
 package com.hex.rpc.sping.registry;
 
+import com.hex.common.annotation.SRpcRoute;
 import com.hex.rpc.sping.annotation.EnableSRpc;
 import com.hex.rpc.sping.annotation.SRpcClient;
 import com.hex.rpc.sping.factory.SRpcClientFactoryBean;
 import com.hex.rpc.sping.processor.RpcPostProcessor;
 import com.hex.rpc.sping.scanner.RpcClientScanner;
+import com.hex.rpc.sping.scanner.RpcRouteScanner;
+import com.hex.srpc.core.reflect.RouterFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,9 +73,10 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
         if (basePackages.isEmpty()) {
             basePackages.add(ClassUtils.getPackageName(metadata.getClassName()));
         }
-        RpcPostProcessor.registerBasePackages(basePackages);
-        //扫描并注册
-        doScanAndRegister(basePackages, registry);
+        //扫描并注册Client
+        scanClientAndRegister(basePackages, registry);
+        //扫描并注册Route
+        scanRouteAndRegister(basePackages, registry);
         //注册rpc后置处理器
         registerRpcProcess(registry);
     }
@@ -82,7 +86,7 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
         registry.registerBeanDefinition("rpcPostProcessor", definition.getBeanDefinition());
     }
 
-    private void doScanAndRegister(Set<String> basePackages, BeanDefinitionRegistry registry) {
+    private void scanClientAndRegister(Set<String> basePackages, BeanDefinitionRegistry registry) {
         RpcClientScanner scanner = new RpcClientScanner(false, environment);
         scanner.setResourceLoader(resourceLoader);
         AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(SRpcClient.class);
@@ -98,19 +102,48 @@ public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
                             "@RpcClient can only be specified on an interface");
                     //注册server address
                     RpcServerAddressRegistry.register(annotationMetadata);
-                    //注册bean
+                    //注册Client bean
                     registerClient(registry, annotationMetadata);
                 }
             }
         }
     }
 
+    private void scanRouteAndRegister(Set<String> basePackages, BeanDefinitionRegistry registry) {
+        RpcRouteScanner scanner = new RpcRouteScanner(false, environment);
+        scanner.setResourceLoader(resourceLoader);
+        AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(SRpcRoute.class);
+        scanner.addIncludeFilter(annotationTypeFilter);
+
+        for (String basePackage : basePackages) {
+            Set<BeanDefinition> candidateComponents = scanner.findCandidateComponents(basePackage);
+            for (BeanDefinition candidateComponent : candidateComponents) {
+                if (candidateComponent instanceof AnnotatedBeanDefinition) {
+                    AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
+                    AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
+                    Assert.isTrue(annotationMetadata.isConcrete(),
+                            "@SRpcRoute can not be specified on an interface or abstract");
+                    //注册Route Class
+                    RouterFactory.addRouterClazz(annotationMetadata.getClassName());
+                    //注册Route bean
+                    registerRoute(registry, annotationMetadata);
+                }
+            }
+        }
+    }
+
+    private void registerRoute(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(annotationMetadata.getClassName());
+        // 注册到spring容器
+        BeanDefinitionReaderUtils.registerWithGeneratedName(builder.getBeanDefinition(), registry);
+    }
+
     private void registerClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
         String className = annotationMetadata.getClassName();
-        BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(SRpcClientFactoryBean.class);
-        definition.addPropertyValue("type", className);
-        definition.setRole(RootBeanDefinition.ROLE_INFRASTRUCTURE);
-        BeanDefinitionHolder holder = new BeanDefinitionHolder(definition.getBeanDefinition(), className);
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SRpcClientFactoryBean.class);
+        builder.addPropertyValue("type", className);
+        builder.setRole(RootBeanDefinition.ROLE_INFRASTRUCTURE);
+        BeanDefinitionHolder holder = new BeanDefinitionHolder(builder.getBeanDefinition(), className);
         // 注册到spring容器
         BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
 

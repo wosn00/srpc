@@ -1,4 +1,4 @@
-package com.hex;
+package com.hex.example.direct;
 
 import com.hex.common.net.HostAndPort;
 import com.hex.entity.TestRequest;
@@ -9,7 +9,7 @@ import com.hex.srpc.core.rpc.client.SRpcClient;
 
 
 /**
- * 单机连接模式 [单个服务端节点]
+ * 单机连接模式 [连接单个服务端节点]
  */
 public class ClientTest {
     public static void main(String[] args) throws InterruptedException {

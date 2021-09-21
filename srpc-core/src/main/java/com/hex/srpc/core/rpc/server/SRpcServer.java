@@ -43,7 +43,6 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,7 +54,6 @@ public class SRpcServer extends AbstractRpc implements Server {
 
     private final ServerBootstrap serverBootstrap = new ServerBootstrap();
     private Class<?> primarySource;
-    private Set<String> scanPackages;
     private SRpcServerConfig serverConfig;
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupSelector;
@@ -81,12 +79,6 @@ public class SRpcServer extends AbstractRpc implements Server {
     @Override
     public Server sourceClass(Class<?> source) {
         primarySource = source;
-        return this;
-    }
-
-    @Override
-    public Server configScanPackages(Set<String> packages) {
-        this.scanPackages = packages;
         return this;
     }
 
@@ -123,6 +115,8 @@ public class SRpcServer extends AbstractRpc implements Server {
     }
 
     private void initConfig() {
+        assertNotNull(serverConfig, "serverConfig can't be null, Please confirm that you have configured");
+        assertNotNull(primarySource, "sourceClass can't be null, Please confirm that you have configured");
         if (port != null) {
             serverConfig.setPort(port);
         }
@@ -228,10 +222,10 @@ public class SRpcServer extends AbstractRpc implements Server {
     }
 
     private void scanRpcServer() {
-        logger.info("RpcRouter scanning ...");
-        new RouteScanner(this.primarySource)
-                .setBasePackages(scanPackages)
-                .san();
+        if (!this.primarySource.equals(Void.class)) {
+            logger.info("RpcRouter scanning ...");
+            new RouteScanner(this.primarySource).san();
+        }
     }
 
     private void registryInitAndPublish() {

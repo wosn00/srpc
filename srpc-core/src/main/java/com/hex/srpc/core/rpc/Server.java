@@ -28,11 +28,6 @@ public interface Server {
     Server sourceClass(Class<?> clazz);
 
     /**
-     * 手动添加扫描包路径[可选]
-     */
-    Server configScanPackages(Set<String> packages);
-
-    /**
      * 设置注册中心地址
      *
      * @param schema          注册中心模式[缺省zookeeper]

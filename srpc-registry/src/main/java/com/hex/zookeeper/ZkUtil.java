@@ -16,6 +16,7 @@ import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class ZkUtil {
 
     private static final int BASE_SLEEP_TIME = 1000;
     private static final int MAX_RETRIES = 3;
-    public static final String SEPERATOR = "/";
+    public static final String SEPERATOR = File.separator;
     public static final String ZK_REGISTER_ROOT_PATH = "/SRPC";
     private static final Map<String, List<HostAndPort>> SERVICE_ADDRESS_MAP = new ConcurrentHashMap<>();
     private static final Set<String> REGISTERED_PATH_SET = ConcurrentHashMap.newKeySet();

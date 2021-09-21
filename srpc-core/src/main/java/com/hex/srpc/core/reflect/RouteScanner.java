@@ -1,15 +1,13 @@
 package com.hex.srpc.core.reflect;
 
-import com.hex.common.annotation.RouteMapping;
-import com.hex.common.annotation.SRpcScan;
 import com.hex.common.annotation.SRpcRoute;
+import com.hex.common.annotation.SRpcScan;
 import com.hex.common.exception.RpcException;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -87,9 +85,13 @@ public class RouteScanner {
                 loadAndRegister(file.listFiles());
                 continue;
             }
+            if (!file.getName().endsWith(".class")) {
+                continue;
+            }
             String classAbsolutePath = file.getAbsolutePath();
-            String className = classAbsolutePath.substring(classAbsolutePath.indexOf("com"), classAbsolutePath.lastIndexOf(".class"));
-            className = className.replace("\\", ".");
+            classAbsolutePath = classAbsolutePath.replace(File.separator, ".");
+            String className = classAbsolutePath.substring(classAbsolutePath.indexOf("classes.") + "classes.".length(),
+                    classAbsolutePath.lastIndexOf(".class"));
             Class<?> loadClass;
             try {
                 loadClass = classLoader.loadClass(className);
@@ -104,19 +106,7 @@ public class RouteScanner {
 
     private void registerRouter(Class<?> clazz) {
         if (clazz.isAnnotationPresent(SRpcRoute.class)) {
-            Method[] methods = clazz.getDeclaredMethods();
-            for (Method method : methods) {
-                if (method.isAnnotationPresent(RouteMapping.class)) {
-                    RouteMapping routeMapping = method.getDeclaredAnnotation(RouteMapping.class);
-                    String route = routeMapping.value();
-                    if (route.length() == 0) {
-                        logger.warn("Class {} Method {} does not have clearly routeMapping, skip register", clazz, method);
-                        continue;
-                    }
-                    // 注册进容器
-                    RouterFactory.register(route, clazz, method);
-                }
-            }
+            RouterFactory.register(clazz);
         }
     }
 

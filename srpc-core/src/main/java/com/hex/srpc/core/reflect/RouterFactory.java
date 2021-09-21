@@ -1,11 +1,14 @@
 package com.hex.srpc.core.reflect;
 
+import com.hex.common.annotation.RouteMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author: hs
@@ -14,18 +17,24 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RouterFactory {
     private static Logger logger = LoggerFactory.getLogger(RouterFactory.class);
 
+    private static Set<Class<?>> routerClasses = new CopyOnWriteArraySet<>();
+
+    private static Map<Class<?>, Object> factory = new ConcurrentHashMap<>();
+
     private static Map<String, RouterTarget> routerTargetMap = new ConcurrentHashMap<>();
 
-    private static Map<String, Object> factory = new ConcurrentHashMap<>();
 
     private RouterFactory() {
     }
 
     /**
      * 注册Router，单例模式
+     * <p>
+     * factory中若不存在route对应的实例，则自行实例化
      */
-    public static synchronized void register(String mapping, Class<?> clazz, Method method) {
-        Object instance = factory.computeIfAbsent(clazz.getName(), key -> {
+    public static synchronized void register(Class<?> clazz) {
+        // 注册进容器
+        Object instance = factory.computeIfAbsent(clazz, key -> {
             try {
                 return clazz.getConstructor().newInstance();
             } catch (Exception e) {
@@ -33,8 +42,19 @@ public class RouterFactory {
                 return null;
             }
         });
-        RouterTarget routerTarget = new RouterTarget(instance, method);
-        routerTargetMap.put(mapping, routerTarget);
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(RouteMapping.class)) {
+                RouteMapping routeMapping = method.getDeclaredAnnotation(RouteMapping.class);
+                String route = routeMapping.value();
+                if (route.length() == 0) {
+                    logger.warn("Class {} Method {} does not have clearly routeMapping, skip register", clazz, method);
+                    continue;
+                }
+                RouterTarget routerTarget = new RouterTarget(instance, method);
+                routerTargetMap.put(route, routerTarget);
+            }
+        }
     }
 
     public static RouterTarget getRouter(String mapping) {
@@ -48,4 +68,24 @@ public class RouterFactory {
     public static Map<String, RouterTarget> getRouterTargetMap() {
         return routerTargetMap;
     }
+
+    public static void addRouterClazz(String className) {
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            logger.error("add route Class failed", e);
+            return;
+        }
+        routerClasses.add(clazz);
+    }
+
+    public static Set<Class<?>> getAllRouteClasses() {
+        return routerClasses;
+    }
+
+    public static void addRouteInstance(Class<?> clazz, Object route) {
+        factory.put(clazz, route);
+    }
+
 }

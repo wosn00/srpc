@@ -1,4 +1,4 @@
-package com.hex.cluster;
+package com.hex.example.cluster;
 
 import com.hex.common.annotation.SRpcScan;
 import com.hex.srpc.core.config.SRpcServerConfig;
@@ -7,6 +7,7 @@ import com.hex.srpc.core.rpc.server.SRpcServer;
 
 /**
  * @author: hs
+ * 集群连接模式 [服务节点2]
  */
 @SRpcScan("com.hex.handler")
 public class ClusterServerTest2 {
