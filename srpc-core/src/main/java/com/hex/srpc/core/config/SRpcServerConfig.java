@@ -10,8 +10,8 @@ import com.hex.common.utils.NetUtil;
 public class SRpcServerConfig extends TLSConfig {
 
     private Integer port = 9987; //绑定端口
-    private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
-    private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
+    private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
+    private Integer businessThreads = 0; //业务处理线程池，具有耗时业务时可配置，0为不设置
 
     private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
     private Integer printConnectionNumInterval = 30; //打印服务端当前连接数信息，时间间隔(秒), 0为不打印
@@ -37,14 +37,6 @@ public class SRpcServerConfig extends TLSConfig {
     public SRpcServerConfig() {
     }
 
-    public Integer getSelectorThreads() {
-        return selectorThreads;
-    }
-
-    public void setSelectorThreads(Integer selectorThreads) {
-        this.selectorThreads = selectorThreads;
-    }
-
     public Integer getPort() {
         return port;
     }
@@ -54,12 +46,21 @@ public class SRpcServerConfig extends TLSConfig {
         this.port = port;
     }
 
-    public Integer getWorkerThreads() {
-        return workerThreads;
+    public Integer getChannelWorkerThreads() {
+        return channelWorkerThreads;
     }
 
-    public void setWorkerThreads(Integer workerThreads) {
-        this.workerThreads = workerThreads;
+    public void setChannelWorkerThreads(Integer channelWorkerThreads) {
+        this.channelWorkerThreads = channelWorkerThreads;
+    }
+
+    public Integer getBusinessThreads() {
+        return businessThreads;
+    }
+
+    public SRpcServerConfig setBusinessThreads(Integer businessThreads) {
+        this.businessThreads = businessThreads;
+        return this;
     }
 
     public Integer getSendBuf() {

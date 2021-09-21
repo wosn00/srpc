@@ -34,6 +34,7 @@ public abstract class AbstractRpc {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractRpc.class);
 
     private static final String CLASSPATH = "classpath:";
+    protected static int IO_THREAD_SIZE = RpcConstant.DEFAULT_THREADS;
     protected GlobalTrafficShapingHandler trafficShapingHandler;
     protected Thread shutdownHook;
     protected SslContext sslContext;

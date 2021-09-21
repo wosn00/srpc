@@ -7,6 +7,7 @@ import com.hex.common.net.HostAndPort;
 import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SRpcThreadFactory;
 import com.hex.common.utils.NetUtil;
+import com.hex.common.utils.ThreadUtil;
 import com.hex.publish.ServicePublisher;
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.handler.connection.NettyServerConnManagerHandler;
@@ -43,6 +44,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,6 +60,7 @@ public class SRpcServer extends AbstractRpc implements Server {
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupSelector;
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
+    private ExecutorService businessExecutor;
     private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
     private ServicePublisher servicePublisher;
@@ -105,8 +108,8 @@ public class SRpcServer extends AbstractRpc implements Server {
 
                 registerShutdownHook(this::stop);
             } catch (Exception e) {
-                logger.error("RpcServer started failed");
-                throw e;
+                logger.error("RpcServer started failed", e);
+                stop();
             }
         } else {
             logger.warn("RpcServer has started!");
@@ -117,6 +120,9 @@ public class SRpcServer extends AbstractRpc implements Server {
     private void initConfig() {
         assertNotNull(serverConfig, "serverConfig can't be null, Please confirm that you have configured");
         assertNotNull(primarySource, "sourceClass can't be null, Please confirm that you have configured");
+        if (serverConfig.getBusinessThreads() != null && serverConfig.getBusinessThreads() > 0) {
+            businessExecutor = Executors.newFixedThreadPool(serverConfig.getBusinessThreads(), new SRpcThreadFactory("sRpc-business"));
+        }
         if (port != null) {
             serverConfig.setPort(port);
         }
@@ -153,6 +159,9 @@ public class SRpcServer extends AbstractRpc implements Server {
                 if (this.eventLoopGroupBoss != null) {
                     this.eventLoopGroupBoss.shutdownGracefully();
                 }
+                if (businessExecutor != null) {
+                    ThreadUtil.gracefulShutdown(businessExecutor, 5);
+                }
                 //清除注册中心节点
                 clearRpcRegistryService();
 
@@ -170,13 +179,13 @@ public class SRpcServer extends AbstractRpc implements Server {
         logger.info("RpcServer server init");
         if (useEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(1);
-            this.eventLoopGroupSelector = new EpollEventLoopGroup(serverConfig.getSelectorThreads());
+            this.eventLoopGroupSelector = new EpollEventLoopGroup(IO_THREAD_SIZE);
         } else {
             this.eventLoopGroupBoss = new NioEventLoopGroup(1);
-            this.eventLoopGroupSelector = new NioEventLoopGroup(serverConfig.getSelectorThreads());
+            this.eventLoopGroupSelector = new NioEventLoopGroup(IO_THREAD_SIZE);
         }
 
-        this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(serverConfig.getWorkerThreads());
+        this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(serverConfig.getChannelWorkerThreads());
         // 流控
         buildTrafficMonitor(defaultEventExecutorGroup,
                 serverConfig.isTrafficMonitorEnable(), serverConfig.getMaxReadSpeed(), serverConfig.getMaxWriteSpeed());
@@ -287,7 +296,7 @@ public class SRpcServer extends AbstractRpc implements Server {
             ChannelPipeline pipeline = ch.pipeline();
             // 流控
             if (null != trafficShapingHandler) {
-                pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
+                pipeline.addLast(defaultEventExecutorGroup, "trafficShapingHandler", trafficShapingHandler);
             }
             //tls加密
             if (null != sslContext) {
@@ -306,7 +315,7 @@ public class SRpcServer extends AbstractRpc implements Server {
                     // 3min没收到或没发送数据则认为空闲
                     new IdleStateHandler(serverConfig.getConnectionIdleTime(), serverConfig.getConnectionIdleTime(), 0),
                     new NettyServerConnManagerHandler(nodeManager, serverConfig),
-                    new ServerProcessHandler(nodeManager, duplicatedMarker, serverConfig));
+                    new ServerProcessHandler(nodeManager, duplicatedMarker, serverConfig, businessExecutor));
         }
     }
 

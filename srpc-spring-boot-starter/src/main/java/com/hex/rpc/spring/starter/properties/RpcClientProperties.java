@@ -11,8 +11,8 @@ import java.util.List;
  */
 @ConfigurationProperties(prefix = "com.hex.srpc.client")
 public class RpcClientProperties {
-    private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
-    private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
+    private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
+    private Integer businessThreads = 0; //业务处理线程池，具有耗时业务时可配置，0为不设置
 
     private Integer connectionTimeout = 5; //连接超时时间(秒)
     private Integer requestTimeout = 10; //请求超时时间(秒)
@@ -55,21 +55,21 @@ public class RpcClientProperties {
     private String registrySchema; //注册中心模式名称, 缺省为zookeeper
     private List<String> registryAddress; //注册中心地址
 
-    public Integer getSelectorThreads() {
-        return selectorThreads;
+    public Integer getChannelWorkerThreads() {
+        return channelWorkerThreads;
     }
 
-    public RpcClientProperties setSelectorThreads(Integer selectorThreads) {
-        this.selectorThreads = selectorThreads;
+    public RpcClientProperties setChannelWorkerThreads(Integer channelWorkerThreads) {
+        this.channelWorkerThreads = channelWorkerThreads;
         return this;
     }
 
-    public Integer getWorkerThreads() {
-        return workerThreads;
+    public Integer getBusinessThreads() {
+        return businessThreads;
     }
 
-    public RpcClientProperties setWorkerThreads(Integer workerThreads) {
-        this.workerThreads = workerThreads;
+    public RpcClientProperties setBusinessThreads(Integer businessThreads) {
+        this.businessThreads = businessThreads;
         return this;
     }
 

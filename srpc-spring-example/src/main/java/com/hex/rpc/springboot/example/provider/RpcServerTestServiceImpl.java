@@ -1,4 +1,4 @@
-package com.hex.rpc.springboot.example.server;
+package com.hex.rpc.springboot.example.provider;
 
 import com.hex.common.annotation.RouteBody;
 import com.hex.common.annotation.RouteMapping;

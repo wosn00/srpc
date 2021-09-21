@@ -1,5 +1,6 @@
-package com.hex.rpc.springboot.example.client;
+package com.hex.rpc.springboot.example.consumer;
 
+import com.hex.rpc.springboot.example.api.RpcServerTestService;
 import com.hex.rpc.springboot.example.entity.TestRequest;
 import com.hex.rpc.springboot.example.entity.TestResponse;
 import org.springframework.beans.factory.annotation.Autowired;

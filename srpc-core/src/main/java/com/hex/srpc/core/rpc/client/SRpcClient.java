@@ -12,6 +12,7 @@ import com.hex.common.net.HostAndPort;
 import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SRpcThreadFactory;
 import com.hex.common.utils.SerializerUtil;
+import com.hex.common.utils.ThreadUtil;
 import com.hex.discovery.ServiceDiscover;
 import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.srpc.core.connection.Connection;
@@ -58,6 +59,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,6 +79,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
     private ServiceDiscover serviceDiscover;
     private ResponseMapping responseMapping;
+    private ExecutorService businessExecutor;
 
     private SRpcClient() {
     }
@@ -104,8 +107,8 @@ public class SRpcClient extends AbstractRpc implements Client {
                 registerShutdownHook(this::stop);
 
             } catch (Exception e) {
-                logger.error("RpcClient started failed");
-                throw e;
+                logger.error("RpcClient started failed", e);
+                stop();
             }
         } else {
             logger.warn("RpcClient already started!");
@@ -146,6 +149,9 @@ public class SRpcClient extends AbstractRpc implements Client {
                 }
                 if (defaultEventExecutorGroup != null) {
                     defaultEventExecutorGroup.shutdownGracefully();
+                }
+                if (businessExecutor != null) {
+                    ThreadUtil.gracefulShutdown(businessExecutor, 5);
                 }
                 //关闭所有服务的连接
                 nodeManager.closeManager();
@@ -195,11 +201,11 @@ public class SRpcClient extends AbstractRpc implements Client {
         logger.info("RpcClient init ...");
 
         if (useEpoll()) {
-            this.eventLoopGroupSelector = new EpollEventLoopGroup(config.getSelectorThreads());
+            this.eventLoopGroupSelector = new EpollEventLoopGroup(IO_THREAD_SIZE);
         } else {
-            this.eventLoopGroupSelector = new NioEventLoopGroup(config.getSelectorThreads());
+            this.eventLoopGroupSelector = new NioEventLoopGroup(IO_THREAD_SIZE);
         }
-        this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getWorkerThreads());
+        this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getChannelWorkerThreads());
         // 流控
         buildTrafficMonitor(defaultEventExecutorGroup,
                 config.isTrafficMonitorEnable(), config.getMaxReadSpeed(), config.getMaxWriteSpeed());
@@ -407,6 +413,9 @@ public class SRpcClient extends AbstractRpc implements Client {
     private void initConfig() {
         assertNotNull(config, "clientConfig can't be null, Please confirm that you have configured");
 
+        if (config.getBusinessThreads() != null && config.getBusinessThreads() > 0) {
+            businessExecutor = Executors.newFixedThreadPool(config.getBusinessThreads(), new SRpcThreadFactory("sRpc-business"));
+        }
         LoadBalancer loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
         nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode(), loadBalancer);
         if (config.isExcludeUnAvailableNodesEnable()) {
@@ -459,7 +468,7 @@ public class SRpcClient extends AbstractRpc implements Client {
             ChannelPipeline pipeline = ch.pipeline();
             // 流控
             if (null != trafficShapingHandler) {
-                pipeline.addLast("trafficShapingHandler", trafficShapingHandler);
+                pipeline.addLast(defaultEventExecutorGroup, "trafficShapingHandler", trafficShapingHandler);
             }
             //tls加密
             if (null != sslContext) {
@@ -477,7 +486,7 @@ public class SRpcClient extends AbstractRpc implements Client {
 
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyClientConnManageHandler(nodeManager),
-                    new ClientProcessHandler(nodeManager, duplicatedMarker, responseMapping, config));
+                    new ClientProcessHandler(nodeManager, duplicatedMarker, responseMapping, config, businessExecutor));
         }
     }
 }

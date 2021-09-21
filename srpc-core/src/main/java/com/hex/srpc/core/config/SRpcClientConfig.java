@@ -9,8 +9,8 @@ import com.hex.common.constant.RpcConstant;
  */
 public class SRpcClientConfig extends TLSConfig {
 
-    private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
-    private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
+    private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
+    private Integer businessThreads = 0; //业务处理线程池，具有耗时业务时可配置，0为不设置
 
     private Integer connectionTimeout = 5; //连接超时时间(秒)
     private Integer requestTimeout = 10; //请求超时时间(秒)
@@ -40,20 +40,21 @@ public class SRpcClientConfig extends TLSConfig {
     private Long minThreshold = -1L; //开启压缩包大小最低阈值(byte),超过则压缩,-1代表不限制
     private Long maxThreshold = -1L; //开启压缩包大小最高阈值(byte),低于则压缩,-1代表不限制
 
-    public Integer getSelectorThreads() {
-        return selectorThreads;
+    public Integer getChannelWorkerThreads() {
+        return channelWorkerThreads;
     }
 
-    public void setSelectorThreads(Integer selectorThreads) {
-        this.selectorThreads = selectorThreads;
+    public void setChannelWorkerThreads(Integer channelWorkerThreads) {
+        this.channelWorkerThreads = channelWorkerThreads;
     }
 
-    public Integer getWorkerThreads() {
-        return workerThreads;
+    public Integer getBusinessThreads() {
+        return businessThreads;
     }
 
-    public void setWorkerThreads(Integer workerThreads) {
-        this.workerThreads = workerThreads;
+    public SRpcClientConfig setBusinessThreads(Integer businessThreads) {
+        this.businessThreads = businessThreads;
+        return this;
     }
 
     public Integer getConnectionTimeout() {

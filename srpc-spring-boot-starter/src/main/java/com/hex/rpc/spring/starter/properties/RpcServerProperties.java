@@ -11,8 +11,8 @@ import java.util.List;
 @ConfigurationProperties(prefix = "com.hex.srpc.server")
 public class RpcServerProperties {
     private Integer port = 8008; //绑定端口
-    private Integer selectorThreads = RpcConstant.DEFAULT_THREADS; //io线程数
-    private Integer workerThreads = RpcConstant.DEFAULT_THREADS; //工作线程数
+    private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
+    private Integer businessThreads = 0; //业务处理线程池，具有耗时业务时可配置，0为不设置
 
     private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
     private Integer printConnectionNumInterval = 30; //打印服务端当前连接数时间间隔(秒), 0为不打印
@@ -45,15 +45,22 @@ public class RpcServerProperties {
     private String registrySchema; //注册中心模式名称
     private List<String> registryAddress; //注册中心地址
 
-    public RpcServerProperties() {
+    public Integer getChannelWorkerThreads() {
+        return channelWorkerThreads;
     }
 
-    public Integer getSelectorThreads() {
-        return selectorThreads;
+    public RpcServerProperties setChannelWorkerThreads(Integer channelWorkerThreads) {
+        this.channelWorkerThreads = channelWorkerThreads;
+        return this;
     }
 
-    public void setSelectorThreads(Integer selectorThreads) {
-        this.selectorThreads = selectorThreads;
+    public Integer getBusinessThreads() {
+        return businessThreads;
+    }
+
+    public RpcServerProperties setBusinessThreads(Integer businessThreads) {
+        this.businessThreads = businessThreads;
+        return this;
     }
 
     public Integer getPort() {
@@ -65,14 +72,6 @@ public class RpcServerProperties {
             throw new IllegalArgumentException("port should be lesser 65535 and greater 0");
         }
         this.port = port;
-    }
-
-    public Integer getWorkerThreads() {
-        return workerThreads;
-    }
-
-    public void setWorkerThreads(Integer workerThreads) {
-        this.workerThreads = workerThreads;
     }
 
     public Integer getSendBuf() {
@@ -107,12 +106,11 @@ public class RpcServerProperties {
         this.highWaterLevel = highWaterLevel;
     }
 
-
-    public Boolean getCompressEnable() {
+    public boolean isCompressEnable() {
         return compressEnable;
     }
 
-    public RpcServerProperties setCompressEnable(Boolean compressEnable) {
+    public RpcServerProperties setCompressEnable(boolean compressEnable) {
         this.compressEnable = compressEnable;
         return this;
     }
