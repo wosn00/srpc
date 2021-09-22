@@ -108,8 +108,9 @@ public class SRpcServer extends AbstractRpc implements Server {
 
                 registerShutdownHook(this::stop);
             } catch (Exception e) {
-                logger.error("RpcServer started failed", e);
+                logger.error("RpcServer started failed");
                 stop();
+                throw e;
             }
         } else {
             logger.warn("RpcServer has started!");

@@ -107,8 +107,9 @@ public class SRpcClient extends AbstractRpc implements Client {
                 registerShutdownHook(this::stop);
 
             } catch (Exception e) {
-                logger.error("RpcClient started failed", e);
+                logger.error("RpcClient started failed");
                 stop();
+                throw e;
             }
         } else {
             logger.warn("RpcClient already started!");
