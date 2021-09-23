@@ -15,7 +15,7 @@
         <module>srpc-spring-boot-starter</module>
         <module>srpc-registry</module>
         <module>srpc-example</module>
-        <module>srpc-spring-example</module>
+        <module>srpc-spring-boot-example</module>
     </modules>
 
     <properties>

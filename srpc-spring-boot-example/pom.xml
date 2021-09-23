@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.hex</groupId>
-    <artifactId>srpc-spring-example</artifactId>
+    <artifactId>srpc-spring-boot-example</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
