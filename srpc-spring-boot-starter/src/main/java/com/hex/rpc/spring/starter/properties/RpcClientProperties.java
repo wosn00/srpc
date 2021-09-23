@@ -12,7 +12,7 @@ import java.util.List;
 @ConfigurationProperties(prefix = "com.hex.srpc.client")
 public class RpcClientProperties {
     private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
-    private Integer businessThreads = 0; //业务处理线程池，具有耗时业务时可配置，0为不设置
+    private Integer businessThreads = 200; //业务处理线程池，0为不设置
 
     private Integer connectionTimeout = 5; //连接超时时间(秒)
     private Integer requestTimeout = 10; //请求超时时间(秒)
@@ -30,11 +30,11 @@ public class RpcClientProperties {
     private Integer lowWaterLevel = 1024 * 1024; //低水位
     private Integer highWaterLevel = 10 * 1024 * 1024; //高水位
 
-    private boolean deDuplicateEnable = true; //是否开启去重处理
+    private boolean deDuplicateEnable = false; //是否开启去重处理
     private Integer duplicateCheckTime = 10; //请求去重缓存时长(秒)
     private Long duplicateMaxSize = 1024 * 64L; //最大缓存请求个数
 
-    private Boolean trafficMonitorEnable = true; //是否开启流量控制
+    private Boolean trafficMonitorEnable = false; //是否开启流量控制
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度
     private Long maxWriteSpeed = 10 * 1000 * 1000L; //带宽限制，最大写出速度
 

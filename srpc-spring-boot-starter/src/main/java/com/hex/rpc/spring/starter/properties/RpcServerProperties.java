@@ -15,16 +15,18 @@ public class RpcServerProperties {
     private Integer businessThreads = 0; //业务处理线程池，具有耗时业务时可配置，0为不设置
 
     private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
-    private Integer printConnectionNumInterval = 30; //打印服务端当前连接数时间间隔(秒), 0为不打印
+    private Integer printConnectionNumInterval = 60; //打印服务端当前连接数时间间隔(秒), 0为不打印
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
     private Integer receiveBuf = 65535; //tcp接收缓冲区
     private Integer lowWaterLevel = 1024 * 1024; //低水位
     private Integer highWaterLevel = 10 * 1024 * 1024; //高水位
 
-    private Boolean preventDuplicateEnable = true; //是否开启去重处理
+    private boolean deDuplicateEnable = false; //是否开启去重处理
+    private Integer duplicateCheckTime = 10; //请求去重缓存时长(秒)
+    private Long duplicateMaxSize = 1024 * 64L; //最大缓存请求个数
 
-    private Boolean trafficMonitorEnable = true; //是否开启流控
+    private Boolean trafficMonitorEnable = false; //是否开启流控
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度
     private Long maxWriteSpeed = 10 * 1000 * 1000L; //带宽限制，最大写出速度
 
@@ -160,12 +162,31 @@ public class RpcServerProperties {
         return this;
     }
 
-    public Boolean getPreventDuplicateEnable() {
-        return preventDuplicateEnable;
+    public boolean isDeDuplicateEnable() {
+        return deDuplicateEnable;
     }
 
-    public void setPreventDuplicateEnable(Boolean preventDuplicateEnable) {
-        this.preventDuplicateEnable = preventDuplicateEnable;
+    public RpcServerProperties setDeDuplicateEnable(boolean deDuplicateEnable) {
+        this.deDuplicateEnable = deDuplicateEnable;
+        return this;
+    }
+
+    public Integer getDuplicateCheckTime() {
+        return duplicateCheckTime;
+    }
+
+    public RpcServerProperties setDuplicateCheckTime(Integer duplicateCheckTime) {
+        this.duplicateCheckTime = duplicateCheckTime;
+        return this;
+    }
+
+    public Long getDuplicateMaxSize() {
+        return duplicateMaxSize;
+    }
+
+    public RpcServerProperties setDuplicateMaxSize(Long duplicateMaxSize) {
+        this.duplicateMaxSize = duplicateMaxSize;
+        return this;
     }
 
     public Integer getConnectionIdleTime() {
