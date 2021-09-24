@@ -61,14 +61,10 @@ public class DispatchDealing implements Dealing {
     }
 
     private void requestDispatch(RpcRequest<String> rpcRequest, String cmd, IConnection connection) {
-        // 获取对应router
-        RouterTarget target = RouterFactory.getRouter(cmd);
-        if (target == null) {
-            RpcResponse.serverError(rpcRequest.getSeq());
-            return;
-        }
         Object result;
         try {
+            // 获取对应router
+            RouterTarget target = RouterFactory.getRouter(cmd);
             result = target.invoke(rpcRequest);
         } catch (Exception e) {
             logger.error("error occurred on the RpcServer", e);

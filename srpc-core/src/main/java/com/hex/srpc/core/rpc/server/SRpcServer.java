@@ -1,6 +1,7 @@
 package com.hex.srpc.core.rpc.server;
 
 import com.google.common.base.Throwables;
+import com.hex.common.constant.RpcConstant;
 import com.hex.common.exception.RegistryException;
 import com.hex.common.exception.RpcException;
 import com.hex.common.net.HostAndPort;
@@ -10,6 +11,8 @@ import com.hex.common.utils.NetUtil;
 import com.hex.common.utils.ThreadUtil;
 import com.hex.publish.ServicePublisher;
 import com.hex.srpc.core.config.SRpcServerConfig;
+import com.hex.srpc.core.extension.DefaultDuplicateMarker;
+import com.hex.srpc.core.extension.DuplicatedMarker;
 import com.hex.srpc.core.handler.connection.NettyServerConnManagerHandler;
 import com.hex.srpc.core.handler.process.ServerProcessHandler;
 import com.hex.srpc.core.node.INodeManager;
@@ -64,6 +67,7 @@ public class SRpcServer extends AbstractRpc implements Server {
     private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
     private ServicePublisher servicePublisher;
+    private DuplicatedMarker duplicatedMarker;
     private Integer port;
 
     private SRpcServer() {
@@ -98,15 +102,21 @@ public class SRpcServer extends AbstractRpc implements Server {
     public Server start() {
         if (isServerStart.compareAndSet(false, true)) {
             try {
+                //1.初始化配置
                 initConfig();
 
-                scanRpcServer();
+                //2.扫描RpcRoute并注册
+                scanRpcRoute();
 
+                //3.初始化rpc服务端
                 initServer();
 
+                //4.初始化注册中心配置并发布服务
                 registryInitAndPublish();
 
+                //5.注册shutdownHook
                 registerShutdownHook(this::stop);
+
             } catch (Exception e) {
                 logger.error("RpcServer started failed");
                 stop();
@@ -180,10 +190,10 @@ public class SRpcServer extends AbstractRpc implements Server {
         logger.info("RpcServer server init");
         if (useEpoll()) {
             this.eventLoopGroupBoss = new EpollEventLoopGroup(1);
-            this.eventLoopGroupSelector = new EpollEventLoopGroup(IO_THREAD_SIZE);
+            this.eventLoopGroupSelector = new EpollEventLoopGroup(IO_THREADS);
         } else {
             this.eventLoopGroupBoss = new NioEventLoopGroup(1);
-            this.eventLoopGroupSelector = new NioEventLoopGroup(IO_THREAD_SIZE);
+            this.eventLoopGroupSelector = new NioEventLoopGroup(IO_THREADS);
         }
 
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(serverConfig.getChannelWorkerThreads());
@@ -231,7 +241,7 @@ public class SRpcServer extends AbstractRpc implements Server {
         }
     }
 
-    private void scanRpcServer() {
+    private void scanRpcRoute() {
         if (!this.primarySource.equals(Void.class)) {
             logger.info("RpcRouter scanning ...");
             new RouteScanner(this.primarySource).san();
@@ -285,6 +295,17 @@ public class SRpcServer extends AbstractRpc implements Server {
                         this.registryConfig.getServiceName(), address);
             }
         }
+    }
+
+    private void buildDuplicatedMarker(int checkTime, long maxSize) {
+        ExtensionLoader<DuplicatedMarker> loader = ExtensionLoader.getExtensionLoader(DuplicatedMarker.class);
+        DuplicatedMarker customDuplicatedMarker = loader.getExtension(RpcConstant.SPI_CUSTOM_IMPL);
+        if ((this.duplicatedMarker = customDuplicatedMarker) == null) {
+            this.duplicatedMarker = new DefaultDuplicateMarker();
+        } else {
+            logger.info("Use the custom DuplicateMarker [{}]", duplicatedMarker.getClass().getCanonicalName());
+        }
+        this.duplicatedMarker.initMarkerConfig(checkTime, maxSize);
     }
 
     /**

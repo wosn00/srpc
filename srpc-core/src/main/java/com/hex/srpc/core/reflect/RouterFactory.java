@@ -1,6 +1,7 @@
 package com.hex.srpc.core.reflect;
 
 import com.hex.common.annotation.RouteMapping;
+import com.hex.common.exception.RpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,11 @@ public class RouterFactory {
     }
 
     public static RouterTarget getRouter(String mapping) {
-        return routerTargetMap.get(mapping);
+        RouterTarget routerTarget = routerTargetMap.get(mapping);
+        if (routerTarget == null) {
+            throw new RpcException("RouterTarget not found, ,RouteMapping: " + mapping);
+        }
+        return routerTarget;
     }
 
     public static int getMappingSize() {

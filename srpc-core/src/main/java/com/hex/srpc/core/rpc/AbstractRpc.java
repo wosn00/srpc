@@ -2,17 +2,10 @@ package com.hex.srpc.core.rpc;
 
 import com.hex.common.constant.RpcConstant;
 import com.hex.common.exception.RegistryException;
-import com.hex.common.spi.ExtensionLoader;
 import com.hex.srpc.core.config.RegistryConfig;
 import com.hex.srpc.core.config.TLSConfig;
-import com.hex.srpc.core.extension.DefaultDuplicateMarker;
-import com.hex.srpc.core.extension.DuplicatedMarker;
 import io.netty.channel.epoll.Epoll;
-import io.netty.handler.ssl.ClientAuth;
-import io.netty.handler.ssl.OpenSsl;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.SslProvider;
+import io.netty.handler.ssl.*;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.apache.commons.collections.CollectionUtils;
@@ -34,12 +27,11 @@ public abstract class AbstractRpc {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractRpc.class);
 
     private static final String CLASSPATH = "classpath:";
-    protected static int IO_THREAD_SIZE = RpcConstant.DEFAULT_THREADS;
+    protected static int IO_THREADS = RpcConstant.DEFAULT_THREADS;
     protected GlobalTrafficShapingHandler trafficShapingHandler;
     protected Thread shutdownHook;
     protected SslContext sslContext;
     protected RegistryConfig registryConfig;
-    protected DuplicatedMarker duplicatedMarker;
 
     protected void setConfigRegistry(String schema, List<String> registryAddress, String serviceName) {
         if (CollectionUtils.isEmpty(registryAddress)) {
@@ -165,17 +157,6 @@ public abstract class AbstractRpc {
             return false;
         }
         return true;
-    }
-
-    protected void buildDuplicatedMarker(int checkTime, long maxSize) {
-        ExtensionLoader<DuplicatedMarker> loader = ExtensionLoader.getExtensionLoader(DuplicatedMarker.class);
-        DuplicatedMarker customDuplicatedMarker = loader.getExtension(RpcConstant.SPI_CUSTOM_IMPL);
-        if ((this.duplicatedMarker = customDuplicatedMarker) == null) {
-            this.duplicatedMarker = new DefaultDuplicateMarker();
-        } else {
-            logger.info("Use the custom DuplicateMarker [{}]", duplicatedMarker.getClass().getCanonicalName());
-        }
-        this.duplicatedMarker.initMarkerConfig(checkTime, maxSize);
     }
 
     protected void assertNotNull(Object object, String message) {

@@ -1,7 +1,6 @@
 package com.hex.srpc.core.handler.process;
 
 import com.google.common.base.Throwables;
-import com.hex.srpc.core.extension.DuplicatedMarker;
 import com.hex.srpc.core.node.INodeManager;
 import com.hex.srpc.core.protocol.pb.proto.Rpc;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,13 +17,11 @@ public abstract class AbstractProcessHandler extends SimpleChannelInboundHandler
     private static final Logger logger = LoggerFactory.getLogger(AbstractProcessHandler.class);
 
     protected INodeManager nodeManager;
-    protected DuplicatedMarker duplicatedMarker;
     protected ExecutorService businessExecutor;
 
 
-    public AbstractProcessHandler(INodeManager nodeManager, DuplicatedMarker duplicatedMarker, ExecutorService businessExecutor) {
+    public AbstractProcessHandler(INodeManager nodeManager, ExecutorService businessExecutor) {
         this.nodeManager = nodeManager;
-        this.duplicatedMarker = duplicatedMarker;
         this.businessExecutor = businessExecutor;
     }
 

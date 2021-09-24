@@ -16,7 +16,7 @@ public class RpcClientProperties {
 
     private Integer connectionTimeout = 5; //连接超时时间(秒)
     private Integer requestTimeout = 10; //请求超时时间(秒)
-    private Integer connectionSizePerNode = 5; //每个节点连接数
+    private Integer connectionSizePerNode = 3; //每个节点连接数
     private Integer connectionIdleTime = 180; //超过连接空闲时间(秒)未收发数据则关闭连接
     private Integer heartBeatTimeInterval = 30; //发送心跳包间隔时间(秒)
 
@@ -29,10 +29,6 @@ public class RpcClientProperties {
     private Integer receiveBuf = 65535; //tcp接收缓冲区
     private Integer lowWaterLevel = 1024 * 1024; //低水位
     private Integer highWaterLevel = 10 * 1024 * 1024; //高水位
-
-    private boolean deDuplicateEnable = false; //是否开启去重处理
-    private Integer duplicateCheckTime = 10; //请求去重缓存时长(秒)
-    private Long duplicateMaxSize = 1024 * 64L; //最大缓存请求个数
 
     private Boolean trafficMonitorEnable = false; //是否开启流量控制
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度
@@ -187,33 +183,6 @@ public class RpcClientProperties {
 
     public RpcClientProperties setHighWaterLevel(Integer highWaterLevel) {
         this.highWaterLevel = highWaterLevel;
-        return this;
-    }
-
-    public boolean isDeDuplicateEnable() {
-        return deDuplicateEnable;
-    }
-
-    public RpcClientProperties setDeDuplicateEnable(boolean deDuplicateEnable) {
-        this.deDuplicateEnable = deDuplicateEnable;
-        return this;
-    }
-
-    public Integer getDuplicateCheckTime() {
-        return duplicateCheckTime;
-    }
-
-    public RpcClientProperties setDuplicateCheckTime(Integer duplicateCheckTime) {
-        this.duplicateCheckTime = duplicateCheckTime;
-        return this;
-    }
-
-    public Long getDuplicateMaxSize() {
-        return duplicateMaxSize;
-    }
-
-    public RpcClientProperties setDuplicateMaxSize(Long duplicateMaxSize) {
-        this.duplicateMaxSize = duplicateMaxSize;
         return this;
     }
 

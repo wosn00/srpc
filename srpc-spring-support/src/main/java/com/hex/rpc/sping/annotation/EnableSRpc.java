@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 public @interface EnableSRpc {
 
     /**
-     * 需扫描包路径
+     * 需扫描包路径, 需包含@SRpcRoute 和 @SRpcClient注解的类
      */
     String[] basePackages() default {};
 }

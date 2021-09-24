@@ -97,13 +97,16 @@ public class SRpcClient extends AbstractRpc implements Client {
     public Client start() {
         if (isClientStart.compareAndSet(false, true)) {
             try {
-                //初始化服务节点管理器
+                //1.初始化配置
                 initConfig();
 
+                //2.初始化rpc客户端
                 initClient();
 
+                //3.初始化注册中心配置
                 registryInit();
 
+                //4.注册shutdownHook
                 registerShutdownHook(this::stop);
 
             } catch (Exception e) {
@@ -202,9 +205,9 @@ public class SRpcClient extends AbstractRpc implements Client {
         logger.info("RpcClient init ...");
 
         if (useEpoll()) {
-            this.eventLoopGroupSelector = new EpollEventLoopGroup(IO_THREAD_SIZE);
+            this.eventLoopGroupSelector = new EpollEventLoopGroup(IO_THREADS);
         } else {
-            this.eventLoopGroupSelector = new NioEventLoopGroup(IO_THREAD_SIZE);
+            this.eventLoopGroupSelector = new NioEventLoopGroup(IO_THREADS);
         }
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(config.getChannelWorkerThreads());
         // 流控
@@ -427,9 +430,6 @@ public class SRpcClient extends AbstractRpc implements Client {
                     .scheduleAtFixedRate(new NodeHealthCheckTask(nodeManager), 0, config.getNodeHealthCheckTimeInterval(), TimeUnit.SECONDS);
         }
         responseMapping = new ResponseMapping(config.getRequestTimeout());
-        if (config.isDeDuplicateEnable()) {
-            buildDuplicatedMarker(config.getDuplicateCheckTime(), config.getDuplicateMaxSize());
-        }
     }
 
     private void assertNodesNotNull(List<HostAndPort> nodes) {
@@ -487,7 +487,7 @@ public class SRpcClient extends AbstractRpc implements Client {
 
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyClientConnManageHandler(nodeManager),
-                    new ClientProcessHandler(nodeManager, duplicatedMarker, responseMapping, config, businessExecutor));
+                    new ClientProcessHandler(nodeManager, responseMapping, config, businessExecutor));
         }
     }
 }

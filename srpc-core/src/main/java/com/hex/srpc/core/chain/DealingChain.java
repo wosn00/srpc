@@ -1,7 +1,6 @@
 package com.hex.srpc.core.chain;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -11,7 +10,7 @@ import java.util.List;
  */
 public class DealingChain {
 
-    private List<Dealing> dealings = Collections.synchronizedList(new ArrayList<>(8));
+    private List<Dealing> dealings = new ArrayList<>(4);
 
     private Iterator<Dealing> iterator;
 

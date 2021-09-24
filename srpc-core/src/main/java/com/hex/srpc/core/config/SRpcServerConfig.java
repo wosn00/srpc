@@ -34,24 +34,22 @@ public class SRpcServerConfig extends TLSConfig {
     private Long minThreshold = -1L; //开启压缩包大小最低阈值(byte),超过则压缩,-1代表不限制
     private Long maxThreshold = -1L; //开启压缩包大小最高阈值(byte),低于则压缩,-1代表不限制
 
-    public SRpcServerConfig() {
-    }
-
     public Integer getPort() {
         return port;
     }
 
-    public void setPort(Integer port) {
-        NetUtil.checkPort(port);
+    public SRpcServerConfig setPort(Integer port) {
         this.port = port;
+        return this;
     }
 
     public Integer getChannelWorkerThreads() {
         return channelWorkerThreads;
     }
 
-    public void setChannelWorkerThreads(Integer channelWorkerThreads) {
+    public SRpcServerConfig setChannelWorkerThreads(Integer channelWorkerThreads) {
         this.channelWorkerThreads = channelWorkerThreads;
+        return this;
     }
 
     public Integer getBusinessThreads() {
@@ -60,119 +58,6 @@ public class SRpcServerConfig extends TLSConfig {
 
     public SRpcServerConfig setBusinessThreads(Integer businessThreads) {
         this.businessThreads = businessThreads;
-        return this;
-    }
-
-    public Integer getSendBuf() {
-        return sendBuf;
-    }
-
-    public void setSendBuf(Integer sendBuf) {
-        this.sendBuf = sendBuf;
-    }
-
-    public Integer getReceiveBuf() {
-        return receiveBuf;
-    }
-
-    public void setReceiveBuf(Integer receiveBuf) {
-        this.receiveBuf = receiveBuf;
-    }
-
-    public Integer getLowWaterLevel() {
-        return lowWaterLevel;
-    }
-
-    public void setLowWaterLevel(Integer lowWaterLevel) {
-        this.lowWaterLevel = lowWaterLevel;
-    }
-
-    public Integer getHighWaterLevel() {
-        return highWaterLevel;
-    }
-
-    public void setHighWaterLevel(Integer highWaterLevel) {
-        this.highWaterLevel = highWaterLevel;
-    }
-
-    public SRpcServerConfig setCompressEnable(boolean compressEnable) {
-        this.compressEnable = compressEnable;
-        return this;
-    }
-
-    public Long getMinThreshold() {
-        return minThreshold;
-    }
-
-    public SRpcServerConfig setMinThreshold(Long minThreshold) {
-        this.minThreshold = minThreshold;
-        return this;
-    }
-
-    public Long getMaxThreshold() {
-        return maxThreshold;
-    }
-
-    public SRpcServerConfig setMaxThreshold(Long maxThreshold) {
-        this.maxThreshold = maxThreshold;
-        return this;
-    }
-
-
-    public SRpcServerConfig setTrafficMonitorEnable(boolean trafficMonitorEnable) {
-        this.trafficMonitorEnable = trafficMonitorEnable;
-        return this;
-    }
-
-    public Long getMaxReadSpeed() {
-        return maxReadSpeed;
-    }
-
-    public SRpcServerConfig setMaxReadSpeed(Long maxReadSpeed) {
-        this.maxReadSpeed = maxReadSpeed;
-        return this;
-    }
-
-    public Long getMaxWriteSpeed() {
-        return maxWriteSpeed;
-    }
-
-    public SRpcServerConfig setMaxWriteSpeed(Long maxWriteSpeed) {
-        this.maxWriteSpeed = maxWriteSpeed;
-        return this;
-    }
-
-    public boolean isDeDuplicateEnable() {
-        return deDuplicateEnable;
-    }
-
-    public boolean isTrafficMonitorEnable() {
-        return trafficMonitorEnable;
-    }
-
-    public boolean isCompressEnable() {
-        return compressEnable;
-    }
-
-    public void setDeDuplicateEnable(boolean deDuplicateEnable) {
-        this.deDuplicateEnable = deDuplicateEnable;
-    }
-
-    public Integer getDuplicateCheckTime() {
-        return duplicateCheckTime;
-    }
-
-    public SRpcServerConfig setDuplicateCheckTime(Integer duplicateCheckTime) {
-        this.duplicateCheckTime = duplicateCheckTime;
-        return this;
-    }
-
-    public Long getDuplicateMaxSize() {
-        return duplicateMaxSize;
-    }
-
-    public SRpcServerConfig setDuplicateMaxSize(Long duplicateMaxSize) {
-        this.duplicateMaxSize = duplicateMaxSize;
         return this;
     }
 
@@ -200,6 +85,123 @@ public class SRpcServerConfig extends TLSConfig {
 
     public SRpcServerConfig setPrintHearBeatPacketInfo(Boolean printHearBeatPacketInfo) {
         isPrintHearBeatPacketInfo = printHearBeatPacketInfo;
+        return this;
+    }
+
+    public Integer getSendBuf() {
+        return sendBuf;
+    }
+
+    public SRpcServerConfig setSendBuf(Integer sendBuf) {
+        this.sendBuf = sendBuf;
+        return this;
+    }
+
+    public Integer getReceiveBuf() {
+        return receiveBuf;
+    }
+
+    public SRpcServerConfig setReceiveBuf(Integer receiveBuf) {
+        this.receiveBuf = receiveBuf;
+        return this;
+    }
+
+    public Integer getLowWaterLevel() {
+        return lowWaterLevel;
+    }
+
+    public SRpcServerConfig setLowWaterLevel(Integer lowWaterLevel) {
+        this.lowWaterLevel = lowWaterLevel;
+        return this;
+    }
+
+    public Integer getHighWaterLevel() {
+        return highWaterLevel;
+    }
+
+    public SRpcServerConfig setHighWaterLevel(Integer highWaterLevel) {
+        this.highWaterLevel = highWaterLevel;
+        return this;
+    }
+
+    public boolean isDeDuplicateEnable() {
+        return deDuplicateEnable;
+    }
+
+    public SRpcServerConfig setDeDuplicateEnable(boolean deDuplicateEnable) {
+        this.deDuplicateEnable = deDuplicateEnable;
+        return this;
+    }
+
+    public Integer getDuplicateCheckTime() {
+        return duplicateCheckTime;
+    }
+
+    public SRpcServerConfig setDuplicateCheckTime(Integer duplicateCheckTime) {
+        this.duplicateCheckTime = duplicateCheckTime;
+        return this;
+    }
+
+    public Long getDuplicateMaxSize() {
+        return duplicateMaxSize;
+    }
+
+    public SRpcServerConfig setDuplicateMaxSize(Long duplicateMaxSize) {
+        this.duplicateMaxSize = duplicateMaxSize;
+        return this;
+    }
+
+    public boolean isTrafficMonitorEnable() {
+        return trafficMonitorEnable;
+    }
+
+    public SRpcServerConfig setTrafficMonitorEnable(boolean trafficMonitorEnable) {
+        this.trafficMonitorEnable = trafficMonitorEnable;
+        return this;
+    }
+
+    public Long getMaxReadSpeed() {
+        return maxReadSpeed;
+    }
+
+    public SRpcServerConfig setMaxReadSpeed(Long maxReadSpeed) {
+        this.maxReadSpeed = maxReadSpeed;
+        return this;
+    }
+
+    public Long getMaxWriteSpeed() {
+        return maxWriteSpeed;
+    }
+
+    public SRpcServerConfig setMaxWriteSpeed(Long maxWriteSpeed) {
+        this.maxWriteSpeed = maxWriteSpeed;
+        return this;
+    }
+
+    public boolean isCompressEnable() {
+        return compressEnable;
+    }
+
+    public SRpcServerConfig setCompressEnable(boolean compressEnable) {
+        this.compressEnable = compressEnable;
+        return this;
+    }
+
+    public Long getMinThreshold() {
+        return minThreshold;
+    }
+
+    public SRpcServerConfig setMinThreshold(Long minThreshold) {
+        this.minThreshold = minThreshold;
+        return this;
+    }
+
+    public Long getMaxThreshold() {
+        return maxThreshold;
+    }
+
+    public SRpcServerConfig setMaxThreshold(Long maxThreshold) {
+        this.maxThreshold = maxThreshold;
         return this;
     }
 }

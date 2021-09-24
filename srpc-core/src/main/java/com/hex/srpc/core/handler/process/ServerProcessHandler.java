@@ -21,10 +21,13 @@ import static com.hex.srpc.core.connection.Connection.CONN;
 public class ServerProcessHandler extends AbstractProcessHandler {
 
     private SRpcServerConfig config;
+    private DuplicatedMarker duplicatedMarker;
+
 
     public ServerProcessHandler(INodeManager nodeManager, DuplicatedMarker duplicatedMarker,
                                 SRpcServerConfig config, ExecutorService businessExecutor) {
-        super(nodeManager, duplicatedMarker, businessExecutor);
+        super(nodeManager, businessExecutor);
+        this.duplicatedMarker = duplicatedMarker;
         this.config = config;
     }
 
@@ -45,7 +48,7 @@ public class ServerProcessHandler extends AbstractProcessHandler {
         context.setPrintHeartbeatInfo(config.getPrintHearBeatPacketInfo());
         // 开始执行责任链
         if (businessExecutor != null) {
-            businessExecutor.submit(() -> chain.deal(context));
+            businessExecutor.execute(() -> chain.deal(context));
         } else {
             chain.deal(context);
         }
