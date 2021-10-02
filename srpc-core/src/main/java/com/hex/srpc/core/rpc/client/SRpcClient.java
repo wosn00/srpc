@@ -36,6 +36,7 @@ import com.hex.srpc.core.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.srpc.core.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.srpc.core.rpc.task.HeartBeatTask;
 import com.hex.srpc.core.rpc.task.NodeHealthCheckTask;
+import com.hex.srpc.core.thread.CallBackTaskThreadPool;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
@@ -59,8 +60,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -79,7 +80,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     private AtomicBoolean isClientStart = new AtomicBoolean(false);
     private ServiceDiscover serviceDiscover;
     private ResponseMapping responseMapping;
-    private ExecutorService businessExecutor;
+    private ThreadPoolExecutor callBackTaskThreadPool;
 
     private SRpcClient() {
     }
@@ -154,8 +155,8 @@ public class SRpcClient extends AbstractRpc implements Client {
                 if (defaultEventExecutorGroup != null) {
                     defaultEventExecutorGroup.shutdownGracefully();
                 }
-                if (businessExecutor != null) {
-                    ThreadUtil.gracefulShutdown(businessExecutor, 5);
+                if (callBackTaskThreadPool != null) {
+                    ThreadUtil.gracefulShutdown(callBackTaskThreadPool, 5);
                 }
                 //关闭所有服务的连接
                 nodeManager.closeManager();
@@ -417,8 +418,22 @@ public class SRpcClient extends AbstractRpc implements Client {
     private void initConfig() {
         assertNotNull(config, "clientConfig can't be null, Please confirm that you have configured");
 
-        if (config.getBusinessThreads() != null && config.getBusinessThreads() > 0) {
-            businessExecutor = Executors.newFixedThreadPool(config.getBusinessThreads(), new SRpcThreadFactory("sRpc-business"));
+        ExtensionLoader<CallBackTaskThreadPool> loader = ExtensionLoader.getExtensionLoader(CallBackTaskThreadPool.class);
+        CallBackTaskThreadPool callBackTaskThreadPoolImpl = loader.getExtension(RpcConstant.SPI_CUSTOM_IMPL);
+        if (callBackTaskThreadPoolImpl != null) {
+            //若自定义了回调任务线程池则使用自定义的线程池
+            callBackTaskThreadPool = callBackTaskThreadPoolImpl.getCallBackTaskThreadPool();
+            logger.info("Use the custom callBackTaskThreadPool [{}]", callBackTaskThreadPool.getClass().getCanonicalName());
+        } else {
+            if (config.getCallBackTaskThreads() != null && config.getCallBackTaskThreads() > 0) {
+                Integer coreThreads = config.getCallBackTaskThreads();
+                Integer queueSize = config.getCallBackTaskQueueSize();
+                callBackTaskThreadPool = ThreadUtil.getFixThreadPoolExecutor(coreThreads, queueSize,
+                        new ThreadPoolExecutor.AbortPolicy(), "sRpc-client-business");
+            }
+        }
+        if (callBackTaskThreadPool != null) {
+            ResponseFuture.setTaskExecutor(callBackTaskThreadPool);
         }
         LoadBalancer loadBalancer = LoadBalancerFactory.getLoadBalance(config.getLoadBalanceRule());
         nodeManager = new NodeManager(true, this, config.getConnectionSizePerNode(), loadBalancer);
@@ -487,7 +502,7 @@ public class SRpcClient extends AbstractRpc implements Client {
 
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyClientConnManageHandler(nodeManager),
-                    new ClientProcessHandler(nodeManager, responseMapping, config, businessExecutor));
+                    new ClientProcessHandler(nodeManager, responseMapping, config));
         }
     }
 }

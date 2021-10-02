@@ -10,8 +10,6 @@ import com.hex.srpc.core.protocol.adpater.PbProtocolAdapter;
 import com.hex.srpc.core.protocol.pb.proto.Rpc;
 import io.netty.channel.ChannelHandlerContext;
 
-import java.util.concurrent.ExecutorService;
-
 import static com.hex.srpc.core.connection.Connection.CONN;
 
 /**
@@ -22,9 +20,8 @@ public class ClientProcessHandler extends AbstractProcessHandler {
     private SRpcClientConfig config;
     private ResponseMapping responseMapping;
 
-    public ClientProcessHandler(INodeManager nodeManager, ResponseMapping responseMapping,
-                                SRpcClientConfig config, ExecutorService businessExecutor) {
-        super(nodeManager, businessExecutor);
+    public ClientProcessHandler(INodeManager nodeManager, ResponseMapping responseMapping, SRpcClientConfig config) {
+        super(nodeManager);
         this.responseMapping = responseMapping;
         this.config = config;
     }
@@ -43,11 +40,7 @@ public class ClientProcessHandler extends AbstractProcessHandler {
         context.setConnection(ctx.channel().attr(CONN).get());
 
         // 开始执行责任链
-        if (businessExecutor != null) {
-            businessExecutor.execute(() -> chain.deal(context));
-        } else {
-            chain.deal(context);
-        }
+        chain.deal(context);
     }
 
 }

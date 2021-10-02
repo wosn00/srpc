@@ -24,6 +24,7 @@ import com.hex.srpc.core.rpc.Server;
 import com.hex.srpc.core.rpc.compress.JdkZlibExtendDecoder;
 import com.hex.srpc.core.rpc.compress.JdkZlibExtendEncoder;
 import com.hex.srpc.core.rpc.task.ConnectionNumCountTask;
+import com.hex.srpc.core.thread.BusinessThreadPool;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
@@ -47,8 +48,8 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -63,7 +64,7 @@ public class SRpcServer extends AbstractRpc implements Server {
     private EventLoopGroup eventLoopGroupBoss;
     private EventLoopGroup eventLoopGroupSelector;
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
-    private ExecutorService businessExecutor;
+    private ThreadPoolExecutor businessThreadPool;
     private INodeManager nodeManager = new NodeManager(false);
     private AtomicBoolean isServerStart = new AtomicBoolean(false);
     private ServicePublisher servicePublisher;
@@ -131,8 +132,19 @@ public class SRpcServer extends AbstractRpc implements Server {
     private void initConfig() {
         assertNotNull(serverConfig, "serverConfig can't be null, Please confirm that you have configured");
         assertNotNull(primarySource, "sourceClass can't be null, Please confirm that you have configured");
-        if (serverConfig.getBusinessThreads() != null && serverConfig.getBusinessThreads() > 0) {
-            businessExecutor = Executors.newFixedThreadPool(serverConfig.getBusinessThreads(), new SRpcThreadFactory("sRpc-business"));
+        ExtensionLoader<BusinessThreadPool> loader = ExtensionLoader.getExtensionLoader(BusinessThreadPool.class);
+        BusinessThreadPool customBusinessThreadPool = loader.getExtension(RpcConstant.SPI_CUSTOM_IMPL);
+        if (customBusinessThreadPool != null) {
+            //若自定义了业务线程池则使用自定义的线程池
+            businessThreadPool = customBusinessThreadPool.getBusinessThreadPool();
+            logger.info("Use the custom businessThreadPool [{}]", businessThreadPool.getClass().getCanonicalName());
+        } else {
+            if (serverConfig.getBusinessThreads() != null && serverConfig.getBusinessThreads() > 0) {
+                Integer coreThreads = serverConfig.getBusinessThreads();
+                Integer queueSize = serverConfig.getBusinessQueueSize();
+                businessThreadPool = ThreadUtil.getFixThreadPoolExecutor(coreThreads, queueSize,
+                        new ThreadPoolExecutor.AbortPolicy(), "sRpc-server-business");
+            }
         }
         if (port != null) {
             serverConfig.setPort(port);
@@ -170,8 +182,8 @@ public class SRpcServer extends AbstractRpc implements Server {
                 if (this.eventLoopGroupBoss != null) {
                     this.eventLoopGroupBoss.shutdownGracefully();
                 }
-                if (businessExecutor != null) {
-                    ThreadUtil.gracefulShutdown(businessExecutor, 5);
+                if (businessThreadPool != null) {
+                    ThreadUtil.gracefulShutdown(businessThreadPool, 5);
                 }
                 //清除注册中心节点
                 clearRpcRegistryService();
@@ -337,7 +349,7 @@ public class SRpcServer extends AbstractRpc implements Server {
                     // 3min没收到或没发送数据则认为空闲
                     new IdleStateHandler(serverConfig.getConnectionIdleTime(), serverConfig.getConnectionIdleTime(), 0),
                     new NettyServerConnManagerHandler(nodeManager, serverConfig),
-                    new ServerProcessHandler(nodeManager, duplicatedMarker, serverConfig, businessExecutor));
+                    new ServerProcessHandler(nodeManager, duplicatedMarker, serverConfig, businessThreadPool));
         }
     }
 

@@ -8,8 +8,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutorService;
-
 /**
  * @author: hs
  */
@@ -17,12 +15,9 @@ public abstract class AbstractProcessHandler extends SimpleChannelInboundHandler
     private static final Logger logger = LoggerFactory.getLogger(AbstractProcessHandler.class);
 
     protected INodeManager nodeManager;
-    protected ExecutorService businessExecutor;
 
-
-    public AbstractProcessHandler(INodeManager nodeManager, ExecutorService businessExecutor) {
+    public AbstractProcessHandler(INodeManager nodeManager) {
         this.nodeManager = nodeManager;
-        this.businessExecutor = businessExecutor;
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.hex.srpc.core.config;
 
 
 import com.hex.common.constant.RpcConstant;
-import com.hex.common.utils.NetUtil;
 
 /**
  * @author: hs
@@ -10,11 +9,14 @@ import com.hex.common.utils.NetUtil;
 public class SRpcServerConfig extends TLSConfig {
 
     private Integer port = 9987; //绑定端口
+
     private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
+
     private Integer businessThreads = 200; //业务处理线程池，0为不设置
+    private Integer businessQueueSize = 500; //业务线程池队列大小
 
     private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
-    private Integer printConnectionNumInterval = 30; //打印服务端当前连接数信息，时间间隔(秒), 0为不打印
+    private Integer printConnectionNumInterval = 0; //打印服务端当前连接数信息，时间间隔(秒), 0为不打印
     private Boolean isPrintHearBeatPacketInfo = false; //是否打印心跳包信息
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
@@ -202,6 +204,15 @@ public class SRpcServerConfig extends TLSConfig {
 
     public SRpcServerConfig setMaxThreshold(Long maxThreshold) {
         this.maxThreshold = maxThreshold;
+        return this;
+    }
+
+    public Integer getBusinessQueueSize() {
+        return businessQueueSize;
+    }
+
+    public SRpcServerConfig setBusinessQueueSize(Integer businessQueueSize) {
+        this.businessQueueSize = businessQueueSize;
         return this;
     }
 }

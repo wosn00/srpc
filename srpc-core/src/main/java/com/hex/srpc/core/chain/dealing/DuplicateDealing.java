@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author: hs
  * <p>
- * 去重处理器(30s内)，集群部署模式需使用redis实现去重
+ * 去重处理器，集群部署模式需使用redis实现去重
  */
 public class DuplicateDealing implements Dealing {
     private static final Logger logger = LoggerFactory.getLogger(DuplicateDealing.class);

@@ -10,9 +10,7 @@ import java.util.concurrent.TimeUnit;
  * @author: hs
  */
 public class ResponseMapping {
-    /**
-     * 响应最长等待时间30s
-     */
+
     private IExpireCache<Long, ResponseFuture> expireCache;
 
     public ResponseMapping(int expiredTime) {

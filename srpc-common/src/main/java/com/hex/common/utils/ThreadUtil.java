@@ -1,7 +1,13 @@
 package com.hex.common.utils;
 
+import com.hex.common.thread.SRpcThreadFactory;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,5 +44,15 @@ public class ThreadUtil {
             es.shutdownNow();
             Thread.currentThread().interrupt();
         }
+    }
+
+    public static ThreadPoolExecutor getFixThreadPoolExecutor(int coreThreads, int queueSize,
+                                                              RejectedExecutionHandler rejectedExecutionHandler,
+                                                              String threadFactoryName) {
+        return new ThreadPoolExecutor(coreThreads, coreThreads, 0, TimeUnit.MILLISECONDS,
+                queueSize == 0 ? new SynchronousQueue<>() :
+                        (queueSize < 0 ? new LinkedBlockingQueue<>()
+                                : new LinkedBlockingQueue<>(queueSize)),
+                new SRpcThreadFactory(threadFactoryName), rejectedExecutionHandler);
     }
 }

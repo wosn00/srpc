@@ -10,7 +10,9 @@ import com.hex.common.constant.RpcConstant;
 public class SRpcClientConfig extends TLSConfig {
 
     private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
-    private Integer businessThreads = 220; //业务处理线程池，0为不设置
+
+    private Integer callBackTaskThreads = 200; //回调任务处理线程池，0为不设置
+    private Integer callBackTaskQueueSize = 500; //回调任务线程池队列大小
 
     private Integer connectionTimeout = 5; //连接超时时间(秒)
     private Integer requestTimeout = 10; //请求超时时间(秒)
@@ -45,12 +47,21 @@ public class SRpcClientConfig extends TLSConfig {
         return this;
     }
 
-    public Integer getBusinessThreads() {
-        return businessThreads;
+    public Integer getCallBackTaskThreads() {
+        return callBackTaskThreads;
     }
 
-    public SRpcClientConfig setBusinessThreads(Integer businessThreads) {
-        this.businessThreads = businessThreads;
+    public SRpcClientConfig setCallBackTaskThreads(Integer callBackTaskThreads) {
+        this.callBackTaskThreads = callBackTaskThreads;
+        return this;
+    }
+
+    public Integer getCallBackTaskQueueSize() {
+        return callBackTaskQueueSize;
+    }
+
+    public SRpcClientConfig setCallBackTaskQueueSize(Integer callBackTaskQueueSize) {
+        this.callBackTaskQueueSize = callBackTaskQueueSize;
         return this;
     }
 

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,14 +21,9 @@ public class ResponseFuture {
     private Command<String> rpcResponse;
     private RpcCallback rpcCallback;
     private CountDownLatch latch = new CountDownLatch(1);
-    private int requestTimeout = 30;
+    private int requestTimeout;
     private HostAndPort remoteAddress;
-
-    public ResponseFuture(Long requestSeq, int requestTimeout, HostAndPort remoteAddress) {
-        this.requestSeq = requestSeq;
-        this.requestTimeout = requestTimeout;
-        this.remoteAddress = remoteAddress;
-    }
+    private static ThreadPoolExecutor TASK_EXECUTOR;
 
     public ResponseFuture(Long requestSeq, int requestTimeout, HostAndPort remoteAddress, RpcCallback rpcCallback) {
         this.requestSeq = requestSeq;
@@ -68,7 +64,11 @@ public class ResponseFuture {
         // 执行响应回调方法
         if (this.rpcCallback != null) {
             try {
-                rpcCallback.callback((RpcResponse) this.rpcResponse);
+                if (TASK_EXECUTOR != null) {
+                    TASK_EXECUTOR.execute(() -> rpcCallback.callback((RpcResponse) this.rpcResponse));
+                } else {
+                    rpcCallback.callback((RpcResponse) this.rpcResponse);
+                }
             } catch (Exception e) {
                 logger.error("response callback processing failed!,requestSeq:{}", this.requestSeq, e);
             }
@@ -85,5 +85,9 @@ public class ResponseFuture {
 
     public void setRequestSeq(Long requestSeq) {
         this.requestSeq = requestSeq;
+    }
+
+    public static void setTaskExecutor(ThreadPoolExecutor taskExecutor) {
+        TASK_EXECUTOR = taskExecutor;
     }
 }

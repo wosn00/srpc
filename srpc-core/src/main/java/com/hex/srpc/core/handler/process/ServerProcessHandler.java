@@ -22,13 +22,14 @@ public class ServerProcessHandler extends AbstractProcessHandler {
 
     private SRpcServerConfig config;
     private DuplicatedMarker duplicatedMarker;
-
+    private ExecutorService businessExecutor;
 
     public ServerProcessHandler(INodeManager nodeManager, DuplicatedMarker duplicatedMarker,
                                 SRpcServerConfig config, ExecutorService businessExecutor) {
-        super(nodeManager, businessExecutor);
+        super(nodeManager);
         this.duplicatedMarker = duplicatedMarker;
         this.config = config;
+        this.businessExecutor = businessExecutor;
     }
 
     @Override

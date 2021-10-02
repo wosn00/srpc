@@ -12,7 +12,9 @@ import java.util.List;
 @ConfigurationProperties(prefix = "com.hex.srpc.client")
 public class RpcClientProperties {
     private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
-    private Integer businessThreads = 200; //业务处理线程池，0为不设置
+
+    private Integer callBackTaskThreads = 200; //回调任务处理线程池，0为不设置
+    private Integer callBackTaskQueueSize = 500; //回调任务线程池队列大小
 
     private Integer connectionTimeout = 5; //连接超时时间(秒)
     private Integer requestTimeout = 10; //请求超时时间(秒)
@@ -60,12 +62,21 @@ public class RpcClientProperties {
         return this;
     }
 
-    public Integer getBusinessThreads() {
-        return businessThreads;
+    public Integer getCallBackTaskThreads() {
+        return callBackTaskThreads;
     }
 
-    public RpcClientProperties setBusinessThreads(Integer businessThreads) {
-        this.businessThreads = businessThreads;
+    public RpcClientProperties setCallBackTaskThreads(Integer callBackTaskThreads) {
+        this.callBackTaskThreads = callBackTaskThreads;
+        return this;
+    }
+
+    public Integer getCallBackTaskQueueSize() {
+        return callBackTaskQueueSize;
+    }
+
+    public RpcClientProperties setCallBackTaskQueueSize(Integer callBackTaskQueueSize) {
+        this.callBackTaskQueueSize = callBackTaskQueueSize;
         return this;
     }
 

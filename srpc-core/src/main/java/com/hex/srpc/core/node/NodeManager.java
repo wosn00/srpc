@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +45,9 @@ public class NodeManager implements INodeManager {
     private SRpcClient client;
     private LoadBalancer loadBalancer;
     private int poolSizePerServer;
+    private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private Lock readLock = readWriteLock.readLock();
+    private Lock writeLock = readWriteLock.writeLock();
 
     public NodeManager(boolean isClient) {
         this.isClient = isClient;
@@ -60,17 +66,20 @@ public class NodeManager implements INodeManager {
     }
 
     @Override
-    public synchronized void addNode(HostAndPort node) {
-        if (isClosed.get()) {
-            logger.error("nodeManager closed, add server {} failed", node);
-        }
-        if (!servers.contains(node)) {
-            servers.add(node);
-            IConnectionPool connectionPool = connectionPoolMap.get(node);
-            if (connectionPool != null) {
-                connectionPool.close();
+    public void addNode(HostAndPort node) {
+        assertClosed(node);
+        this.writeLock.lock();
+        try {
+            if (!servers.contains(node)) {
+                servers.add(node);
+                IConnectionPool connectionPool = connectionPoolMap.get(node);
+                if (connectionPool != null) {
+                    connectionPool.close();
+                }
+                connectionPoolMap.put(node, new ConnectionPool(poolSizePerServer, node, client));
             }
-            connectionPoolMap.put(node, new ConnectionPool(poolSizePerServer, node, client));
+        } finally {
+            this.writeLock.unlock();
         }
     }
 
@@ -82,32 +91,53 @@ public class NodeManager implements INodeManager {
     }
 
     @Override
-    public synchronized void removeNode(HostAndPort server) {
-        servers.remove(server);
-        IConnectionPool connectionPool = connectionPoolMap.get(server);
-        if (connectionPool != null) {
-            connectionPool.close();
-            connectionPoolMap.remove(server);
-        }
-        NodeStatus nodeStatus = nodeStatusMap.get(server);
-        if (nodeStatus != null) {
-            nodeStatusMap.remove(server);
+    public void removeNode(HostAndPort server) {
+        assertClosed(server);
+        this.writeLock.lock();
+        try {
+            servers.remove(server);
+            IConnectionPool connectionPool = connectionPoolMap.get(server);
+            if (connectionPool != null) {
+                connectionPool.close();
+                connectionPoolMap.remove(server);
+            }
+            NodeStatus nodeStatus = nodeStatusMap.get(server);
+            if (nodeStatus != null) {
+                nodeStatusMap.remove(server);
+            }
+        } finally {
+            this.writeLock.unlock();
         }
     }
 
     @Override
     public HostAndPort[] getAllRemoteNodes() {
-        return servers.toArray(new HostAndPort[]{});
+        this.readLock.lock();
+        try {
+            return servers.toArray(new HostAndPort[]{});
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
     public int getNodesSize() {
-        return servers.size();
+        this.readLock.lock();
+        try {
+            return servers.size();
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
     public IConnectionPool getConnectionPool(HostAndPort node) {
-        return connectionPoolMap.get(node);
+        this.readLock.lock();
+        try {
+            return connectionPoolMap.get(node);
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
@@ -126,30 +156,40 @@ public class NodeManager implements INodeManager {
 
     @Override
     public List<HostAndPort> chooseHANode(List<HostAndPort> nodes) {
-        if (nodes.size() == 1) {
-            return nodes;
+        this.readLock.lock();
+        try {
+            if (nodes.size() == 1) {
+                return nodes;
+            }
+            if (!excludeUnAvailableNodesEnable) {
+                return nodes;
+            }
+            // 过滤出可用的server
+            List<HostAndPort> availableServers = nodes.stream()
+                    .filter(server -> nodeStatusMap.get(server) == null || nodeStatusMap.get(server).isAvailable())
+                    .collect(Collectors.toList());
+            if (availableServers.isEmpty()) {
+                throw new NodeException("no available server");
+            }
+            return availableServers;
+        } finally {
+            this.readLock.unlock();
         }
-        if (!excludeUnAvailableNodesEnable) {
-            return nodes;
-        }
-        // 过滤出可用的server
-        List<HostAndPort> availableServers = nodes.stream()
-                .filter(server -> nodeStatusMap.get(server) == null || nodeStatusMap.get(server).isAvailable())
-                .collect(Collectors.toList());
-        if (availableServers.isEmpty()) {
-            throw new NodeException("no available server");
-        }
-        return availableServers;
     }
 
     @Override
     public void closeManager() {
-        if (isClosed.compareAndSet(false, true)) {
-            for (IConnectionPool connectionPool : connectionPoolMap.values()) {
-                connectionPool.close();
+        this.writeLock.lock();
+        try {
+            if (isClosed.compareAndSet(false, true)) {
+                for (IConnectionPool connectionPool : connectionPoolMap.values()) {
+                    connectionPool.close();
+                }
+                servers.clear();
+                connectionPoolMap.clear();
             }
-            servers.clear();
-            connectionPoolMap.clear();
+        } finally {
+            this.writeLock.unlock();
         }
     }
 
@@ -172,7 +212,12 @@ public class NodeManager implements INodeManager {
 
     @Override
     public Map<HostAndPort, NodeStatus> getNodeStatusMap() {
-        return nodeStatusMap;
+        this.readLock.lock();
+        try {
+            return nodeStatusMap;
+        } finally {
+            this.readLock.unlock();
+        }
     }
 
     @Override
@@ -195,5 +240,11 @@ public class NodeManager implements INodeManager {
             }
         }
         nodeStatus.errorTimesInc();
+    }
+
+    private void assertClosed(HostAndPort node) {
+        if (isClosed.get()) {
+            throw new NodeException("nodeManager closed, add server" + node + " failed");
+        }
     }
 }
