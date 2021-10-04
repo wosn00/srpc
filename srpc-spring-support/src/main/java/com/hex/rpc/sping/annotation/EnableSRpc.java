@@ -1,6 +1,6 @@
 package com.hex.rpc.sping.annotation;
 
-import com.hex.rpc.sping.registry.RpcClientRegistrar;
+import com.hex.rpc.sping.registry.RpcComponentRegistrar;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import(RpcClientRegistrar.class)
+@Import(RpcComponentRegistrar.class)
 @Documented
 public @interface EnableSRpc {
 

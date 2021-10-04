@@ -35,8 +35,8 @@ import java.util.Set;
 /**
  * @author: hs
  */
-public class RpcClientRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
-    private static final Logger logger = LoggerFactory.getLogger(RpcClientRegistrar.class);
+public class RpcComponentRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
+    private static final Logger logger = LoggerFactory.getLogger(RpcComponentRegistrar.class);
 
     private ResourceLoader resourceLoader;
 
