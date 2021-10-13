@@ -2,11 +2,12 @@ package com.hex.srpc.core.loadbalance.impl;
 
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.loadbalance.AbstractLoadBalancer;
-import com.hex.srpc.core.protocol.Command;
+import com.hex.srpc.core.protocol.RpcRequest;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -22,15 +23,15 @@ public class ConsistentHashLoadBalancer extends AbstractLoadBalancer {
     private final ConcurrentHashMap<String, ConsistentHashSelector> selectors = new ConcurrentHashMap<>();
 
     @Override
-    protected HostAndPort doSelect(List<HostAndPort> nodes, Command<?> command) {
+    protected HostAndPort doSelect(List<HostAndPort> nodes, RpcRequest request) {
         int identityHashCode = System.identityHashCode(nodes);
-        String cmd = command.getCmd();
-        ConsistentHashSelector selector = selectors.get(cmd);
+        String mapping = request.getMapping();
+        ConsistentHashSelector selector = selectors.get(mapping);
         if (selector == null || selector.identityHashCode != identityHashCode) {
-            selectors.put(cmd, new ConsistentHashSelector(nodes, 160, identityHashCode));
-            selector = selectors.get(cmd);
+            selectors.put(mapping, new ConsistentHashSelector(nodes, 160, identityHashCode));
+            selector = selectors.get(mapping);
         }
-        return selector.select(command.getBody());
+        return selector.select(Arrays.stream(request.getArgs()));
     }
 
     static class ConsistentHashSelector {

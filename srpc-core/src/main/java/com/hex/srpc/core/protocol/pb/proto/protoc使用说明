@@ -1,8 +1,0 @@
-1. 使用命令行工具进入protoc.exe所在目录
-2. 输入以下命令：protoc.exe --java_out=E:\ Rpc.proto，将在E盘下自动生成相应的java文件
-参数说明：
-① java_out标示生成文件的存放路径
-② 后面带上需要转换的.proto类型文件名称
-
-// 快捷复制
-protoc.exe --java_out=..\main\java\ hex\Rpc.proto

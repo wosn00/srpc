@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface RouteMapping {
+public @interface Mapping {
     /**
      * 路由路径
      */

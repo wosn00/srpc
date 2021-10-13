@@ -2,7 +2,7 @@ package com.hex.srpc.core.loadbalance.impl;
 
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.loadbalance.AbstractLoadBalancer;
-import com.hex.srpc.core.protocol.Command;
+import com.hex.srpc.core.protocol.RpcRequest;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Comparator;
@@ -22,7 +22,7 @@ public class RoundLoadBalancer extends AbstractLoadBalancer {
     private final Map<String, AtomicInteger> counterMap = new ConcurrentHashMap<>();
 
     @Override
-    protected HostAndPort doSelect(List<HostAndPort> nodes, Command<?> command) {
+    protected HostAndPort doSelect(List<HostAndPort> nodes, RpcRequest request) {
         nodes.sort(Comparator.comparing(HostAndPort::toString));
         String serverJoin = StringUtils.join(nodes.toArray(), ";");
         AtomicInteger counter = counterMap.get(serverJoin);

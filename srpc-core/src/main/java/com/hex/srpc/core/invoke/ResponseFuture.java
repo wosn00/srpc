@@ -2,7 +2,6 @@ package com.hex.srpc.core.invoke;
 
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.node.NodeManager;
-import com.hex.srpc.core.protocol.Command;
 import com.hex.srpc.core.protocol.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,7 @@ public class ResponseFuture {
     private static final Logger logger = LoggerFactory.getLogger(ResponseFuture.class);
 
     private Long requestSeq;
-    private Command<String> rpcResponse;
+    private RpcResponse rpcResponse;
     private RpcCallback rpcCallback;
     private CountDownLatch latch = new CountDownLatch(1);
     private int requestTimeout;
@@ -35,7 +34,7 @@ public class ResponseFuture {
     /**
      * 等待服务端响应结果并返回
      */
-    public Command<String> waitForResponse() {
+    public RpcResponse waitForResponse() {
         boolean await;
         try {
             await = latch.await(requestTimeout, TimeUnit.SECONDS);
@@ -65,9 +64,9 @@ public class ResponseFuture {
         if (this.rpcCallback != null) {
             try {
                 if (TASK_EXECUTOR != null) {
-                    TASK_EXECUTOR.execute(() -> rpcCallback.callback((RpcResponse) this.rpcResponse));
+                    TASK_EXECUTOR.execute(() -> rpcCallback.callback(this.rpcResponse));
                 } else {
-                    rpcCallback.callback((RpcResponse) this.rpcResponse);
+                    rpcCallback.callback(this.rpcResponse);
                 }
             } catch (Exception e) {
                 logger.error("response callback processing failed!,requestSeq:{}", this.requestSeq, e);
@@ -75,7 +74,7 @@ public class ResponseFuture {
         }
     }
 
-    public void setRpcResponse(Command<String> rpcResponse) {
+    public void setRpcResponse(RpcResponse rpcResponse) {
         this.rpcResponse = rpcResponse;
     }
 

@@ -1,0 +1,4 @@
+Protostuff=com.hex.srpc.core.rpc.serialize.impl.ProtostuffSerializer#
+Kryo=com.hex.srpc.core.rpc.serialize.impl.KryoSerializer#
+JSON=com.hex.srpc.core.rpc.serialize.impl.JsonSerializer#
+Jdk=com.hex.srpc.core.rpc.serialize.impl.JdkSerializer

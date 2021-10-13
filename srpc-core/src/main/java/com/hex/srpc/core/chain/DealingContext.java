@@ -12,7 +12,8 @@ import java.util.Map;
  */
 public class DealingContext {
 
-    private Command<String> command;
+    private boolean isClient;
+    private Command command;
     private DealingChain dealingChain;
     private INodeManager nodeManager;
     private IConnection connection;
@@ -30,12 +31,31 @@ public class DealingContext {
         dealingChain.deal(this);
     }
 
-    public Command<String> getCommand() {
+    public boolean isClient() {
+        return isClient;
+    }
+
+    public DealingContext setClient(boolean client) {
+        isClient = client;
+        return this;
+    }
+
+    public Command getCommand() {
         return command;
     }
 
-    public void setCommand(Command<String> command) {
+    public DealingContext setCommand(Command command) {
         this.command = command;
+        return this;
+    }
+
+    public Map<String, Object> getContent() {
+        return content;
+    }
+
+    public DealingContext setContent(Map<String, Object> content) {
+        this.content = content;
+        return this;
     }
 
     public Object attr(String key) {

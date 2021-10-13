@@ -21,6 +21,7 @@ public class TestRpc implements ApplicationListener<ApplicationReadyEvent> {
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
+        System.out.println("==================finish================");
         String result = testService.handler("测试发送");
         System.out.println(result);
 
@@ -31,5 +32,7 @@ public class TestRpc implements ApplicationListener<ApplicationReadyEvent> {
             TestResponse response = testService.handler2(request);
             System.out.println("这是第" + i + "个响应内容:" + response);
         }
+        testService.handler3();
+        System.out.println("==================finish================");
     }
 }

@@ -1,0 +1,7 @@
+none=com.hex.srpc.core.rpc.compress.impl.NoneCompress#
+Gzip=com.hex.srpc.core.rpc.compress.impl.GzipCompress#
+LZ4=com.hex.srpc.core.rpc.compress.impl.LZ4Compress#
+Lzo=com.hex.srpc.core.rpc.compress.impl.LzoCompress#
+Snappy=com.hex.srpc.core.rpc.compress.impl.SnappyCompress#
+Deflater=com.hex.srpc.core.rpc.compress.impl.DeflaterCompress#
+Bzip2=com.hex.srpc.core.rpc.compress.impl.Bzip2Compress

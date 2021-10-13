@@ -1,7 +1,7 @@
 package com.hex.srpc.core.rpc.client;
 
 import com.google.common.collect.Lists;
-import com.hex.common.constant.CommandType;
+import com.hex.common.constant.ResponseStatus;
 import com.hex.common.constant.RpcConstant;
 import com.hex.common.exception.ConnectionException;
 import com.hex.common.exception.NodeException;
@@ -11,8 +11,8 @@ import com.hex.common.id.IdGenerator;
 import com.hex.common.net.HostAndPort;
 import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SRpcThreadFactory;
-import com.hex.common.utils.SerializerUtil;
 import com.hex.common.utils.ThreadUtil;
+import com.hex.common.utils.TypeUtil;
 import com.hex.discovery.ServiceDiscover;
 import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.srpc.core.connection.Connection;
@@ -29,11 +29,10 @@ import com.hex.srpc.core.node.NodeManager;
 import com.hex.srpc.core.protocol.Command;
 import com.hex.srpc.core.protocol.RpcRequest;
 import com.hex.srpc.core.protocol.RpcResponse;
-import com.hex.srpc.core.protocol.pb.proto.Rpc;
 import com.hex.srpc.core.rpc.AbstractRpc;
 import com.hex.srpc.core.rpc.Client;
-import com.hex.srpc.core.rpc.compress.JdkZlibExtendDecoder;
-import com.hex.srpc.core.rpc.compress.JdkZlibExtendEncoder;
+import com.hex.srpc.core.rpc.codec.RpcPacketDecoder;
+import com.hex.srpc.core.rpc.codec.RpcPacketEncoder;
 import com.hex.srpc.core.rpc.task.HeartBeatTask;
 import com.hex.srpc.core.rpc.task.NodeHealthCheckTask;
 import com.hex.srpc.core.thread.CallBackTaskThreadPool;
@@ -50,15 +49,11 @@ import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -147,7 +142,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     @Override
     public void stop() {
         if (isClientStart.compareAndSet(true, false)) {
-            logger.info("RpcClient stop ...");
+            logger.info("RpcClient stop []");
             try {
                 if (eventLoopGroupSelector != null) {
                     eventLoopGroupSelector.shutdownGracefully();
@@ -203,7 +198,7 @@ public class SRpcClient extends AbstractRpc implements Client {
     }
 
     private void initClient() {
-        logger.info("RpcClient init ...");
+        logger.info("RpcClient init");
 
         if (useEpoll()) {
             this.eventLoopGroupSelector = new EpollEventLoopGroup(IO_THREADS);
@@ -251,121 +246,107 @@ public class SRpcClient extends AbstractRpc implements Client {
     @Override
     public boolean sendHeartBeat(IConnection connection) {
         //构造心跳包
-        Command<String> heartBeatPacket = buildHeartBeatPacket();
+        RpcRequest ping = buildHeartBeatPacket();
         ResponseFuture responseFuture;
         //发送心跳
         try {
-            responseFuture = sendCommand(heartBeatPacket, connection, null, 5);
+            responseFuture = sendCommand(ping, connection, null, 5);
         } catch (Exception e) {
             logger.error("sync send heartBeat packet error", e);
-            responseMapping.invalidate(heartBeatPacket.getSeq());
+            responseMapping.invalidate(ping.getSeq());
             return false;
         }
         //等待并获取响应
-        Command<String> command = responseFuture.waitForResponse();
-        return RpcConstant.PONG.equals(command.getBody());
+        RpcResponse pong = responseFuture.waitForResponse();
+        return RpcConstant.PONG.equals(pong.getBody());
     }
 
     @Override
-    public RpcResponse invoke(String cmd, Object body, HostAndPort node) {
-        return invoke(cmd, body, Lists.newArrayList(node));
+    public RpcResponse invoke(String mapping, Object[] args, HostAndPort... nodes) {
+        return invoke(mapping, 0, args, nodes);
     }
 
     @Override
-    public RpcResponse invoke(String cmd, Object body, List<HostAndPort> nodes) {
-        return invoke(cmd, body, nodes, 0);
-    }
-
-    @Override
-    public RpcResponse invoke(String cmd, Object body, List<HostAndPort> nodes, int retryTimes) {
+    public RpcResponse invoke(String mapping, int retryTimes, Object[] args, HostAndPort... nodes) {
         assertNodesNotNull(nodes);
         RpcResponse response;
         do {
-            response = send(cmd, body, nodes, null, false);
+            response = send(mapping, args, nodes, null, false);
         } while (retryTimes-- > 0 && response.isRetried());
         return response;
     }
 
     @Override
-    public <T> T invoke(String cmd, Object body, Class<T> resultType, HostAndPort node) {
-        return invoke(cmd, body, resultType, Lists.newArrayList(node));
+    public <T> T invoke(String mapping, Class<T> resultType, Object[] args, HostAndPort... nodes) {
+        return invoke(mapping, resultType, 0, args, nodes);
     }
 
     @Override
-    public <T> T invoke(String cmd, Object body, Class<T> resultType, List<HostAndPort> nodes) {
-        return invoke(cmd, body, resultType, nodes, 0);
-    }
-
-    @Override
-    public <T> T invoke(String cmd, Object body, Class<T> resultType, List<HostAndPort> nodes, int retryTimes) {
-        RpcResponse response = invoke(cmd, body, nodes, retryTimes);
-        if (RpcResponse.SUCCESS_CODE.equals(response.getCode())) {
-            String responseBody = response.getBody();
-            return SerializerUtil.deserialize(responseBody, resultType);
+    public <T> T invoke(String mapping, Class<T> resultType, int retryTimes, Object[] args, HostAndPort... nodes) {
+        RpcResponse response = invoke(mapping, retryTimes, args, nodes);
+        if (ResponseStatus.SUCCESS_CODE.equals(response.getStatus())) {
+            Object body = response.getBody();
+            return TypeUtil.convert(body, resultType,
+                    "the resultType dose not match the response body, response body type:" + (body == null ? "Void" : body.getClass()));
         } else {
-            logger.warn("The response code to this request {} is {}", response.getSeq(), response.getCode());
+            logger.warn("The response status to this request {} is {}", response.getSeq(), response.getStatus());
             return null;
         }
     }
 
     @Override
-    public void invokeAsync(String cmd, Object body, RpcCallback callback, HostAndPort node) {
-        invokeAsync(cmd, body, callback, Lists.newArrayList(node));
-    }
-
-    @Override
-    public void invokeAsync(String cmd, Object body, RpcCallback callback, List<HostAndPort> nodes) {
+    public void invokeAsync(String mapping, RpcCallback callback, Object[] args, HostAndPort... nodes) {
         assertNodesNotNull(nodes);
-        send(cmd, body, nodes, callback, true);
+        send(mapping, args, nodes, callback, true);
     }
 
     @Override
-    public RpcResponse invokeWithRegistry(String cmd, Object body, String serviceName) {
-        return invokeWithRegistry(cmd, body, serviceName, 0);
+    public RpcResponse invokeWithRegistry(String mapping, String serviceName, Object[] args) {
+        return invokeWithRegistry(mapping, serviceName, 0, args);
     }
 
     @Override
-    public RpcResponse invokeWithRegistry(String cmd, Object body, String serviceName, int retryTimes) {
+    public RpcResponse invokeWithRegistry(String mapping, String serviceName, int retryTimes, Object[] args) {
         registryConfigCheck();
-        return invoke(cmd, body, discoverRpcService(serviceName), retryTimes);
+        return invoke(mapping, retryTimes, args, discoverRpcService(serviceName));
     }
 
     @Override
-    public <T> T invokeWithRegistry(String cmd, Object body, Class<T> resultType, String serviceName) {
-        return invokeWithRegistry(cmd, body, resultType, serviceName, 0);
+    public <T> T invokeWithRegistry(String mapping, Class<T> resultType, String serviceName, Object[] args) {
+        return invokeWithRegistry(mapping, resultType, serviceName, 0, args);
     }
 
     @Override
-    public <T> T invokeWithRegistry(String cmd, Object body, Class<T> resultType, String serviceName, int retryTimes) {
+    public <T> T invokeWithRegistry(String mapping, Class<T> resultType, String serviceName, int retryTimes, Object[] args) {
         registryConfigCheck();
-        return invoke(cmd, body, resultType, discoverRpcService(serviceName), retryTimes);
+        return invoke(mapping, resultType, retryTimes, args, discoverRpcService(serviceName));
     }
 
     @Override
-    public void invokeAsyncWithRegistry(String cmd, Object body, RpcCallback callback, String serviceName) {
+    public void invokeAsyncWithRegistry(String mapping, RpcCallback callback, String serviceName, Object[] args) {
         registryConfigCheck();
-        invokeAsync(cmd, body, callback, discoverRpcService(serviceName));
+        invokeAsync(mapping, callback, args, discoverRpcService(serviceName));
     }
 
-    private <T> RpcRequest<T> buildRequest(String cmd, T body) {
-        RpcRequest<T> request = new RpcRequest<>();
+    private RpcRequest buildRequest(String mapping, Object[] args) {
+        RpcRequest request = new RpcRequest();
         request.setSeq(IdGenerator.getId());
-        if (StringUtils.isBlank(cmd)) {
-            throw new IllegalArgumentException("cmd can not be null");
+        if (StringUtils.isBlank(mapping)) {
+            throw new IllegalArgumentException("mapping can not be null");
         }
-        request.setCmd(cmd);
-        request.setTs(System.currentTimeMillis());
-        request.setBody(body);
+        request.setMapping(mapping);
+        request.setTimestamp(System.currentTimeMillis());
+        request.setArgs(args);
         return request;
     }
 
-    private RpcResponse send(String cmd, Object body, List<HostAndPort> nodes, RpcCallback callback, boolean sendAsync) {
+    private RpcResponse send(String mapping, Object[] args, HostAndPort[] nodes, RpcCallback callback, boolean sendAsync) {
         // 构造请求
-        RpcRequest<?> request = buildRequest(cmd, body);
+        RpcRequest request = buildRequest(mapping, args);
         RpcResponse response = null;
         ResponseFuture responseFuture;
         try {
-            responseFuture = sendCommand(request, nodes, callback, config.getRequestTimeout());
+            responseFuture = sendCommand(request, Arrays.asList(nodes), callback, config.getRequestTimeout());
 
         } catch (ConnectionException | NodeException e) {
             failed(request, e);
@@ -377,20 +358,20 @@ public class SRpcClient extends AbstractRpc implements Client {
         }
         if (!sendAsync) {
             // 等待并获取响应
-            response = (RpcResponse) responseFuture.waitForResponse();
+            response = responseFuture.waitForResponse();
         }
         return response;
     }
 
-    private ResponseFuture sendCommand(Command<?> command, List<HostAndPort> nodes,
+    private ResponseFuture sendCommand(RpcRequest request, List<HostAndPort> nodes,
                                        RpcCallback callback, Integer requestTimeout) {
         // 获取连接
-        IConnection connection = getConnection(nodes, command);
+        IConnection connection = getConnection(nodes, request);
         // 发送请求
-        return sendCommand(command, connection, callback, requestTimeout);
+        return sendCommand(request, connection, callback, requestTimeout);
     }
 
-    private ResponseFuture sendCommand(Command<?> command, IConnection connection,
+    private ResponseFuture sendCommand(Command command, IConnection connection,
                                        RpcCallback callback, Integer requestTimeout) {
         ResponseFuture responseFuture =
                 new ResponseFuture(command.getSeq(), requestTimeout, connection.getRemoteAddress(), callback);
@@ -399,19 +380,19 @@ public class SRpcClient extends AbstractRpc implements Client {
         return responseFuture;
     }
 
-    private IConnection getConnection(List<HostAndPort> nodes, Command<?> command) {
-        IConnection connection = nodeManager.chooseConnection(nodes, command);
+    private IConnection getConnection(List<HostAndPort> nodes, RpcRequest request) {
+        IConnection connection = nodeManager.chooseConnection(nodes, request);
         if (connection == null) {
             throw new ConnectionException("No connection available");
         }
         return connection;
     }
 
-    private Command<String> buildHeartBeatPacket() {
-        Command<String> ping = new Command<>();
+    private RpcRequest buildHeartBeatPacket() {
+        RpcRequest ping = new RpcRequest();
         ping.setSeq(IdGenerator.getId());
-        ping.setCommandType(CommandType.HEARTBEAT.getValue());
-        ping.setBody(RpcConstant.PING);
+        ping.setHeartBeat(true);
+        ping.setArgs(new Object[]{RpcConstant.PING});
         return ping;
     }
 
@@ -447,20 +428,18 @@ public class SRpcClient extends AbstractRpc implements Client {
         responseMapping = new ResponseMapping(config.getRequestTimeout());
     }
 
-    private void assertNodesNotNull(List<HostAndPort> nodes) {
-        if (CollectionUtils.isEmpty(nodes)) {
-            throw new IllegalArgumentException("nodes can not be null");
+    private void assertNodesNotNull(HostAndPort[] nodes) {
+        if (nodes == null || nodes.length == 0) {
+            throw new IllegalArgumentException("node can not be null");
         }
     }
 
-    private List<HostAndPort> discoverRpcService(String serviceName) {
-        List<HostAndPort> nodes;
+    private HostAndPort[] discoverRpcService(String serviceName) {
         try {
-            nodes = serviceDiscover.discoverRpcServiceAddress(serviceName);
+            return serviceDiscover.discoverRpcServiceAddress(serviceName).toArray(new HostAndPort[]{});
         } catch (Exception e) {
             throw new RegistryException("discover rpc service address failed", e);
         }
-        return nodes;
     }
 
     private void registryConfigCheck() {
@@ -469,7 +448,7 @@ public class SRpcClient extends AbstractRpc implements Client {
         }
     }
 
-    private void failed(Command<?> command, Exception e) {
+    private void failed(Command command, Exception e) {
         logger.error("command send error", e);
         responseMapping.invalidate(command.getSeq());
     }
@@ -493,12 +472,8 @@ public class SRpcClient extends AbstractRpc implements Client {
             // 添加压缩编解码
             pipeline.addLast(
                     defaultEventExecutorGroup,
-                    new ProtobufVarint32FrameDecoder(),
-                    new JdkZlibExtendDecoder(),
-                    new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                    new ProtobufVarint32LengthFieldPrepender(),
-                    new JdkZlibExtendEncoder(config.isCompressEnable(), config.getMinThreshold(), config.getMaxThreshold()),
-                    new ProtobufEncoder(),
+                    new RpcPacketDecoder(),
+                    new RpcPacketEncoder(config.getCompressType(), config.getSerializeType()),
 
                     new IdleStateHandler(config.getConnectionIdleTime(), config.getConnectionIdleTime(), 0),
                     new NettyClientConnManageHandler(nodeManager),

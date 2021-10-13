@@ -1,7 +1,6 @@
 package com.hex.handler;
 
-import com.hex.common.annotation.RouteBody;
-import com.hex.common.annotation.RouteMapping;
+import com.hex.common.annotation.Mapping;
 import com.hex.common.annotation.SRpcRoute;
 import com.hex.entity.TestRequest;
 import com.hex.entity.TestResponse;
@@ -12,19 +11,24 @@ import com.hex.entity.TestResponse;
 @SRpcRoute
 public class TestRouter {
 
-    @RouteMapping("test1")
-    public String handler(@RouteBody String body) {
+    @Mapping("test1")
+    public String handler(String body) {
 
         System.out.println("test1收到请求内容：" + body);
 
         return "这是test1响应内容";
     }
 
-    @RouteMapping("test2")
-    public TestResponse handler2(@RouteBody TestRequest request) {
+    @Mapping("test2")
+    public TestResponse handler2(TestRequest request) {
 
         System.out.println("test2收到请求内容:" + request);
 
         return new TestResponse().setResponse("test2响应结果");
+    }
+
+    @Mapping("test3")
+    public void handler3() {
+        System.out.println("----------test3收到请求");
     }
 }

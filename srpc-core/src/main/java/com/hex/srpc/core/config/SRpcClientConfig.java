@@ -1,8 +1,10 @@
 package com.hex.srpc.core.config;
 
 
+import com.hex.common.constant.CompressType;
 import com.hex.common.constant.LoadBalanceRule;
 import com.hex.common.constant.RpcConstant;
+import com.hex.common.constant.SerializeType;
 
 /**
  * @author: hs
@@ -20,6 +22,9 @@ public class SRpcClientConfig extends TLSConfig {
     private Integer connectionIdleTime = 180; //超过连接空闲时间(秒)未收发数据则关闭连接
     private Integer heartBeatTimeInterval = 30; //发送心跳包间隔时间(秒)
 
+    private CompressType compressType = CompressType.LZ4; //压缩算法类型，无需压缩为NONE
+    private SerializeType serializeType = SerializeType.PROTOSTUFF; //序列化类型，默认protostuff
+
     private LoadBalanceRule loadBalanceRule = LoadBalanceRule.RANDOM; //集群负载均衡策略
     private boolean excludeUnAvailableNodesEnable = true; //集群模式下是否排除不可用的节点
     private Integer nodeErrorTimes = 3; //节点连接或请求超时/异常超过设置次数则置为节点不可用
@@ -33,10 +38,6 @@ public class SRpcClientConfig extends TLSConfig {
     private boolean trafficMonitorEnable = false; //是否开启流量控制
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度
     private Long maxWriteSpeed = 10 * 1000 * 1000L; //带宽限制，最大写出速度
-
-    private boolean compressEnable = true; //是否开启数据压缩（平均压缩率在60%以上，可节省大部分流量，性能损耗低）
-    private Long minThreshold = -1L; //开启压缩包大小最低阈值(byte),超过则压缩,-1代表不限制
-    private Long maxThreshold = -1L; //开启压缩包大小最高阈值(byte),低于则压缩,-1代表不限制
 
     public Integer getChannelWorkerThreads() {
         return channelWorkerThreads;
@@ -209,30 +210,21 @@ public class SRpcClientConfig extends TLSConfig {
         return this;
     }
 
-    public boolean isCompressEnable() {
-        return compressEnable;
+    public CompressType getCompressType() {
+        return compressType;
     }
 
-    public SRpcClientConfig setCompressEnable(boolean compressEnable) {
-        this.compressEnable = compressEnable;
+    public SRpcClientConfig setCompressType(CompressType compressType) {
+        this.compressType = compressType;
         return this;
     }
 
-    public Long getMinThreshold() {
-        return minThreshold;
+    public SerializeType getSerializeType() {
+        return serializeType;
     }
 
-    public SRpcClientConfig setMinThreshold(Long minThreshold) {
-        this.minThreshold = minThreshold;
-        return this;
-    }
-
-    public Long getMaxThreshold() {
-        return maxThreshold;
-    }
-
-    public SRpcClientConfig setMaxThreshold(Long maxThreshold) {
-        this.maxThreshold = maxThreshold;
+    public SRpcClientConfig setSerializeType(SerializeType serializeType) {
+        this.serializeType = serializeType;
         return this;
     }
 }

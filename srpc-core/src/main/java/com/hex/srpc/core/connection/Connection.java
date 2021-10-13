@@ -2,7 +2,6 @@ package com.hex.srpc.core.connection;
 
 import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.protocol.Command;
-import com.hex.srpc.core.protocol.adpater.PbProtocolAdapter;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
@@ -65,9 +64,9 @@ public class Connection implements IConnection {
     }
 
     @Override
-    public void send(Command<?> command) {
+    public void send(Command command) {
         if (this.channel.isWritable() && isAvailable()) {
-            this.channel.writeAndFlush(PbProtocolAdapter.getAdapter().convert(command));
+            this.channel.writeAndFlush(command);
             this.lastSendTime = System.currentTimeMillis();
         } else {
             logger.warn("connection is unWritable now ,id={}, command={}", id, command);

@@ -43,7 +43,6 @@ public class RpcAutoConfiguration {
         return server;
     }
 
-
     @Bean
     @ConditionalOnMissingBean(Client.class)
     public Client rpcClient(RpcClientProperties rpcClientProperties) {

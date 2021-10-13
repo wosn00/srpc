@@ -1,6 +1,6 @@
 package com.hex.rpc.sping.reflect;
 
-import com.hex.common.annotation.RouteMapping;
+import com.hex.common.annotation.Mapping;
 import com.hex.common.net.HostAndPort;
 import com.hex.rpc.sping.annotation.SRpcClient;
 import com.hex.rpc.sping.registry.RpcServerAddressRegistry;
@@ -39,14 +39,14 @@ public class SRpcInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) {
         RouterWrapper routerWrapper = methodCache.get(method);
         if (routerWrapper != null) {
-            String routerMapping = routerWrapper.getRouterMapping();
+            String mapping = routerWrapper.getRouterMapping();
             Class<?> returnType = routerWrapper.getReturnType();
             String serviceName = RpcServerAddressRegistry.getServiceName(typeName);
             if (StringUtils.isNotBlank(serviceName)) {
-                return client.invokeWithRegistry(routerMapping, args[0], returnType, serviceName, timeoutRetryTimes);
+                return client.invokeWithRegistry(mapping, returnType, serviceName, timeoutRetryTimes, args);
             }
             List<HostAndPort> hostAndPorts = RpcServerAddressRegistry.getHostAndPorts(typeName);
-            return client.invoke(routerMapping, args[0], returnType, hostAndPorts, timeoutRetryTimes);
+            return client.invoke(mapping, returnType, timeoutRetryTimes, args, hostAndPorts.toArray(new HostAndPort[]{}));
         }
         return null;
     }
@@ -64,12 +64,12 @@ public class SRpcInvocationHandler implements InvocationHandler {
         timeoutRetryTimes = retryTimes;
         Method[] declaredMethods = type.getDeclaredMethods();
         for (Method method : declaredMethods) {
-            if (method.isAnnotationPresent(RouteMapping.class)) {
-                RouteMapping routeMapping = method.getAnnotation(RouteMapping.class);
+            if (method.isAnnotationPresent(Mapping.class)) {
+                Mapping routeMapping = method.getAnnotation(Mapping.class);
                 RouterWrapper wrapper = new RouterWrapper();
                 String mapping = routeMapping.value();
                 if (mapping.length() == 0) {
-                    logger.error("Class {} Method {} does not have clearly routeMapping", typeName, method);
+                    logger.error("Class {} Method {} does not have clearly Mapping", typeName, method);
                     continue;
                 }
                 wrapper.setRouterMapping(mapping);
@@ -78,7 +78,7 @@ public class SRpcInvocationHandler implements InvocationHandler {
             }
         }
         if (MapUtils.isEmpty(methodCache) && logger.isWarnEnabled()) {
-            logger.warn("The method of the Class {} did not find any @RouteMapping annotation", typeName);
+            logger.warn("The method of the Class {} did not find any @Mapping annotation", typeName);
         }
 
     }

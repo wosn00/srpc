@@ -1,7 +1,7 @@
 package com.hex.srpc.core.loadbalance;
 
 import com.hex.common.net.HostAndPort;
-import com.hex.srpc.core.protocol.Command;
+import com.hex.srpc.core.protocol.RpcRequest;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
@@ -13,15 +13,15 @@ import java.util.List;
 public abstract class AbstractLoadBalancer implements LoadBalancer {
 
     @Override
-    public HostAndPort selectNode(List<HostAndPort> nodes, Command<?> command) {
+    public HostAndPort selectNode(List<HostAndPort> nodes, RpcRequest request) {
         if (CollectionUtils.isEmpty(nodes)) {
             return null;
         }
         if (nodes.size() == 1) {
             return nodes.get(0);
         }
-        return doSelect(nodes, command);
+        return doSelect(nodes, request);
     }
 
-    protected abstract HostAndPort doSelect(List<HostAndPort> nodes, Command<?> command);
+    protected abstract HostAndPort doSelect(List<HostAndPort> nodes, RpcRequest request);
 }

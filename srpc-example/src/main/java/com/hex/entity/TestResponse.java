@@ -1,10 +1,13 @@
 package com.hex.entity;
 
+import java.io.Serializable;
+
 /**
  * @author: hs
  */
-public class TestResponse {
+public class TestResponse implements Serializable {
 
+    private static final long serialVersionUID = -7502021344405778255L;
     private String response;
 
 

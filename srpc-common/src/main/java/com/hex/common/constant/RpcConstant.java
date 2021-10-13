@@ -15,4 +15,16 @@ public interface RpcConstant {
     String PONG = "pong";
 
     String SPI_CUSTOM_IMPL = "custom";
+
+    short MAGIC_NUMBER = 0x1025;
+
+    byte VERSION = 0x01;
+
+    int COMPRESS_TYPE_LENGTH = 1;
+
+    int SERIALIZE_TYPE_LENGTH = 1;
+
+    int LENGTH_FIELD_LENGTH = 4;
+
+    int MAX_FRAME_LENGTH = 10 * 1024 * 1024;
 }

@@ -7,6 +7,8 @@ public class TestResponse {
 
     private String response;
 
+    public TestResponse() {
+    }
 
     public String getResponse() {
         return response;

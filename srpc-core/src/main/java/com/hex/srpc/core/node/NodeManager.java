@@ -8,6 +8,7 @@ import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.connection.IConnectionPool;
 import com.hex.srpc.core.loadbalance.LoadBalancer;
 import com.hex.srpc.core.protocol.Command;
+import com.hex.srpc.core.protocol.RpcRequest;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.srpc.core.rpc.client.SRpcClient;
 import org.apache.commons.collections.CollectionUtils;
@@ -204,9 +205,9 @@ public class NodeManager implements INodeManager {
     }
 
     @Override
-    public IConnection chooseConnection(List<HostAndPort> nodes, Command<?> command) {
+    public IConnection chooseConnection(List<HostAndPort> nodes, RpcRequest request) {
         List<HostAndPort> availableNodes = chooseHANode(nodes);
-        HostAndPort node = loadBalancer.selectNode(availableNodes, command);
+        HostAndPort node = loadBalancer.selectNode(availableNodes, request);
         return getConnectionFromPool(node);
     }
 

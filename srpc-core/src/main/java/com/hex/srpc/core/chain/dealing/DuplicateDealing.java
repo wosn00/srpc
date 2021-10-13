@@ -1,6 +1,5 @@
 package com.hex.srpc.core.chain.dealing;
 
-import com.hex.common.constant.CommandType;
 import com.hex.srpc.core.chain.Dealing;
 import com.hex.srpc.core.chain.DealingContext;
 import com.hex.srpc.core.extension.DuplicatedMarker;
@@ -25,9 +24,9 @@ public class DuplicateDealing implements Dealing {
 
     @Override
     public void deal(DealingContext context) {
-        Command<String> command = context.getCommand();
+        Command command = context.getCommand();
         // 只有收到请求才需要去重
-        if (CommandType.REQUEST_COMMAND.getValue().equals(command.getCommandType())) {
+        if (command.isRequest()) {
             Long seq = command.getSeq();
             if (duplicatedMarker.mark(seq)) {
                 logger.warn("Received duplicate request seq：[{}], ignore it", seq);

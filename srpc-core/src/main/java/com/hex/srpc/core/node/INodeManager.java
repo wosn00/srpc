@@ -4,6 +4,7 @@ import com.hex.common.net.HostAndPort;
 import com.hex.srpc.core.connection.IConnection;
 import com.hex.srpc.core.connection.IConnectionPool;
 import com.hex.srpc.core.protocol.Command;
+import com.hex.srpc.core.protocol.RpcRequest;
 import com.hex.srpc.core.rpc.Client;
 
 import java.util.List;
@@ -101,10 +102,10 @@ public interface INodeManager {
      * 根据节点和指令获取连接
      *
      * @param nodes   节点
-     * @param command 请求指令
+     * @param request 请求指令
      * @return 连接
      */
-    IConnection chooseConnection(List<HostAndPort> nodes, Command<?> command);
+    IConnection chooseConnection(List<HostAndPort> nodes, RpcRequest request);
 
     /**
      * 是否需要排除不可用的节点（连接或请求超时/异常超过设置次数置为不可用）

@@ -7,8 +7,8 @@ import com.hex.srpc.core.chain.dealing.DuplicateDealing;
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.extension.DuplicatedMarker;
 import com.hex.srpc.core.node.INodeManager;
-import com.hex.srpc.core.protocol.adpater.PbProtocolAdapter;
-import com.hex.srpc.core.protocol.pb.proto.Rpc;
+import com.hex.srpc.core.protocol.Command;
+import com.hex.srpc.core.protocol.RpcRequest;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.concurrent.ExecutorService;
@@ -33,7 +33,7 @@ public class ServerProcessHandler extends AbstractProcessHandler {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Rpc.Packet msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Command command) throws Exception {
         // 生成处理责任链
         DealingChain chain = new DealingChain();
         if (duplicatedMarker != null) {
@@ -42,7 +42,8 @@ public class ServerProcessHandler extends AbstractProcessHandler {
         chain.addDealing(new DispatchDealing());
         // 上下文，携带消息内容
         DealingContext context = new DealingContext();
-        context.setCommand(PbProtocolAdapter.getAdapter().reverse(msg));
+        context.setClient(false);
+        context.setCommand(command);
         context.setDealingChain(chain);
         context.setNodeManager(nodeManager);
         context.setConnection(ctx.channel().attr(CONN).get());

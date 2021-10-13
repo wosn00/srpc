@@ -41,7 +41,7 @@ public interface IConnection {
      *
      * @param command
      */
-    void send(Command<?> command);
+    void send(Command command);
 
     /**
      * 获取最后一次发送时间

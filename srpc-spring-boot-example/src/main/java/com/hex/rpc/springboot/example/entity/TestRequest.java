@@ -8,6 +8,9 @@ public class TestRequest {
     private String name;
     private String body;
 
+    public TestRequest() {
+    }
+
     public String getName() {
         return name;
     }

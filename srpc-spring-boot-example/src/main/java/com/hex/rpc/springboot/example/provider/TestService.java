@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
 public class TestService {
 
     public String get() {
-        return "this is from spring";
+        return "this is a bean from spring";
     }
 }

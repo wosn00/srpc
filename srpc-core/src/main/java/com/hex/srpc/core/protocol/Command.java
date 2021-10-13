@@ -1,64 +1,52 @@
 package com.hex.srpc.core.protocol;
 
+import java.io.Serializable;
+
 /**
  * @author hs
  */
-public class Command<T> {
+public class Command implements Serializable {
+
+    private static final long serialVersionUID = -5672014817638321964L;
+    /**
+     * 序号，指令唯一标识
+     */
+    private Long seq;
 
     /**
-     * 序号，唯一标识
+     * 指令头部信息，用于扩展
      */
-    protected Long seq;
+    private String header;
 
     /**
-     * 指令头部信息，可用于扩展
+     * 用于服务端映射对应的处理器
      */
-    protected String header;
+    private String mapping;
 
     /**
-     * 用于服务端分发请求，类似http url
+     * 指令类型，请求或响应
      */
-    protected String cmd;
+    private boolean isRequest;
 
     /**
-     * 0为心跳，1为请求，2为响应
+     * 是否是心跳包
      */
-    protected Integer commandType;
-
-    /**
-     * 响应码，只有响应才有
-     */
-    private Integer code;
+    private boolean isHeartBeat;
 
     /**
      * 创建时间
      */
-    protected Long ts;
-
-    /**
-     * 数据内容
-     */
-    protected T body;
+    private Long timestamp;
 
     public Command() {
     }
 
-    public Command(Long seq, String cmd, Integer commandType, Integer code, Long ts, T body) {
+    public Command(Long seq, String header, String mapping, boolean isRequest, Long timestamp) {
         this.seq = seq;
-        this.cmd = cmd;
-        this.commandType = commandType;
-        this.code = code;
-        this.ts = ts;
-        this.body = body;
-    }
-
-
-    public Integer getCode() {
-        return code;
-    }
-
-    public void setCode(Integer code) {
-        this.code = code;
+        this.header = header;
+        this.mapping = mapping;
+        this.isRequest = isRequest;
+        this.timestamp = timestamp;
     }
 
     public Long getSeq() {
@@ -69,36 +57,39 @@ public class Command<T> {
         this.seq = seq;
     }
 
-    public String getCmd() {
-        return cmd;
+    public String getMapping() {
+        return mapping;
     }
 
-    public void setCmd(String cmd) {
-        this.cmd = cmd;
+    public Command setMapping(String mapping) {
+        this.mapping = mapping;
+        return this;
     }
 
-    public Integer getCommandType() {
-        return commandType;
+    public boolean isRequest() {
+        return isRequest;
     }
 
-    public void setCommandType(Integer commandType) {
-        this.commandType = commandType;
+    public Command setRequest(boolean request) {
+        isRequest = request;
+        return this;
     }
 
-    public Long getTs() {
-        return ts;
+    public boolean isHeartBeat() {
+        return isHeartBeat;
     }
 
-    public void setTs(Long ts) {
-        this.ts = ts;
+    public Command setHeartBeat(boolean heartBeat) {
+        isHeartBeat = heartBeat;
+        return this;
     }
 
-    public T getBody() {
-        return body;
+    public Long getTimestamp() {
+        return timestamp;
     }
 
-    public void setBody(T body) {
-        this.body = body;
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public String getHeader() {
@@ -113,12 +104,12 @@ public class Command<T> {
     @Override
     public String toString() {
         return "Command{" +
-                "seq='" + seq + '\'' +
-                ", cmd='" + cmd + '\'' +
-                ", commandType=" + commandType +
-                ", code=" + code +
-                ", ts=" + ts +
-                ", body=" + body +
+                "seq=" + seq +
+                ", header='" + header + '\'' +
+                ", mapping='" + mapping + '\'' +
+                ", isRequest=" + isRequest +
+                ", isHeartBeat=" + isHeartBeat +
+                ", timestamp=" + timestamp +
                 '}';
     }
 }

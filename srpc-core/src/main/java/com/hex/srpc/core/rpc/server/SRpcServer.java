@@ -17,12 +17,11 @@ import com.hex.srpc.core.handler.connection.NettyServerConnManagerHandler;
 import com.hex.srpc.core.handler.process.ServerProcessHandler;
 import com.hex.srpc.core.node.INodeManager;
 import com.hex.srpc.core.node.NodeManager;
-import com.hex.srpc.core.protocol.pb.proto.Rpc;
 import com.hex.srpc.core.reflect.RouteScanner;
 import com.hex.srpc.core.rpc.AbstractRpc;
 import com.hex.srpc.core.rpc.Server;
-import com.hex.srpc.core.rpc.compress.JdkZlibExtendDecoder;
-import com.hex.srpc.core.rpc.compress.JdkZlibExtendEncoder;
+import com.hex.srpc.core.rpc.codec.RpcPacketDecoder;
+import com.hex.srpc.core.rpc.codec.RpcPacketEncoder;
 import com.hex.srpc.core.rpc.task.ConnectionNumCountTask;
 import com.hex.srpc.core.thread.BusinessThreadPool;
 import io.netty.bootstrap.ServerBootstrap;
@@ -39,10 +38,6 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.apache.commons.lang3.StringUtils;
@@ -339,12 +334,8 @@ public class SRpcServer extends AbstractRpc implements Server {
             // 添加压缩编解码
             pipeline.addLast(
                     defaultEventExecutorGroup,
-                    new ProtobufVarint32FrameDecoder(),
-                    new JdkZlibExtendDecoder(),
-                    new ProtobufDecoder(Rpc.Packet.getDefaultInstance()),
-                    new ProtobufVarint32LengthFieldPrepender(),
-                    new JdkZlibExtendEncoder(serverConfig.isCompressEnable(), serverConfig.getMinThreshold(), serverConfig.getMaxThreshold()),
-                    new ProtobufEncoder(),
+                    new RpcPacketDecoder(),
+                    new RpcPacketEncoder(serverConfig.getCompressType(), serverConfig.getSerializeType()),
 
                     // 3min没收到或没发送数据则认为空闲
                     new IdleStateHandler(serverConfig.getConnectionIdleTime(), serverConfig.getConnectionIdleTime(), 0),

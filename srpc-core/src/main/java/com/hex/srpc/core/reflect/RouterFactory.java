@@ -1,6 +1,6 @@
 package com.hex.srpc.core.reflect;
 
-import com.hex.common.annotation.RouteMapping;
+import com.hex.common.annotation.Mapping;
 import com.hex.common.exception.RpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,11 +45,11 @@ public class RouterFactory {
         });
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
-            if (method.isAnnotationPresent(RouteMapping.class)) {
-                RouteMapping routeMapping = method.getDeclaredAnnotation(RouteMapping.class);
-                String route = routeMapping.value();
+            if (method.isAnnotationPresent(Mapping.class)) {
+                Mapping mapping = method.getDeclaredAnnotation(Mapping.class);
+                String route = mapping.value();
                 if (route.length() == 0) {
-                    logger.warn("Class {} Method {} does not have clearly routeMapping, skip register", clazz, method);
+                    logger.warn("Class {} Method {} does not have clearly Mapping, skip register", clazz, method);
                     continue;
                 }
                 RouterTarget routerTarget = new RouterTarget(instance, method);
@@ -61,7 +61,7 @@ public class RouterFactory {
     public static RouterTarget getRouter(String mapping) {
         RouterTarget routerTarget = routerTargetMap.get(mapping);
         if (routerTarget == null) {
-            throw new RpcException("RouterTarget not found, ,RouteMapping: " + mapping);
+            throw new RpcException("RouterTarget not found, ,Mapping: " + mapping);
         }
         return routerTarget;
     }
