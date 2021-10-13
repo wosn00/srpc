@@ -14,6 +14,7 @@ import com.hex.srpc.core.rpc.serialize.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +45,9 @@ public class RpcPacketDecoder extends LengthFieldBasedFrameDecoder {
         }
         try {
             //校验魔数
-            checkMagicNumber(frame);
+            checkMagicNumber(ctx, frame);
             //校验版本
-            checkVersion(frame);
+            checkVersion(ctx, frame);
 
             short readByte = frame.readUnsignedByte();
 
@@ -81,19 +82,23 @@ public class RpcPacketDecoder extends LengthFieldBasedFrameDecoder {
         } catch (Exception e) {
             logger.error("frame decode failed", e);
             throw new DecoderException();
+        } finally {
+            ReferenceCountUtil.release(frame);
         }
     }
 
-    private void checkMagicNumber(ByteBuf in) {
+    private void checkMagicNumber(ChannelHandlerContext ctx, ByteBuf in) {
         short magicNumber = in.readShort();
         if (magicNumber != RpcConstant.MAGIC_NUMBER) {
+            ctx.close();
             throw new DecoderException("Unknown magic code: " + magicNumber);
         }
     }
 
-    private void checkVersion(ByteBuf in) {
+    private void checkVersion(ChannelHandlerContext ctx, ByteBuf in) {
         int version = in.readUnsignedByte();
         if (version != RpcConstant.VERSION) {
+            ctx.close();
             throw new DecoderException("version isn't compatible" + version);
         }
     }
