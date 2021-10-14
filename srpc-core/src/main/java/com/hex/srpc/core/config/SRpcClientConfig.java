@@ -25,15 +25,15 @@ public class SRpcClientConfig extends TLSConfig {
     private CompressType compressType = CompressType.LZ4; //压缩算法类型，无需压缩为NONE
     private SerializeType serializeType = SerializeType.PROTOSTUFF; //序列化类型，默认protostuff
 
-    private LoadBalanceRule loadBalanceRule = LoadBalanceRule.RANDOM; //集群负载均衡策略
+    private LoadBalanceRule loadBalanceRule = LoadBalanceRule.ROUND; //集群负载均衡策略
     private boolean excludeUnAvailableNodesEnable = true; //集群模式下是否排除不可用的节点
     private Integer nodeErrorTimes = 3; //节点连接或请求超时/异常超过设置次数则置为节点不可用
     private Integer nodeHealthCheckTimeInterval = 10; //节点健康检查周期(秒),心跳包响应成功则恢复不可用的节点
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
     private Integer receiveBuf = 65535; //tcp接收缓冲区
-    private Integer lowWaterLevel = 1024 * 1024; //netty低水位
-    private Integer highWaterLevel = 10 * 1024 * 1024; //netty高水位
+    private Integer lowWaterLevel = 1024 * 1024; //netty单个连接低水位
+    private Integer highWaterLevel = 10 * 1024 * 1024; //netty单个连接高水位(避免内存溢出)
 
     private boolean trafficMonitorEnable = false; //是否开启流量控制
     private Long maxReadSpeed = 10 * 1000 * 1000L; //带宽限制，最大读取速度

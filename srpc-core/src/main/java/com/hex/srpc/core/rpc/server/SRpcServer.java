@@ -244,7 +244,7 @@ public class SRpcServer extends AbstractRpc implements Server {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("RpcServer started success, Listening port:{}", bindPort);
+            logger.info("RpcServer started success, Listening port:[{}]", bindPort);
         }
     }
 

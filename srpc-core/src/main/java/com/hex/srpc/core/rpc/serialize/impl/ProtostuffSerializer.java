@@ -18,25 +18,19 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProtostuffSerializer implements Serializer {
 
     /**
-     * 避免每次序列化都重新申请Buffer空间
-     */
-    private static LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
-    /**
      * 缓存Schema
      */
     private static Map<Class<?>, Schema<?>> schemaCache = new ConcurrentHashMap<>();
 
     @Override
     public byte[] serialize(Object object) {
-        Class clazz = object.getClass();
-        Schema schema = getSchema(clazz);
-        byte[] data;
+        Schema schema = getSchema(object.getClass());
+        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
         try {
-            data = ProtostuffIOUtil.toByteArray(object, schema, buffer);
+            return ProtostuffIOUtil.toByteArray(object, schema, buffer);
         } finally {
             buffer.clear();
         }
-        return data;
     }
 
     @Override
