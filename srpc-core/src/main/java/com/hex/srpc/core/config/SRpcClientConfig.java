@@ -22,7 +22,7 @@ public class SRpcClientConfig extends TLSConfig {
     private Integer connectionIdleTime = 180; //超过连接空闲时间(秒)未收发数据则关闭连接
     private Integer heartBeatTimeInterval = 30; //发送心跳包间隔时间(秒)
 
-    private CompressType compressType = CompressType.LZ4; //压缩算法类型，无需压缩为NONE
+    private CompressType compressType = CompressType.SNAPPY; //压缩算法类型，无需压缩为NONE
     private SerializeType serializeType = SerializeType.PROTOSTUFF; //序列化类型，默认protostuff
 
     private LoadBalanceRule loadBalanceRule = LoadBalanceRule.ROUND; //集群负载均衡策略

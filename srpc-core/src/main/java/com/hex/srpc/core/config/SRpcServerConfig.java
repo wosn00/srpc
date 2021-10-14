@@ -21,7 +21,7 @@ public class SRpcServerConfig extends TLSConfig {
     private Integer printConnectionNumInterval = 0; //打印服务端当前连接数信息，时间间隔(秒), 0为不打印
     private Boolean isPrintHearBeatPacketInfo = false; //是否打印心跳包信息
 
-    private CompressType compressType = CompressType.LZ4; //压缩算法类型，无需压缩为NONE
+    private CompressType compressType = CompressType.SNAPPY; //压缩算法类型，无需压缩为NONE
     private SerializeType serializeType = SerializeType.PROTOSTUFF; //序列化类型，默认protostuff
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
