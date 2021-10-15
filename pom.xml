@@ -15,7 +15,6 @@
         <module>srpc-spring-boot-starter</module>
         <module>srpc-registry-zookeeper</module>
         <module>srpc-example</module>
-        <module>srpc-spring-boot-example</module>
         <module>srpc-registry-api</module>
     </modules>
 
