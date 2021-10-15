@@ -9,21 +9,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>srpc-spring-boot-starter</artifactId>
+    <artifactId>srpc-registry-api</artifactId>
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-            <version>2.1.6.RELEASE</version>
-        </dependency>
-        <dependency>
             <groupId>com.hex</groupId>
-            <artifactId>srpc-spring-support</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
+            <artifactId>srpc-common</artifactId>
         </dependency>
     </dependencies>
 

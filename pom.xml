@@ -7,15 +7,16 @@
     <groupId>com.hex</groupId>
     <artifactId>srpc</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
     <modules>
         <module>srpc-common</module>
         <module>srpc-core</module>
         <module>srpc-spring-support</module>
         <module>srpc-spring-boot-starter</module>
-        <module>srpc-registry</module>
+        <module>srpc-registry-zookeeper</module>
         <module>srpc-example</module>
         <module>srpc-spring-boot-example</module>
+        <module>srpc-registry-api</module>
     </modules>
 
     <properties>
@@ -31,7 +32,6 @@
         <slf4j.version>1.7.12</slf4j.version>
         <logback.version>1.1.1</logback.version>
         <spring.context.version>5.1.8.RELEASE</spring.context.version>
-        <l4z.version>1.7.1</l4z.version>
         <kryo.version>4.0.2</kryo.version>
         <protostuff.version>1.7.2</protostuff.version>
 
@@ -55,7 +55,12 @@
             </dependency>
             <dependency>
                 <groupId>com.hex</groupId>
-                <artifactId>srpc-registry</artifactId>
+                <artifactId>srpc-registry-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hex</groupId>
+                <artifactId>srpc-registry-zookeeper</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -120,12 +125,6 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
-            </dependency>
-            <!--compress-->
-            <dependency>
-                <groupId>org.lz4</groupId>
-                <artifactId>lz4-java</artifactId>
-                <version>${l4z.version}</version>
             </dependency>
             <!--serialize-->
             <dependency>

@@ -1,4 +1,4 @@
-package com.hex.discovery;
+package com.hex.registry;
 
 import com.hex.common.annotation.SPI;
 import com.hex.common.net.HostAndPort;

@@ -1,8 +1,5 @@
 package com.hex.zookeeper;
 
-import com.hex.common.exception.RegistryException;
-import com.hex.common.net.HostAndPort;
-import com.hex.publish.ServicePublisher;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -13,7 +13,6 @@ import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SRpcThreadFactory;
 import com.hex.common.utils.ThreadUtil;
 import com.hex.common.utils.TypeUtil;
-import com.hex.discovery.ServiceDiscover;
 import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.srpc.core.connection.Connection;
 import com.hex.srpc.core.connection.IConnection;
@@ -132,6 +131,10 @@ public class SRpcClient extends AbstractRpc implements Client {
 
             this.serviceDiscover = loader.getExtension(registrySchema);
 
+            if (this.serviceDiscover == null) {
+                throw new RpcException("The registry schema" + registrySchema + " implementation was not found, " +
+                        "Make sure you have implemented and configured the META-INF.srpc files using SPI");
+            }
             this.serviceDiscover.initRegistry(this.registryConfig.getRegistryAddress());
 
         } catch (Exception e) {

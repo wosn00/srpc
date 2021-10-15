@@ -9,7 +9,7 @@ import com.hex.common.spi.ExtensionLoader;
 import com.hex.common.thread.SRpcThreadFactory;
 import com.hex.common.utils.NetUtil;
 import com.hex.common.utils.ThreadUtil;
-import com.hex.publish.ServicePublisher;
+import com.hex.srpc.core.registry.ServicePublisher;
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.extension.DefaultDuplicateMarker;
 import com.hex.srpc.core.extension.DuplicatedMarker;
