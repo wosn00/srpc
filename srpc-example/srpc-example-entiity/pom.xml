@@ -11,5 +11,13 @@
 
     <artifactId>srpc-example-entiity</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.hex</groupId>
+            <artifactId>srpc-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
 
 </project>

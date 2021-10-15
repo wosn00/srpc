@@ -10,7 +10,7 @@ import com.hex.srpc.core.rpc.server.SRpcServer;
  * <p>
  * 集群服务2[服务会注册到注册中心, 需要先启动zookeeper或对应的注册中心]
  */
-@SRpcScan("com.hex")
+@SRpcScan("com.hex.example")
 public class RegistryServerTest2 {
 
     public static void main(String[] args) {

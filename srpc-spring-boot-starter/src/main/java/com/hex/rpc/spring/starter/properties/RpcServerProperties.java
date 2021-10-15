@@ -12,7 +12,7 @@ import java.util.List;
  */
 @ConfigurationProperties(prefix = "com.hex.srpc.server")
 public class RpcServerProperties {
-    private Integer port = 8008; //绑定端口
+    private Integer port = 9957; //绑定端口
 
     private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
 

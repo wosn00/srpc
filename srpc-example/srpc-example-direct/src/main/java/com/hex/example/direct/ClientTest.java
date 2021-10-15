@@ -1,6 +1,8 @@
 package com.hex.example.direct;
 
 import com.hex.common.net.HostAndPort;
+import com.hex.example.entity.TestRequest;
+import com.hex.example.entity.TestResponse;
 import com.hex.srpc.core.config.SRpcClientConfig;
 import com.hex.srpc.core.rpc.Client;
 import com.hex.srpc.core.rpc.client.SRpcClient;

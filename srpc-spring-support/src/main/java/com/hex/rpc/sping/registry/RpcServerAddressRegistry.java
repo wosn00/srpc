@@ -1,7 +1,7 @@
 package com.hex.rpc.sping.registry;
 
 import com.hex.common.net.HostAndPort;
-import com.hex.rpc.sping.annotation.SRpcClient;
+import com.hex.common.annotation.SRpcClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

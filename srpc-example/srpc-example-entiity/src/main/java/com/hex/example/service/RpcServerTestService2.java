@@ -1,6 +1,8 @@
 package com.hex.example.service;
 
-import com.hex.rpc.sping.annotation.SRpcClient;
+
+import com.hex.common.annotation.Mapping;
+import com.hex.common.annotation.SRpcClient;
 
 /**
  * @author: hs
@@ -10,5 +12,6 @@ import com.hex.rpc.sping.annotation.SRpcClient;
 @SRpcClient(serviceName = "test-application", retryTimes = 2)
 public interface RpcServerTestService2 {
 
+    @Mapping("test3")
     public void test();
 }

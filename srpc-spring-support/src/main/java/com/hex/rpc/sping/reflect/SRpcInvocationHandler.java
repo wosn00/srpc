@@ -2,7 +2,7 @@ package com.hex.rpc.sping.reflect;
 
 import com.hex.common.annotation.Mapping;
 import com.hex.common.net.HostAndPort;
-import com.hex.rpc.sping.annotation.SRpcClient;
+import com.hex.common.annotation.SRpcClient;
 import com.hex.rpc.sping.registry.RpcServerAddressRegistry;
 import com.hex.srpc.core.rpc.Client;
 import org.apache.commons.collections.MapUtils;

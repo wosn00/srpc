@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@EnableSRpc(basePackages = "com.hex.rpc.springboot.example")
+@EnableSRpc(basePackages = "com.hex.example")
 public class RpcSpringBootExampleApplication {
 
     public static void main(String[] args) {

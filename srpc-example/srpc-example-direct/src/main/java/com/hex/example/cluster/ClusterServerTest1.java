@@ -1,26 +1,22 @@
-package com.hex.example.registry;
+package com.hex.example.cluster;
 
-import com.google.common.collect.Lists;
 import com.hex.common.annotation.SRpcScan;
 import com.hex.srpc.core.config.SRpcServerConfig;
 import com.hex.srpc.core.rpc.server.SRpcServer;
 
+
 /**
  * @author: hs
- * <p>
- * 集群服务1[服务会注册到注册中心, 需要先启动zookeeper或对应的注册中心]
+ * 集群连接模式 [服务节点1]
  */
 @SRpcScan("com.hex.example")
-public class RegistryServerTest1 {
-
+public class ClusterServerTest1 {
     public static void main(String[] args) {
 
         // 启动服务端, 需填入rpc服务端配置, 可使用默认配置, source填写有@RouteScan注解的类
         SRpcServer.builder()
                 .serverConfig(new SRpcServerConfig())
-                .sourceClass(RegistryServerTest1.class)
-                // 配置注册中心地址, 需要注册到注册中心上的服务名称
-                .configRegistry(null, Lists.newArrayList("192.168.1.2:2181"), "SRpcServerTest")
+                .sourceClass(ClusterServerTest1.class)
                 .port(8005)
                 .start();
     }

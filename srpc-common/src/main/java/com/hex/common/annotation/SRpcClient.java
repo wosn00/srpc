@@ -1,4 +1,4 @@
-package com.hex.rpc.sping.annotation;
+package com.hex.common.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

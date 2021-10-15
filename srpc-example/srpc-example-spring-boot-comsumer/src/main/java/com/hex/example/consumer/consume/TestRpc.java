@@ -1,5 +1,8 @@
 package com.hex.example.consumer.consume;
 
+import com.hex.example.entity.TestRequest;
+import com.hex.example.entity.TestResponse;
+import com.hex.example.service.RpcServerTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -18,7 +21,7 @@ public class TestRpc implements ApplicationListener<ApplicationReadyEvent> {
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        System.out.println("==================finish================");
+        System.out.println("==================start================");
         String result = testService.handler("测试发送");
         System.out.println(result);
 

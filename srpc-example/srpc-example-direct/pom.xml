@@ -16,6 +16,11 @@
             <groupId>com.hex</groupId>
             <artifactId>srpc-example-entiity</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.hex</groupId>
+            <artifactId>srpc-core</artifactId>
+            <version>1.1.0</version>
+        </dependency>
     </dependencies>
 
 
