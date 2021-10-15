@@ -1,9 +1,14 @@
 package com.hex.zookeeper;
 
+import com.hex.common.exception.RegistryException;
+import com.hex.common.net.HostAndPort;
+import com.hex.registry.ServiceDiscover;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 
 /**

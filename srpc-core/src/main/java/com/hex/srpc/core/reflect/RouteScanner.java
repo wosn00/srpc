@@ -8,7 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -64,11 +66,17 @@ public class RouteScanner {
                 logger.warn("this package {} dose not exist", basePackage);
                 continue;
             }
-            File file = new File(resource.getFile());
-            File[] files = file.listFiles();
-            if (files == null) {
-                logger.warn("the package {} does not have any class or package", basePackage);
-                return;
+            File[] files = new File[0];
+            try {
+                String filePath = URLDecoder.decode(resource.getFile(), "UTF-8");
+                File file = new File(filePath);
+                files = file.listFiles();
+                if (files == null) {
+                    logger.warn("the package {} does not have any class or package", basePackage);
+                    return;
+                }
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
             }
             loadAndRegister(files);
         }
