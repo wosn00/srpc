@@ -1,8 +1,8 @@
 package com.hex.rpc.sping.registry;
 
 import com.hex.common.annotation.SRpcRoute;
-import com.hex.rpc.sping.annotation.EnableSRpc;
 import com.hex.common.annotation.SRpcClient;
+import com.hex.rpc.sping.annotation.EnableSRpc;
 import com.hex.rpc.sping.factory.SRpcClientFactoryBean;
 import com.hex.rpc.sping.processor.RpcPostProcessor;
 import com.hex.rpc.sping.scanner.RpcClientScanner;
