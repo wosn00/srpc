@@ -121,6 +121,8 @@ public class RpcComponentRegistrar implements ImportBeanDefinitionRegistrar, Res
                 if (candidateComponent instanceof AnnotatedBeanDefinition) {
                     AnnotatedBeanDefinition beanDefinition = (AnnotatedBeanDefinition) candidateComponent;
                     AnnotationMetadata annotationMetadata = beanDefinition.getMetadata();
+                    Assert.isTrue(annotationMetadata.getInterfaceNames().length > 0,
+                            "the class annotated @SRpcRoute must implement an interface");
                     Assert.isTrue(annotationMetadata.isConcrete(),
                             "@SRpcRoute can not be specified on an interface or abstract");
                     //注册Route Class

@@ -1,7 +1,9 @@
 package com.hex.srpc.core.reflect;
 
 import com.hex.common.annotation.Mapping;
+import com.hex.common.annotation.SRpcClient;
 import com.hex.common.exception.RpcException;
+import com.hex.common.utils.MappingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,16 +47,27 @@ public class RouterFactory {
         });
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
+            String mapping = null;
             if (method.isAnnotationPresent(Mapping.class)) {
-                Mapping mapping = method.getDeclaredAnnotation(Mapping.class);
-                String route = mapping.value();
-                if (route.length() == 0) {
-                    logger.warn("Class {} Method {} does not have clearly Mapping, skip register", clazz, method);
-                    continue;
+                Mapping annotation = method.getDeclaredAnnotation(Mapping.class);
+                mapping = annotation.value();
+                if (mapping.length() == 0) {
+                    throw new RpcException("Class " + clazz + " Method " + method + " does not have clearly Mapping, skip register");
                 }
-                RouterTarget routerTarget = new RouterTarget(instance, method);
-                routerTargetMap.put(route, routerTarget);
+            } else {
+                for (Class<?> anInterface : clazz.getInterfaces()) {
+                    if (anInterface.isAnnotationPresent(SRpcClient.class)) {
+                        //默认生成唯一标识
+                        mapping = MappingUtil.generateMapping(anInterface, method);
+                        break;
+                    }
+                }
             }
+            if (mapping == null) {
+                throw new RpcException("class" + clazz.getCanonicalName() + "must implement an interface annotated @SRpcClient");
+            }
+            RouterTarget routerTarget = new RouterTarget(instance, method);
+            routerTargetMap.put(mapping, routerTarget);
         }
     }
 

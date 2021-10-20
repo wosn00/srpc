@@ -1,8 +1,9 @@
 package com.hex.rpc.sping.reflect;
 
 import com.hex.common.annotation.Mapping;
-import com.hex.common.net.HostAndPort;
 import com.hex.common.annotation.SRpcClient;
+import com.hex.common.net.HostAndPort;
+import com.hex.common.utils.MappingUtil;
 import com.hex.rpc.sping.registry.RpcServerAddressRegistry;
 import com.hex.srpc.core.rpc.Client;
 import org.apache.commons.collections.MapUtils;
@@ -64,24 +65,30 @@ public class SRpcInvocationHandler implements InvocationHandler {
         timeoutRetryTimes = retryTimes;
         Method[] declaredMethods = type.getDeclaredMethods();
         for (Method method : declaredMethods) {
+            RouterWrapper wrapper = new RouterWrapper();
             if (method.isAnnotationPresent(Mapping.class)) {
                 Mapping routeMapping = method.getAnnotation(Mapping.class);
-                RouterWrapper wrapper = new RouterWrapper();
                 String mapping = routeMapping.value();
                 if (mapping.length() == 0) {
                     logger.error("Class {} Method {} does not have clearly Mapping", typeName, method);
                     continue;
                 }
                 wrapper.setRouterMapping(mapping);
-                wrapper.setReturnType(method.getReturnType());
-                methodCache.put(method, wrapper);
+            } else {
+                //没有手动指定mapping的话将根据type和method生成唯一标识
+                String mapping = MappingUtil.generateMapping(type, method);
+                wrapper.setRouterMapping(mapping);
             }
+            wrapper.setReturnType(method.getReturnType());
+            methodCache.put(method, wrapper);
         }
+
         if (MapUtils.isEmpty(methodCache) && logger.isWarnEnabled()) {
             logger.warn("The method of the Class {} did not find any @Mapping annotation", typeName);
         }
 
     }
+
 
     static class RouterWrapper {
         /**
