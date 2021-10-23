@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author: hs
  */
-@ConfigurationProperties(prefix = "com.hex.srpc.server")
+@ConfigurationProperties(prefix = "srpc.server")
 public class RpcServerProperties {
     private Integer port = 9957; //绑定端口
 
@@ -20,9 +20,10 @@ public class RpcServerProperties {
     private Integer businessQueueSize = 500; //业务线程池队列大小
 
     private Integer connectionIdleTime = 180;//超过连接空闲时间(秒)未收发数据则关闭连接
-    private Integer printConnectionNumInterval = 0; //打印服务端当前连接数时间间隔(秒), 0为不打印
+    private Integer printConnectionNumInterval = 0; //打印服务端当前连接数, 时间间隔(秒), 0为不打印
+    private Boolean isPrintHearBeatPacketInfo = false; //是否打印心跳包信息
 
-    private CompressType compressType = CompressType.LZ4; //压缩算法类型，无需压缩为NONE
+    private CompressType compressType = CompressType.SNAPPY; //压缩算法类型，无需压缩为NONE
     private SerializeType serializeType = SerializeType.PROTOSTUFF; //序列化类型，默认protostuff
 
     private Integer sendBuf = 65535; //tcp发送缓冲区
@@ -290,6 +291,15 @@ public class RpcServerProperties {
 
     public RpcServerProperties setSerializeType(SerializeType serializeType) {
         this.serializeType = serializeType;
+        return this;
+    }
+
+    public Boolean getPrintHearBeatPacketInfo() {
+        return isPrintHearBeatPacketInfo;
+    }
+
+    public RpcServerProperties setPrintHearBeatPacketInfo(Boolean printHearBeatPacketInfo) {
+        isPrintHearBeatPacketInfo = printHearBeatPacketInfo;
         return this;
     }
 }

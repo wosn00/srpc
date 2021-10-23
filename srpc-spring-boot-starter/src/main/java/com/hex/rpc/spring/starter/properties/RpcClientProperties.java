@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @author: hs
  */
-@ConfigurationProperties(prefix = "com.hex.srpc.client")
+@ConfigurationProperties(prefix = "srpc.client")
 public class RpcClientProperties {
     private Integer channelWorkerThreads = RpcConstant.DEFAULT_THREADS; //channel处理工作线程数，连接数量多时可调大
 
@@ -24,7 +24,7 @@ public class RpcClientProperties {
     private Integer connectionIdleTime = 180; //超过连接空闲时间(秒)未收发数据则关闭连接
     private Integer heartBeatTimeInterval = 30; //发送心跳包间隔时间(秒)
 
-    private CompressType compressType = CompressType.LZ4; //压缩算法类型，无需压缩为NONE
+    private CompressType compressType = CompressType.SNAPPY; //压缩算法类型，无需压缩为NONE
     private SerializeType serializeType = SerializeType.PROTOSTUFF; //序列化类型，默认protostuff
 
     private LoadBalanceRule loadBalanceRule = LoadBalanceRule.RANDOM; //集群负载均衡策略
