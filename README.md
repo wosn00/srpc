@@ -19,19 +19,19 @@
 
 ### 设计
 
-![设计](./images/设计.png)
+![设计](./images/Design.png)
 
 - **RPC协议**
 
-![协议](./images/协议.png)
+![协议](./images/protocol.png)
 
 - **同步线程模型**
 
-![同步线程模型](./images/同步线程模型.png)
+![同步线程模型](./images/syncModel.png)
 
 - **异步线程模型**
 
-![异步线程模型](./images/异步线程模型.png)
+![异步线程模型](./images/asyncModel.png)
 
 ### 使用示例
 
