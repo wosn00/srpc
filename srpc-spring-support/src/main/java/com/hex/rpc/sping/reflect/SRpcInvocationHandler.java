@@ -49,9 +49,8 @@ public class SRpcInvocationHandler implements InvocationHandler {
             List<HostAndPort> hostAndPorts = RpcServerAddressRegistry.getHostAndPorts(typeName);
             return client.invoke(mapping, returnType, timeoutRetryTimes, args, hostAndPorts.toArray(new HostAndPort[]{}));
         }
-        return null;
+        return ignoreMethodProcess(method, args);
     }
-
 
     private void resolveType() {
         this.typeName = type.getCanonicalName();
@@ -89,6 +88,19 @@ public class SRpcInvocationHandler implements InvocationHandler {
 
     }
 
+    private Object ignoreMethodProcess(Method method, Object[] args) {
+        switch (method.getName()) {
+            case "equals":
+                return this.equals(args[0]);
+            case "toString":
+                return this.toString();
+            case "hashCode":
+                return this.hashCode();
+            default:
+                logger.error("invoke error, Method {} is invalid, args: {}", method.getName(), args);
+                return null;
+        }
+    }
 
     static class RouterWrapper {
         /**

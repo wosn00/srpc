@@ -28,6 +28,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
+import java.beans.Introspector;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -135,9 +136,11 @@ public class RpcComponentRegistrar implements ImportBeanDefinitionRegistrar, Res
     }
 
     private void registerRoute(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
-        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(annotationMetadata.getClassName());
+        String className = annotationMetadata.getClassName();
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(className);
+        BeanDefinitionHolder holder = new BeanDefinitionHolder(builder.getBeanDefinition(), generateBeanName(className));
         // 注册到spring容器
-        BeanDefinitionReaderUtils.registerWithGeneratedName(builder.getBeanDefinition(), registry);
+        BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
     }
 
     private void registerClient(BeanDefinitionRegistry registry, AnnotationMetadata annotationMetadata) {
@@ -145,9 +148,14 @@ public class RpcComponentRegistrar implements ImportBeanDefinitionRegistrar, Res
         BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(SRpcClientFactoryBean.class);
         builder.addPropertyValue("type", className);
         builder.setRole(RootBeanDefinition.ROLE_INFRASTRUCTURE);
-        BeanDefinitionHolder holder = new BeanDefinitionHolder(builder.getBeanDefinition(), className);
+        BeanDefinitionHolder holder = new BeanDefinitionHolder(builder.getBeanDefinition(), generateBeanName(className));
         // 注册到spring容器
         BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
 
+    }
+
+    private String generateBeanName(String className) {
+        String shortName = ClassUtils.getShortName(className);
+        return Introspector.decapitalize(shortName);
     }
 }
