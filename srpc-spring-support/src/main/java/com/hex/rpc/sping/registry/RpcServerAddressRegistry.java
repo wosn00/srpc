@@ -1,10 +1,12 @@
 package com.hex.rpc.sping.registry;
 
+import com.hex.common.exception.RpcException;
 import com.hex.common.net.HostAndPort;
 import com.hex.common.annotation.SRpcClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
 import java.util.Collection;
@@ -20,10 +22,11 @@ import java.util.stream.Collectors;
 public class RpcServerAddressRegistry {
     private static final Logger logger = LoggerFactory.getLogger(RpcServerAddressRegistry.class);
 
+    private static final String NODES_SEPARATOR = ";";
     private static final Map<String, List<HostAndPort>> CLASS_ADDRESS_MAP = new ConcurrentHashMap<>();
     private static final Map<String, String> CLASS_SERVICE_NAME_MAP = new ConcurrentHashMap<>();
 
-    public static void register(AnnotationMetadata annotationMetadata) {
+    public static void register(AnnotationMetadata annotationMetadata, Environment environment) {
         Class<?> clazz;
         try {
             clazz = Class.forName(annotationMetadata.getClassName());
@@ -36,15 +39,25 @@ public class RpcServerAddressRegistry {
             return;
         }
         SRpcClient annotation = clazz.getAnnotation(SRpcClient.class);
-        String[] nodes = annotation.nodes();
+        String nodes = annotation.nodes();
         String serviceName = annotation.serviceName();
-        if (nodes.length == 0 && StringUtils.isBlank(serviceName)) {
-            logger.error("annotation @RpcClient must define attribute nodes or serviceName, Class {}", clazz);
+        if (nodes.length() == 0 && StringUtils.isBlank(serviceName)) {
+            throw new RpcException("annotation @RpcClient must define attribute nodes or serviceName, Class :" + clazz);
         }
-        if (nodes.length != 0) {
+        if (nodes.length() != 0) {
             List<HostAndPort> hostAndPorts = CLASS_ADDRESS_MAP.computeIfAbsent(clazz.getCanonicalName(),
                     k -> new CopyOnWriteArrayList<>());
-            for (String node : nodes) {
+            //从配置文件读取配置方式
+            if (nodes.startsWith("$")) {
+                String configKey = nodes.substring(2, nodes.length() - 1);
+                String property = environment.getProperty(configKey);
+                if (StringUtils.isBlank(property)) {
+                    throw new RpcException("class " + clazz + " @RpcClient’s nodes config key :" + configKey + " does't find property");
+                } else {
+                    nodes = property;
+                }
+            }
+            for (String node : nodes.split(NODES_SEPARATOR)) {
                 hostAndPorts.add(HostAndPort.from(node));
             }
         }

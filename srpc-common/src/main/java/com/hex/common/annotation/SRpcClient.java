@@ -8,9 +8,6 @@ import java.lang.annotation.Target;
 
 /**
  * @author: hs
- * <p>
- * example:
- * @RpcClient({"ip:port","ip:port"})
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -18,9 +15,11 @@ import java.lang.annotation.Target;
 public @interface SRpcClient {
 
     /**
-     * rpc服务节点地址
+     * 指定rpc服务节点地址
+     * 配置方式一 ：以分号隔开地址，example: @SRpcClient(nodes = "127.0.0.1:9955;127.0.0.1:9956")
+     * 配置方式二 ：支持${}配置方式从yml或properties中读取配置，example: @SRpcClient(nodes = "${rpc.server}")
      */
-    String[] nodes() default {};
+    String nodes() default "";
 
     /**
      * rpc注册中心服务名称

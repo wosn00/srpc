@@ -102,7 +102,7 @@ public class RpcComponentRegistrar implements ImportBeanDefinitionRegistrar, Res
                     Assert.isTrue(annotationMetadata.isInterface(),
                             "@RpcClient can only be specified on an interface");
                     //注册server address
-                    RpcServerAddressRegistry.register(annotationMetadata);
+                    RpcServerAddressRegistry.register(annotationMetadata, environment);
                     //注册Client bean
                     registerClient(registry, annotationMetadata);
                 }

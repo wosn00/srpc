@@ -69,15 +69,20 @@ public interface HelloService {
 }
 ```
 
-接口添加@SRpcClient注解，serviceName属性为rpc服务都在注册中心的服务名称，若不使用注册中心，则注解nodes属性需手动指定服务端节点集群地址，将根据负载均衡策略自动选取节点调用
+接口添加@SRpcClient注解，serviceName属性为rpc服务都在注册中心的服务名称，若不使用注册中心，则注解nodes属性需手动指定服务端节点集群地址，将根据负载均衡策略自动选取节点调用，配置优先级:serviceName > nodes
 
 ```java
-@SRpcClient(nodes = {"127.0.0.1:9955","127.0.0.1:9956","127.0.0.1:9957"})
+@SRpcClient(nodes = "127.0.0.1:9955;127.0.0.1:9956;127.0.0.1:9957")
 public interface HelloService {
     
     String hello(String name);
 }
 ```
+
+nodes属性有两种配置方式：
+- 直接指定节点地址列表，以分号隔开的字符串，例如 @SRpcClient(nodes = "127.0.0.1:9955;127.0.0.1:9956;127.0.0.1:9957")
+- 以$符号开头支持从yml或properties配置文件获取节点配置，例如 @SRpcClient(nodes = "${srpc.helloService}") 方式，需保证服务消费方的yml或properties配置文件有对应的集群地址配置，同样以分号隔开
+
 
 2.服务接口实现
 

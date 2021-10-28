@@ -9,7 +9,7 @@ import com.hex.example.entity.TestResponse;
  * <p>
  * 指定节点列表
  */
-@SRpcClient(nodes = {"127.0.0.1:9955"}, retryTimes = 2)
+@SRpcClient(nodes = "${srpc.testService}", retryTimes = 2)
 public interface RpcServerTestService {
 
     String handler(String body);
