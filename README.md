@@ -2,6 +2,8 @@
 
 一款轻量，高效的RPC框架，基于TCP的二进制通信协议实现
 
+欢迎fork项目持续开发改进，性能优化
+
 ### 特征
 
 - 基于netty的主从Reactor模型，NIO通信
@@ -38,6 +40,8 @@
 #### **一、spring环境下**
 
 maven依赖
+
+项目目前暂时还未上传到maven中央仓库，需clone项目到本地maven选择srpc(root)下install后使用
 
 ```xml
 <dependency>
@@ -186,6 +190,9 @@ public class RpcClientProperties {
     private List<String> registryAddress; //注册中心地址
 ```
 
+配置类信息：
+https://github.com/wosn00/srpc/blob/master/srpc-spring-boot-starter/src/main/java/com/hex/rpc/spring/starter/properties/RpcClientProperties.java
+
 4.服务端启动
 
 ```java
@@ -311,7 +318,7 @@ https://github.com/wosn00/srpc/blob/master/srpc-core/src/main/java/com/hex/srpc/
 
 ### 性能测试
 
-目前只是与dubbo进行了简单了的性能测试对比0_0，后续有时间会进行更多的测试
+目前只是与dubbo进行了及其简单的性能测试对比0_0，后续有时间会进行更多的测试
 
 测试代码：https://github.com/wosn00/THOC/blob/master/srpc-demo-provider/src/main/java/com/hex/srpc/SRpcProviderApplication.java 
 
