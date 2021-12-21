@@ -26,8 +26,7 @@ public class NetUtil {
     }
 
     public static void checkPort(Integer port) {
-        if (port == null || port <= 0 || port > 65535) {
-            throw new IllegalArgumentException("port should be lesser 65535 and greater 0");
-        }
+        if (port < 0 || port > 0xFFFF)
+            throw new IllegalArgumentException("port out of range:" + port);
     }
 }

@@ -24,9 +24,9 @@ public class ProtostuffSerializer implements Serializer {
 
     @Override
     public byte[] serialize(Object object) {
-        Schema schema = getSchema(object.getClass());
-        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+        LinkedBuffer buffer = LinkedBuffer.allocate();
         try {
+            Schema schema = getSchema(object.getClass());
             return ProtostuffIOUtil.toByteArray(object, schema, buffer);
         } finally {
             buffer.clear();
@@ -42,13 +42,6 @@ public class ProtostuffSerializer implements Serializer {
     }
 
     private static Schema<?> getSchema(Class<?> clazz) {
-        Schema<?> schema = schemaCache.get(clazz);
-        if (Objects.isNull(schema)) {
-            schema = RuntimeSchema.getSchema(clazz);
-            if (Objects.nonNull(schema)) {
-                schemaCache.put(clazz, schema);
-            }
-        }
-        return schema;
+        return schemaCache.computeIfAbsent(clazz, k -> RuntimeSchema.getSchema(clazz));
     }
 }
